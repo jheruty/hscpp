@@ -1,0 +1,9 @@
+*.suo
+*.user
+*.ipch
+*.VC.db
+*.tlog
+**/.vs/**
+
+**/Release/**
+**/Debug/**
