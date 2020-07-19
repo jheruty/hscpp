@@ -10,15 +10,22 @@ int main()
 	hscpp::Hotswapper swapper;
 
 	hscpp::FileWatcher watcher;
-	watcher.AddDirectory("C:\\Users\\jheru\\Documents", false);
-	watcher.AddDirectory("./src", true);
+	watcher.AddWatch("C:\\Users\\jheru\\Documents", false);
+	watcher.AddWatch("./src", true);
 
-	std::vector<std::string> files;
+	std::vector<hscpp::FileWatcher::Event> files;
+
 	while (true)
 	{
 		watcher.PollChanges(files);
-		std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
+		for (auto file : files)
+		{
+			std::cout << file.FullPath() << (int)file.type << std::endl;
+		}
 	}
+
+	watcher.ClearAllWatches();
 
 	return 0;
 }

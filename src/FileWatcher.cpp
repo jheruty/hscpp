@@ -1,11 +1,21 @@
+#include <algorithm>
+
 #include "FileWatcher.h"
 #include "Log.h"
 #include "StringUtil.h"
+#include <assert.h>
 
 namespace hscpp
 {
 
-	bool FileWatcher::AddDirectory(const std::string& directory, bool recursive)
+	const static std::chrono::milliseconds DEBOUNCE_TIME = std::chrono::milliseconds(20);
+
+	FileWatcher::~FileWatcher()
+	{
+		ClearAllWatches();
+	}
+
+	bool FileWatcher::AddWatch(const std::string& directory, bool bRecursive)
 	{
 		auto pWatch = std::make_unique<DirectoryWatch>();
 
@@ -21,50 +31,176 @@ namespace hscpp
 
 		if (hDirectory == INVALID_HANDLE_VALUE)
 		{
-			Log::Write(LogLevel::Error, "%s: Failed to add directory '%s' to watch. [%s]",
+			Log::Write(LogLevel::Error, "%s: Failed to add directory '%s' to watch. [%s]\n",
 				__func__, directory.c_str(), GetLastErrorString().c_str());
 			return false;
 		}
 
+		pWatch->directory = directory;
 		pWatch->hDirectory = hDirectory;
-		pWatch->recursive = recursive;
+		pWatch->bRecursive = bRecursive;
+		pWatch->pFileWatcher = this;
 
 		if (!ReadDirectoryChangesAsync(pWatch.get()))
 		{
-			Log::Write(LogLevel::Error, "%s: Failed initial call to ReadDirectoryChangesW. [%s]",
+			Log::Write(LogLevel::Error, "%s: Failed initial call to ReadDirectoryChangesW. [%s]\n",
 				__func__, GetLastErrorString().c_str());
+
+			CloseHandle(hDirectory);
 			return false;
 		}
 
-		m_DirHandles.push_back(hDirectory);
+		m_DirectoryHandles.push_back(hDirectory);
 		m_Watchers.push_back(std::move(pWatch));
 
 		return true;
 	}
 
-	void FileWatcher::PollChanges(std::vector<std::string>& changedFiles)
+	bool FileWatcher::RemoveWatch(const std::string& directory)
 	{
-		WaitForMultipleObjectsEx(m_DirHandles.size(), m_DirHandles.data(), false, 0, true);
+		auto watchIt = std::find_if(m_Watchers.begin(), m_Watchers.end(),
+			[directory](const std::unique_ptr<DirectoryWatch>& pWatch) {
+				return pWatch->directory == directory;
+			});
 
-		changedFiles = m_ChangedFiles;
-		m_ChangedFiles.clear();
+		if (watchIt == m_Watchers.end())
+		{
+			Log::Write(LogLevel::Error, "%s: Directory '%s' could not be found.\n",
+				__func__, directory.c_str());
+			return false;
+		}
+
+		DirectoryWatch* pWatch = watchIt->get();
+
+		EraseDirectoryHandle(pWatch->hDirectory);
+		CloseWatch(pWatch);
+
+		m_Watchers.erase(watchIt);
+
+		return true;
 	}
 
-	void WINAPI FileWatcher::WatchCallback(DWORD dwErrorCode,
-		DWORD dwNumberOfBytesTransferred, LPOVERLAPPED lpOverlapped)
+	void FileWatcher::ClearAllWatches()
 	{
-		if (dwErrorCode != ERROR_SUCCESS)
+		for (const auto& pWatch : m_Watchers)
 		{
-			Log::Write(LogLevel::Error, "%s: ReadDirectoryChangesW failed. [%s]",
-				__func__, GetErrorString(dwErrorCode).c_str());
+			EraseDirectoryHandle(pWatch->hDirectory);
+			CloseWatch(pWatch.get());
+		}
+
+		m_Watchers.clear();
+	}
+
+	void FileWatcher::SetPollFrequencyMs(int ms)
+	{
+		m_PollFrequency = std::chrono::milliseconds(ms);
+	}
+
+	void FileWatcher::PollChanges(std::vector<Event>& events)
+	{
+		events.clear();
+
+		// Trigger WatchCallback if a file change was detected.
+		WaitForMultipleObjectsEx(m_DirectoryHandles.size(), m_DirectoryHandles.data(), false, 0, true);
+
+		// Return if not enough time has passed. This gives time for multiple events to collect.
+		auto now = std::chrono::steady_clock::now();
+		auto dt = now - m_LastPollTime;
+		if (std::chrono::duration_cast<std::chrono::milliseconds>(dt) < m_PollFrequency)
+		{
 			return;
 		}
 
-		DirectoryWatch* pWatch = reinterpret_cast<DirectoryWatch*>(lpOverlapped);
+		PickReadyEvents(events);
+		m_LastPollTime = now;
+	}
+
+	void FileWatcher::PushPendingEvent(const Event& event)
+	{
+		// Check if this event is already pending.
+		auto pendingEventIt = std::find_if(m_PendingEvents.begin(), m_PendingEvents.end(),
+			[event](const PendingEvent& pendingEvent) {
+				return event.FullPath() == pendingEvent.event.FullPath()
+					&& event.type == pendingEvent.event.type;
+			});
+
+		if (pendingEventIt != m_PendingEvents.end())
+		{
+			// Debounce event.
+			pendingEventIt->lastAccess = std::chrono::steady_clock::now();
+		}
+		else
+		{
+			PendingEvent pendingEvent;
+			pendingEvent.event = event;
+			pendingEvent.lastAccess = std::chrono::steady_clock::now();
+
+			m_PendingEvents.push_back(pendingEvent);
+		}
+	}
+
+	void WINAPI FileWatcher::WatchCallback(DWORD error, DWORD nBytesTransferred, LPOVERLAPPED overlapped)
+	{
+		UNREFERENCED_PARAMETER(nBytesTransferred);
+
+		if (error != ERROR_SUCCESS)
+		{
+			Log::Write(LogLevel::Error, "%s: ReadDirectoryChangesW failed. [%s]\n",
+				__func__, GetErrorString(error).c_str());
+			return;
+		}
+
+		FILE_NOTIFY_INFORMATION* pNotify = nullptr;
+		DirectoryWatch* pWatch = reinterpret_cast<DirectoryWatch*>(overlapped);
+		char filenameBuf[MAX_PATH];
+
+		size_t offset = 0;
+		do
+		{
+			pNotify = reinterpret_cast<FILE_NOTIFY_INFORMATION*>(&pWatch->buffer[offset]);
+			offset += pNotify->NextEntryOffset;
+
+			int size = WideCharToMultiByte(
+				CP_ACP,
+				0,
+				pNotify->FileName,
+				pNotify->FileNameLength / sizeof(WCHAR),
+				filenameBuf,
+				MAX_PATH - 1,
+				NULL,
+				NULL);
+
+			filenameBuf[size] = 0;
+
+			Event event;
+			event.directory = pWatch->directory;
+			event.file = filenameBuf;
+
+			switch (pNotify->Action)
+			{
+			case FILE_ACTION_ADDED:
+			case FILE_ACTION_RENAMED_NEW_NAME:
+				event.type = EventType::Added;
+				break;
+			case FILE_ACTION_REMOVED:
+			case FILE_ACTION_RENAMED_OLD_NAME:
+				event.type = EventType::Removed;
+				break;
+			case FILE_ACTION_MODIFIED:
+				event.type = EventType::Modified;
+				break;
+			default:
+				assert(false);
+				break;
+			}
+
+			pWatch->pFileWatcher->PushPendingEvent(event);
+
+		} while (pNotify->NextEntryOffset != 0);
 
 		if (!ReadDirectoryChangesAsync(pWatch))
 		{
-			Log::Write(LogLevel::Error, "%s: Failed refresh call to ReadDirectoryChangesW. [%s]",
+			Log::Write(LogLevel::Error, "%s: Failed refresh call to ReadDirectoryChangesW. [%s]\n",
 				__func__, GetLastErrorString().c_str());
 			return;
 		}
@@ -72,15 +208,72 @@ namespace hscpp
 
 	bool FileWatcher::ReadDirectoryChangesAsync(DirectoryWatch* pWatch)
 	{
+		// OVERLAPPED struct must be zero-initialized before calling ReadDirectoryChangesW.
+		pWatch->overlapped = {};
+
 		return ReadDirectoryChangesW(
 			pWatch->hDirectory,
 			pWatch->buffer,
 			sizeof(pWatch->buffer),
-			pWatch->recursive,
+			pWatch->bRecursive,
 			FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_CREATION | FILE_NOTIFY_CHANGE_SIZE,
 			NULL,
 			&pWatch->overlapped,
 			WatchCallback) != 0;
+	}
+
+	void FileWatcher::CloseWatch(DirectoryWatch* pWatch)
+	{
+		bool bResult = CancelIoEx(pWatch->hDirectory, &pWatch->overlapped);
+		if (!bResult)
+		{
+			Log::Write(LogLevel::Error, "%s: Failed to cancel IO. [%s]\n",
+				__func__, GetLastErrorString().c_str());
+			return;
+		}
+
+		// Wait for IO to be canceled.
+		DWORD nBytesTransferred = 0;
+		bResult = GetOverlappedResult(pWatch->hDirectory, &pWatch->overlapped, &nBytesTransferred, true);
+
+		// If we were in the middle of an IO operation (like ReadDirectoryChangesW) and call CancelIoEx,
+		// GetOverlappedResult returns false, with ERROR_OPERATON_ABORTED.
+		if (!bResult && GetLastError() != ERROR_OPERATION_ABORTED)
+		{
+			Log::Write(LogLevel::Error, "%s: Failed to wait on overlapped result. [%s]\n",
+				__func__, GetLastErrorString().c_str());
+			return;
+		}
+
+		CloseHandle(pWatch->hDirectory);
+	}
+
+	void FileWatcher::EraseDirectoryHandle(HANDLE hDirectory)
+	{
+		auto directoryIt = std::find_if(m_DirectoryHandles.begin(),
+			m_DirectoryHandles.end(), [hDirectory](HANDLE h) {
+				return hDirectory == h;
+			});
+		m_DirectoryHandles.erase(directoryIt);
+	}
+
+	void FileWatcher::PickReadyEvents(std::vector<Event>& readyEvents)
+	{
+		auto now = std::chrono::steady_clock::now();
+		for (auto pendingEventIt = m_PendingEvents.begin(); pendingEventIt != m_PendingEvents.end();)
+		{
+			auto timeSinceAccess = now - pendingEventIt->lastAccess;
+			if (timeSinceAccess >= DEBOUNCE_TIME)
+			{
+				readyEvents.push_back(pendingEventIt->event);
+				pendingEventIt = m_PendingEvents.erase(pendingEventIt);
+			}
+			else
+			{
+				// Event currently being debounced, skip.
+				++pendingEventIt;
+			}
+		}
 	}
 
 }

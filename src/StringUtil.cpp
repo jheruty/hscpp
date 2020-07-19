@@ -7,7 +7,7 @@ namespace hscpp
 
 	std::string GetErrorString(DWORD error)
 	{
-		if (error == 0)
+		if (error == ERROR_SUCCESS)
 		{
 			return ""; // No error.
 		}
