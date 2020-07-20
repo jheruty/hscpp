@@ -158,14 +158,17 @@
     <None Include=".gitignore" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\Allocator.h" />
-    <ClInclude Include="include\FileWatcher.h" />
-    <ClInclude Include="include\Hotswapper.h" />
-    <ClInclude Include="include\Log.h" />
-    <ClInclude Include="include\StringUtil.h" />
+    <ClInclude Include="include\hscpp\Allocator.h" />
+    <ClInclude Include="include\hscpp\Compiler.h" />
+    <ClInclude Include="include\hscpp\FileWatcher.h" />
+    <ClInclude Include="include\hscpp\Hotswapper.h" />
+    <ClInclude Include="include\hscpp\Log.h" />
+    <ClInclude Include="include\hscpp\Register.h" />
+    <ClInclude Include="include\hscpp\StringUtil.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Allocator.cpp" />
+    <ClCompile Include="src\Compiler.cpp" />
     <ClCompile Include="src\FileWatcher.cpp" />
     <ClCompile Include="src\Hotswapper.cpp" />
     <ClCompile Include="src\Log.cpp" />

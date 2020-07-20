@@ -1,9 +1,9 @@
 #include <algorithm>
-
-#include "FileWatcher.h"
-#include "Log.h"
-#include "StringUtil.h"
 #include <assert.h>
+
+#include "hscpp/FileWatcher.h"
+#include "hscpp/Log.h"
+#include "hscpp/StringUtil.h"
 
 namespace hscpp
 {
@@ -103,40 +103,39 @@ namespace hscpp
 		// Trigger WatchCallback if a file change was detected.
 		WaitForMultipleObjectsEx(m_DirectoryHandles.size(), m_DirectoryHandles.data(), false, 0, true);
 
-		// Return if not enough time has passed. This gives time for multiple events to collect.
-		auto now = std::chrono::steady_clock::now();
-		auto dt = now - m_LastPollTime;
-		if (std::chrono::duration_cast<std::chrono::milliseconds>(dt) < m_PollFrequency)
+		// We will gather the events that occur over the next m_PollFrequency ms. This makes it
+		// easier to deal with temporary files that occur during saving, as one can be reasonably
+		// confident that these files have been created and removed within a sufficiently long
+		// m_PollFrequency period.
+		if (!m_bGatheringEvents && m_PendingEvents.size() > 0)
 		{
+			// Begin gathering events.
+			m_bGatheringEvents = true;
+			m_LastPollTime = std::chrono::steady_clock::now();
+			
 			return;
 		}
+		else
+		{
+			// Currently gathering events. Return if not enough time has passed yet.
+			auto now = std::chrono::steady_clock::now();
+			auto dt = now - m_LastPollTime;
+			if (dt < m_PollFrequency)
+			{
+				return;
+			}
+		}
 
-		PickReadyEvents(events);
-		m_LastPollTime = now;
+		// Done gathering events.
+		m_bGatheringEvents = false;
+		
+		events = m_PendingEvents;
+		m_PendingEvents.clear();
 	}
 
 	void FileWatcher::PushPendingEvent(const Event& event)
 	{
-		// Check if this event is already pending.
-		auto pendingEventIt = std::find_if(m_PendingEvents.begin(), m_PendingEvents.end(),
-			[event](const PendingEvent& pendingEvent) {
-				return event.FullPath() == pendingEvent.event.FullPath()
-					&& event.type == pendingEvent.event.type;
-			});
-
-		if (pendingEventIt != m_PendingEvents.end())
-		{
-			// Debounce event.
-			pendingEventIt->lastAccess = std::chrono::steady_clock::now();
-		}
-		else
-		{
-			PendingEvent pendingEvent;
-			pendingEvent.event = event;
-			pendingEvent.lastAccess = std::chrono::steady_clock::now();
-
-			m_PendingEvents.push_back(pendingEvent);
-		}
+		m_PendingEvents.push_back(event);
 	}
 
 	void WINAPI FileWatcher::WatchCallback(DWORD error, DWORD nBytesTransferred, LPOVERLAPPED overlapped)
@@ -255,25 +254,6 @@ namespace hscpp
 				return hDirectory == h;
 			});
 		m_DirectoryHandles.erase(directoryIt);
-	}
-
-	void FileWatcher::PickReadyEvents(std::vector<Event>& readyEvents)
-	{
-		auto now = std::chrono::steady_clock::now();
-		for (auto pendingEventIt = m_PendingEvents.begin(); pendingEventIt != m_PendingEvents.end();)
-		{
-			auto timeSinceAccess = now - pendingEventIt->lastAccess;
-			if (timeSinceAccess >= DEBOUNCE_TIME)
-			{
-				readyEvents.push_back(pendingEventIt->event);
-				pendingEventIt = m_PendingEvents.erase(pendingEventIt);
-			}
-			else
-			{
-				// Event currently being debounced, skip.
-				++pendingEventIt;
-			}
-		}
 	}
 
 }

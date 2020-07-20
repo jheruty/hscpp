@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 
-#include "Log.h"
+#include "hscpp/Log.h"
 
 namespace hscpp
 {

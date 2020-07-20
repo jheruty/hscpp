@@ -1,6 +1,6 @@
 #include <windows.h>
 
-#include "StringUtil.h"
+#include "hscpp/StringUtil.h"
 
 namespace hscpp
 {

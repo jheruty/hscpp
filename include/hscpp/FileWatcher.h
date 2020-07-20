@@ -55,25 +55,19 @@ namespace hscpp
 			FileWatcher* pFileWatcher = nullptr;
 		};
 
-		struct PendingEvent
-		{
-			std::chrono::steady_clock::time_point lastAccess;
-			Event event;
-		};
-
-		std::chrono::milliseconds m_PollFrequency = std::chrono::milliseconds(50);
+		std::chrono::milliseconds m_PollFrequency = std::chrono::milliseconds(100);
 		std::chrono::steady_clock::time_point m_LastPollTime = std::chrono::steady_clock::now();
+		bool m_bGatheringEvents = false;
 
 		std::vector<std::unique_ptr<DirectoryWatch>> m_Watchers;
 		std::vector<HANDLE> m_DirectoryHandles;
 
-		std::vector<PendingEvent> m_PendingEvents;
+		std::vector<Event> m_PendingEvents;
 
 		static void WINAPI WatchCallback(DWORD error, DWORD nBytesTransferred, LPOVERLAPPED overlapped);
 		static bool ReadDirectoryChangesAsync(DirectoryWatch* pWatch);
 
 		void CloseWatch(DirectoryWatch* pWatch);
 		void EraseDirectoryHandle(HANDLE hDirectory);
-		void PickReadyEvents(std::vector<Event>& readyEvents);
 	};
 }

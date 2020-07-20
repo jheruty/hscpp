@@ -20,6 +20,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Main.cpp" />
+    <ClCompile Include="src\Printer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\hotswap-cpp.vcxproj">
