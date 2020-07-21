@@ -9,6 +9,7 @@ namespace hscpp
 	void Hotswapper::AddIncludeDirectory(const std::string& directory)
 	{
 		m_FileWatcher.AddWatch(directory, false);
+		m_IncludeDirectories.push_back(directory);
 	}
 
 	void Hotswapper::AddSourceDirectory(const std::string& directory, bool bRecursive)

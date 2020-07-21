@@ -4,4 +4,7 @@
     <ClCompile Include="src\Main.cpp" />
     <ClCompile Include="src\Printer.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\Printer.h" />
+  </ItemGroup>
 </Project>

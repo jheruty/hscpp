@@ -11,6 +11,9 @@
     <ClInclude Include="include\hscpp\Hotswapper.h" />
     <ClInclude Include="include\hscpp\Log.h" />
     <ClInclude Include="include\hscpp\Register.h" />
+    <ClInclude Include="include\hscpp\Constructors.h" />
+    <ClInclude Include="include\hscpp\Swappable.h" />
+    <ClInclude Include="include\hscpp\SharedModuleMemory.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Allocator.cpp" />
@@ -19,5 +22,8 @@
     <ClCompile Include="src\Log.cpp" />
     <ClCompile Include="src\StringUtil.cpp" />
     <ClCompile Include="src\Compiler.cpp" />
+    <ClCompile Include="src\Registration.cpp" />
+    <ClCompile Include="src\Constructors.cpp" />
+    <ClCompile Include="src\SharedModuleMemory.cpp" />
   </ItemGroup>
 </Project>

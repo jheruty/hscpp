@@ -1,9 +1,14 @@
 #include <iostream>
 
-class Printer
+#include "hscpp/Register.h"
+#include "hscpp/Swappable.h"
+#include "Printer.h"
+
+
+void Printer::Update()
 {
-	virtual void Update()
-	{
-		
-	}
-};
+
+}
+
+
+HSCPP_REGISTER_HOTSWAPPABLE(Printer);

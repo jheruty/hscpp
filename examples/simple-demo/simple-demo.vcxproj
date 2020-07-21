@@ -27,6 +27,9 @@
       <Project>{f472e445-8b47-4fb5-b13e-c0aa9a7cfcd4}</Project>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="include\Printer.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
