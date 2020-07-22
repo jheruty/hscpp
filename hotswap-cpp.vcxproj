@@ -159,6 +159,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\hscpp\Allocator.h" />
+    <ClInclude Include="include\hscpp\CmdShell.h" />
     <ClInclude Include="include\hscpp\Compiler.h" />
     <ClInclude Include="include\hscpp\Constructors.h" />
     <ClInclude Include="include\hscpp\FileWatcher.h" />
@@ -171,6 +172,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Allocator.cpp" />
+    <ClCompile Include="src\CmdShell.cpp" />
     <ClCompile Include="src\Compiler.cpp" />
     <ClCompile Include="src\Constructors.cpp" />
     <ClCompile Include="src\FileWatcher.cpp" />

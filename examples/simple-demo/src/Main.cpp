@@ -23,7 +23,5 @@ int main()
 		swapper.Update();
 	}
 
-
-
 	return 0;
 }

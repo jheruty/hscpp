@@ -23,8 +23,10 @@ namespace hscpp
 		if (m_FileEvents.size() > 0)
 		{
 			auto files = GetChangedFiles();
-			m_Compiler.Compile(files);
+			m_Compiler.Compile(files, m_IncludeDirectories);
 		}
+
+		m_Compiler.Update();
 	}
 
 	std::vector<std::string> Hotswapper::GetChangedFiles()
