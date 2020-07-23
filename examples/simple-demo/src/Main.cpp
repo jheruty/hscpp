@@ -16,7 +16,7 @@ int main()
 	swapper.AddIncludeDirectory("../../include");
 	swapper.AddSourceDirectory("./src", true);
 
-	hscpp::ISwappable* pSwappable = hscpp::Constructors::Create(std::type_index(typeid(Printer)));
+	hscpp::ISwappable* pSwappable = hscpp::Constructors::Create(hscpp::Swappable<Printer>::key);
 
 	while (true)
 	{

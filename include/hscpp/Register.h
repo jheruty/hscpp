@@ -2,16 +2,16 @@
 
 #include "Constructors.h"
 
-#define HSCPP_REGISTER_HOTSWAPPABLE(T) \
+#define HSCPP_REGISTER_HOTSWAPPABLE(T, key) \
 namespace\
 {\
-	struct Hscpp_Registration\
+	struct Registration\
 	{\
-		Hscpp_Registration()\
+		Registration()\
 		{\
-			hscpp::Constructors::RegisterConstructor<T>();\
+			hscpp::Constructors::RegisterConstructor<T>(key);\
 		}\
 	};\
-}\
 \
-static Hscpp_Registration hscppAutoRegistration##T;
+Registration registration##T;\
+}

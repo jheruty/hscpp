@@ -178,7 +178,6 @@
     <ClCompile Include="src\FileWatcher.cpp" />
     <ClCompile Include="src\Hotswapper.cpp" />
     <ClCompile Include="src\Log.cpp" />
-    <ClCompile Include="src\Registration.cpp" />
     <ClCompile Include="src\SharedModuleMemory.cpp" />
     <ClCompile Include="src\StringUtil.cpp" />
   </ItemGroup>

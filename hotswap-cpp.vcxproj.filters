@@ -23,7 +23,6 @@
     <ClCompile Include="src\Log.cpp" />
     <ClCompile Include="src\StringUtil.cpp" />
     <ClCompile Include="src\Compiler.cpp" />
-    <ClCompile Include="src\Registration.cpp" />
     <ClCompile Include="src\Constructors.cpp" />
     <ClCompile Include="src\SharedModuleMemory.cpp" />
     <ClCompile Include="src\CmdShell.cpp" />

@@ -10,5 +10,4 @@ void Printer::Update()
 
 }
 
-
-HSCPP_REGISTER_HOTSWAPPABLE(Printer);
+HSCPP_REGISTER_HOTSWAPPABLE(Printer, "Printer");

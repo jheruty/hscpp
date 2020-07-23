@@ -45,23 +45,24 @@ namespace hscpp
 	{
 	public:
 		template <typename T>
-		static void RegisterConstructor();
+		static void RegisterConstructor(const std::string& key);
 
-		static ISwappable* Create(const std::type_index& type);
+		static ISwappable* Create(const std::string& key);
 
 	private:
 		// Avoid static initialization order issues by placing static variables within functions.
 		static std::vector<std::unique_ptr<IConstructor>>& GetConstructors();
-		static std::unordered_map<std::type_index, size_t>& GetConstructorsByType();
+		static std::unordered_map<std::string, size_t>& GetConstructorsByKey();
 	};
 
 	template <typename T>
-	void hscpp::Constructors::RegisterConstructor()
+	void hscpp::Constructors::RegisterConstructor(const std::string& key)
 	{
 		GetConstructors().push_back(std::make_unique<Constructor<T>>());
 		size_t iConstructor = GetConstructors().size() - 1;
 
-		GetConstructorsByType()[std::type_index(typeid(T))] = iConstructor;
+		Swappable<T>::s_Key = key;
+		GetConstructorsByKey()[key] = iConstructor;
 	}
 
 }

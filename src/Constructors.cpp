@@ -5,10 +5,10 @@
 namespace hscpp
 {
 
-	hscpp::ISwappable* Constructors::Create(const std::type_index& type)
+	hscpp::ISwappable* Constructors::Create(const std::string& key)
 	{
-		auto constructorIt = GetConstructorsByType().find(type);
-		if (constructorIt != GetConstructorsByType().end()) {
+		auto constructorIt = GetConstructorsByKey().find(key);
+		if (constructorIt != GetConstructorsByKey().end()) {
 			IConstructor* constructor = GetConstructors().at(constructorIt->second).get();
 			return constructor->Construct();
 		}
@@ -22,10 +22,10 @@ namespace hscpp
 		return constructors;
 	}
 
-	std::unordered_map<std::type_index, size_t>& Constructors::GetConstructorsByType()
+	std::unordered_map<std::string, size_t>& Constructors::GetConstructorsByKey()
 	{
-		static std::unordered_map<std::type_index, size_t> iConstructorByType;
-		return iConstructorByType;
+		static std::unordered_map<std::string, size_t> iConstructorByKey;
+		return iConstructorByKey;
 	}
 
 }
