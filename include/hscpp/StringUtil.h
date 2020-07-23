@@ -5,6 +5,6 @@
 
 namespace hscpp
 {
-	std::string GetErrorString(DWORD error);
-	std::string GetLastErrorString();
+    std::string GetErrorString(DWORD error);
+    std::string GetLastErrorString();
 }

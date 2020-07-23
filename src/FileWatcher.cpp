@@ -8,252 +8,252 @@
 namespace hscpp
 {
 
-	const static std::chrono::milliseconds DEBOUNCE_TIME = std::chrono::milliseconds(20);
+    const static std::chrono::milliseconds DEBOUNCE_TIME = std::chrono::milliseconds(20);
 
-	FileWatcher::~FileWatcher()
-	{
-		ClearAllWatches();
-	}
+    FileWatcher::~FileWatcher()
+    {
+        ClearAllWatches();
+    }
 
-	bool FileWatcher::AddWatch(const std::string& directory, bool bRecursive)
-	{
-		auto pWatch = std::make_unique<DirectoryWatch>();
+    bool FileWatcher::AddWatch(const std::string& directory, bool bRecursive)
+    {
+        auto pWatch = std::make_unique<DirectoryWatch>();
 
-		// FILE_FLAG_BACKUP_SEMANTICS is necessary to open a directory.
-		HANDLE hDirectory = CreateFileA(
-			directory.c_str(),
-			FILE_LIST_DIRECTORY,
-			FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-			NULL,
-			OPEN_EXISTING,
-			FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED,
-			NULL);
+        // FILE_FLAG_BACKUP_SEMANTICS is necessary to open a directory.
+        HANDLE hDirectory = CreateFileA(
+            directory.c_str(),
+            FILE_LIST_DIRECTORY,
+            FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+            NULL,
+            OPEN_EXISTING,
+            FILE_FLAG_BACKUP_SEMANTICS | FILE_FLAG_OVERLAPPED,
+            NULL);
 
-		if (hDirectory == INVALID_HANDLE_VALUE)
-		{
-			Log::Write(LogLevel::Error, "%s: Failed to add directory '%s' to watch. [%s]\n",
-				__func__, directory.c_str(), GetLastErrorString().c_str());
-			return false;
-		}
+        if (hDirectory == INVALID_HANDLE_VALUE)
+        {
+            Log::Write(LogLevel::Error, "%s: Failed to add directory '%s' to watch. [%s]\n",
+                __func__, directory.c_str(), GetLastErrorString().c_str());
+            return false;
+        }
 
-		pWatch->directory = directory;
-		pWatch->hDirectory = hDirectory;
-		pWatch->bRecursive = bRecursive;
-		pWatch->pFileWatcher = this;
+        pWatch->directory = directory;
+        pWatch->hDirectory = hDirectory;
+        pWatch->bRecursive = bRecursive;
+        pWatch->pFileWatcher = this;
 
-		if (!ReadDirectoryChangesAsync(pWatch.get()))
-		{
-			Log::Write(LogLevel::Error, "%s: Failed initial call to ReadDirectoryChangesW. [%s]\n",
-				__func__, GetLastErrorString().c_str());
+        if (!ReadDirectoryChangesAsync(pWatch.get()))
+        {
+            Log::Write(LogLevel::Error, "%s: Failed initial call to ReadDirectoryChangesW. [%s]\n",
+                __func__, GetLastErrorString().c_str());
 
-			CloseHandle(hDirectory);
-			return false;
-		}
+            CloseHandle(hDirectory);
+            return false;
+        }
 
-		m_DirectoryHandles.push_back(hDirectory);
-		m_Watchers.push_back(std::move(pWatch));
+        m_DirectoryHandles.push_back(hDirectory);
+        m_Watchers.push_back(std::move(pWatch));
 
-		return true;
-	}
+        return true;
+    }
 
-	bool FileWatcher::RemoveWatch(const std::string& directory)
-	{
-		auto watchIt = std::find_if(m_Watchers.begin(), m_Watchers.end(),
-			[directory](const std::unique_ptr<DirectoryWatch>& pWatch) {
-				return pWatch->directory == directory;
-			});
+    bool FileWatcher::RemoveWatch(const std::string& directory)
+    {
+        auto watchIt = std::find_if(m_Watchers.begin(), m_Watchers.end(),
+            [directory](const std::unique_ptr<DirectoryWatch>& pWatch) {
+                return pWatch->directory == directory;
+            });
 
-		if (watchIt == m_Watchers.end())
-		{
-			Log::Write(LogLevel::Error, "%s: Directory '%s' could not be found.\n",
-				__func__, directory.c_str());
-			return false;
-		}
+        if (watchIt == m_Watchers.end())
+        {
+            Log::Write(LogLevel::Error, "%s: Directory '%s' could not be found.\n",
+                __func__, directory.c_str());
+            return false;
+        }
 
-		DirectoryWatch* pWatch = watchIt->get();
+        DirectoryWatch* pWatch = watchIt->get();
 
-		EraseDirectoryHandle(pWatch->hDirectory);
-		CloseWatch(pWatch);
+        EraseDirectoryHandle(pWatch->hDirectory);
+        CloseWatch(pWatch);
 
-		m_Watchers.erase(watchIt);
+        m_Watchers.erase(watchIt);
 
-		return true;
-	}
+        return true;
+    }
 
-	void FileWatcher::ClearAllWatches()
-	{
-		for (const auto& pWatch : m_Watchers)
-		{
-			EraseDirectoryHandle(pWatch->hDirectory);
-			CloseWatch(pWatch.get());
-		}
+    void FileWatcher::ClearAllWatches()
+    {
+        for (const auto& pWatch : m_Watchers)
+        {
+            EraseDirectoryHandle(pWatch->hDirectory);
+            CloseWatch(pWatch.get());
+        }
 
-		m_Watchers.clear();
-	}
+        m_Watchers.clear();
+    }
 
-	void FileWatcher::SetPollFrequencyMs(int ms)
-	{
-		m_PollFrequency = std::chrono::milliseconds(ms);
-	}
+    void FileWatcher::SetPollFrequencyMs(int ms)
+    {
+        m_PollFrequency = std::chrono::milliseconds(ms);
+    }
 
-	void FileWatcher::PollChanges(std::vector<Event>& events)
-	{
-		events.clear();
+    void FileWatcher::PollChanges(std::vector<Event>& events)
+    {
+        events.clear();
 
-		// Trigger WatchCallback if a file change was detected.
-		WaitForMultipleObjectsEx(m_DirectoryHandles.size(), m_DirectoryHandles.data(), false, 0, true);
+        // Trigger WatchCallback if a file change was detected.
+        WaitForMultipleObjectsEx(m_DirectoryHandles.size(), m_DirectoryHandles.data(), false, 0, true);
 
-		// We will gather the events that occur over the next m_PollFrequency ms. This makes it
-		// easier to deal with temporary files that occur during saving, as one can be reasonably
-		// confident that these files have been created and removed within a sufficiently long
-		// m_PollFrequency period.
-		if (!m_bGatheringEvents && m_PendingEvents.size() > 0)
-		{
-			// Begin gathering events.
-			m_bGatheringEvents = true;
-			m_LastPollTime = std::chrono::steady_clock::now();
-			
-			return;
-		}
-		else
-		{
-			// Currently gathering events. Return if not enough time has passed yet.
-			auto now = std::chrono::steady_clock::now();
-			auto dt = now - m_LastPollTime;
-			if (dt < m_PollFrequency)
-			{
-				return;
-			}
-		}
+        // We will gather the events that occur over the next m_PollFrequency ms. This makes it
+        // easier to deal with temporary files that occur during saving, as one can be reasonably
+        // confident that these files have been created and removed within a sufficiently long
+        // m_PollFrequency period.
+        if (!m_bGatheringEvents && m_PendingEvents.size() > 0)
+        {
+            // Begin gathering events.
+            m_bGatheringEvents = true;
+            m_LastPollTime = std::chrono::steady_clock::now();
+            
+            return;
+        }
+        else
+        {
+            // Currently gathering events. Return if not enough time has passed yet.
+            auto now = std::chrono::steady_clock::now();
+            auto dt = now - m_LastPollTime;
+            if (dt < m_PollFrequency)
+            {
+                return;
+            }
+        }
 
-		// Done gathering events.
-		m_bGatheringEvents = false;
-		
-		events = m_PendingEvents;
-		m_PendingEvents.clear();
-	}
+        // Done gathering events.
+        m_bGatheringEvents = false;
+        
+        events = m_PendingEvents;
+        m_PendingEvents.clear();
+    }
 
-	void FileWatcher::PushPendingEvent(const Event& event)
-	{
-		m_PendingEvents.push_back(event);
-	}
+    void FileWatcher::PushPendingEvent(const Event& event)
+    {
+        m_PendingEvents.push_back(event);
+    }
 
-	void WINAPI FileWatcher::WatchCallback(DWORD error, DWORD nBytesTransferred, LPOVERLAPPED overlapped)
-	{
-		UNREFERENCED_PARAMETER(nBytesTransferred);
+    void WINAPI FileWatcher::WatchCallback(DWORD error, DWORD nBytesTransferred, LPOVERLAPPED overlapped)
+    {
+        UNREFERENCED_PARAMETER(nBytesTransferred);
 
-		if (error != ERROR_SUCCESS)
-		{
-			Log::Write(LogLevel::Error, "%s: ReadDirectoryChangesW failed. [%s]\n",
-				__func__, GetErrorString(error).c_str());
-			return;
-		}
+        if (error != ERROR_SUCCESS)
+        {
+            Log::Write(LogLevel::Error, "%s: ReadDirectoryChangesW failed. [%s]\n",
+                __func__, GetErrorString(error).c_str());
+            return;
+        }
 
-		FILE_NOTIFY_INFORMATION* pNotify = nullptr;
-		DirectoryWatch* pWatch = reinterpret_cast<DirectoryWatch*>(overlapped);
-		char filenameBuf[MAX_PATH];
+        FILE_NOTIFY_INFORMATION* pNotify = nullptr;
+        DirectoryWatch* pWatch = reinterpret_cast<DirectoryWatch*>(overlapped);
+        char filenameBuf[MAX_PATH];
 
-		size_t offset = 0;
-		do
-		{
-			pNotify = reinterpret_cast<FILE_NOTIFY_INFORMATION*>(&pWatch->buffer[offset]);
-			offset += pNotify->NextEntryOffset;
+        size_t offset = 0;
+        do
+        {
+            pNotify = reinterpret_cast<FILE_NOTIFY_INFORMATION*>(&pWatch->buffer[offset]);
+            offset += pNotify->NextEntryOffset;
 
-			int size = WideCharToMultiByte(
-				CP_ACP,
-				0,
-				pNotify->FileName,
-				pNotify->FileNameLength / sizeof(WCHAR),
-				filenameBuf,
-				MAX_PATH - 1,
-				NULL,
-				NULL);
+            int size = WideCharToMultiByte(
+                CP_ACP,
+                0,
+                pNotify->FileName,
+                pNotify->FileNameLength / sizeof(WCHAR),
+                filenameBuf,
+                MAX_PATH - 1,
+                NULL,
+                NULL);
 
-			filenameBuf[size] = 0;
+            filenameBuf[size] = 0;
 
-			Event event;
-			event.directory = pWatch->directory;
-			event.file = filenameBuf;
+            Event event;
+            event.directory = pWatch->directory;
+            event.file = filenameBuf;
 
-			switch (pNotify->Action)
-			{
-			case FILE_ACTION_ADDED:
-			case FILE_ACTION_RENAMED_NEW_NAME:
-				event.type = EventType::Added;
-				break;
-			case FILE_ACTION_REMOVED:
-			case FILE_ACTION_RENAMED_OLD_NAME:
-				event.type = EventType::Removed;
-				break;
-			case FILE_ACTION_MODIFIED:
-				event.type = EventType::Modified;
-				break;
-			default:
-				assert(false);
-				break;
-			}
+            switch (pNotify->Action)
+            {
+            case FILE_ACTION_ADDED:
+            case FILE_ACTION_RENAMED_NEW_NAME:
+                event.type = EventType::Added;
+                break;
+            case FILE_ACTION_REMOVED:
+            case FILE_ACTION_RENAMED_OLD_NAME:
+                event.type = EventType::Removed;
+                break;
+            case FILE_ACTION_MODIFIED:
+                event.type = EventType::Modified;
+                break;
+            default:
+                assert(false);
+                break;
+            }
 
-			pWatch->pFileWatcher->PushPendingEvent(event);
+            pWatch->pFileWatcher->PushPendingEvent(event);
 
-		} while (pNotify->NextEntryOffset != 0);
+        } while (pNotify->NextEntryOffset != 0);
 
-		if (!ReadDirectoryChangesAsync(pWatch))
-		{
-			Log::Write(LogLevel::Error, "%s: Failed refresh call to ReadDirectoryChangesW. [%s]\n",
-				__func__, GetLastErrorString().c_str());
-			return;
-		}
-	}
+        if (!ReadDirectoryChangesAsync(pWatch))
+        {
+            Log::Write(LogLevel::Error, "%s: Failed refresh call to ReadDirectoryChangesW. [%s]\n",
+                __func__, GetLastErrorString().c_str());
+            return;
+        }
+    }
 
-	bool FileWatcher::ReadDirectoryChangesAsync(DirectoryWatch* pWatch)
-	{
-		// OVERLAPPED struct must be zero-initialized before calling ReadDirectoryChangesW.
-		pWatch->overlapped = {};
+    bool FileWatcher::ReadDirectoryChangesAsync(DirectoryWatch* pWatch)
+    {
+        // OVERLAPPED struct must be zero-initialized before calling ReadDirectoryChangesW.
+        pWatch->overlapped = {};
 
-		return ReadDirectoryChangesW(
-			pWatch->hDirectory,
-			pWatch->buffer,
-			sizeof(pWatch->buffer),
-			pWatch->bRecursive,
-			FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_CREATION | FILE_NOTIFY_CHANGE_SIZE,
-			NULL,
-			&pWatch->overlapped,
-			WatchCallback) != 0;
-	}
+        return ReadDirectoryChangesW(
+            pWatch->hDirectory,
+            pWatch->buffer,
+            sizeof(pWatch->buffer),
+            pWatch->bRecursive,
+            FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_CREATION | FILE_NOTIFY_CHANGE_SIZE,
+            NULL,
+            &pWatch->overlapped,
+            WatchCallback) != 0;
+    }
 
-	void FileWatcher::CloseWatch(DirectoryWatch* pWatch)
-	{
-		bool bResult = CancelIoEx(pWatch->hDirectory, &pWatch->overlapped);
-		if (!bResult)
-		{
-			Log::Write(LogLevel::Error, "%s: Failed to cancel IO. [%s]\n",
-				__func__, GetLastErrorString().c_str());
-			return;
-		}
+    void FileWatcher::CloseWatch(DirectoryWatch* pWatch)
+    {
+        bool bResult = CancelIoEx(pWatch->hDirectory, &pWatch->overlapped);
+        if (!bResult)
+        {
+            Log::Write(LogLevel::Error, "%s: Failed to cancel IO. [%s]\n",
+                __func__, GetLastErrorString().c_str());
+            return;
+        }
 
-		// Wait for IO to be canceled.
-		DWORD nBytesTransferred = 0;
-		bResult = GetOverlappedResult(pWatch->hDirectory, &pWatch->overlapped, &nBytesTransferred, true);
+        // Wait for IO to be canceled.
+        DWORD nBytesTransferred = 0;
+        bResult = GetOverlappedResult(pWatch->hDirectory, &pWatch->overlapped, &nBytesTransferred, true);
 
-		// If we were in the middle of an IO operation (like ReadDirectoryChangesW) and call CancelIoEx,
-		// GetOverlappedResult returns false, with ERROR_OPERATON_ABORTED.
-		if (!bResult && GetLastError() != ERROR_OPERATION_ABORTED)
-		{
-			Log::Write(LogLevel::Error, "%s: Failed to wait on overlapped result. [%s]\n",
-				__func__, GetLastErrorString().c_str());
-			return;
-		}
+        // If we were in the middle of an IO operation (like ReadDirectoryChangesW) and call CancelIoEx,
+        // GetOverlappedResult returns false, with ERROR_OPERATON_ABORTED.
+        if (!bResult && GetLastError() != ERROR_OPERATION_ABORTED)
+        {
+            Log::Write(LogLevel::Error, "%s: Failed to wait on overlapped result. [%s]\n",
+                __func__, GetLastErrorString().c_str());
+            return;
+        }
 
-		CloseHandle(pWatch->hDirectory);
-	}
+        CloseHandle(pWatch->hDirectory);
+    }
 
-	void FileWatcher::EraseDirectoryHandle(HANDLE hDirectory)
-	{
-		auto directoryIt = std::find_if(m_DirectoryHandles.begin(),
-			m_DirectoryHandles.end(), [hDirectory](HANDLE h) {
-				return hDirectory == h;
-			});
-		m_DirectoryHandles.erase(directoryIt);
-	}
+    void FileWatcher::EraseDirectoryHandle(HANDLE hDirectory)
+    {
+        auto directoryIt = std::find_if(m_DirectoryHandles.begin(),
+            m_DirectoryHandles.end(), [hDirectory](HANDLE h) {
+                return hDirectory == h;
+            });
+        m_DirectoryHandles.erase(directoryIt);
+    }
 
 }

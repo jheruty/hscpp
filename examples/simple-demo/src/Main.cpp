@@ -10,18 +10,18 @@
 
 int main() 
 {
-	hscpp::Hotswapper swapper;
+    hscpp::Hotswapper swapper;
 
-	swapper.AddIncludeDirectory("./include");
-	swapper.AddIncludeDirectory("../../include");
-	swapper.AddSourceDirectory("./src", true);
+    swapper.AddIncludeDirectory("./include");
+    swapper.AddIncludeDirectory("../../include");
+    swapper.AddSourceDirectory("./src", true);
 
-	hscpp::ISwappable* pSwappable = hscpp::Constructors::Create(hscpp::Swappable<Printer>::key);
+    hscpp::ISwappable* pSwappable = hscpp::Constructors::Create(hscpp::Swappable<Printer>::s_Key);
 
-	while (true)
-	{
-		swapper.Update();
-	}
+    while (true)
+    {
+        swapper.Update();
+    }
 
-	return 0;
+    return 0;
 }

@@ -4,5 +4,5 @@
 
 class Printer : public hscpp::Swappable<Printer>
 {
-	virtual void Update();
+    virtual void Update();
 };
