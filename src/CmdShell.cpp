@@ -5,6 +5,9 @@
 namespace hscpp
 {
 
+    // Unique key we can use to verify a task is done running.
+    const static std::string TASK_COMPLETION_KEY = "__hscpp_task_complete(fbdd766e-fa9e-4b12-9304-c9e7af59f44c)__";
+
     CmdShell::~CmdShell()
     {
         if (m_hProcess != INVALID_HANDLE_VALUE)
@@ -88,6 +91,76 @@ namespace hscpp
         return true;
     }
 
+    void CmdShell::StartTask(const std::string& command, int taskId)
+    {
+        SendCommand(command);
+        SendCommand("echo " + TASK_COMPLETION_KEY);
+
+        m_TaskState = TaskState::Running;
+        m_TaskId = taskId;
+
+        m_TaskOutput.clear();
+    }
+
+    CmdShell::TaskState CmdShell::GetTaskState()
+    {
+        return m_TaskState;
+    }
+
+    CmdShell::TaskState CmdShell::Update(int& taskId)
+    {
+        taskId = m_TaskId;
+
+        // Read as many output lines as possible from the cmd subprocess.
+        bool bDoneReading = false;
+        do 
+        {
+            std::string line;
+            if (!ReadOutputLine(line))
+            {
+                m_TaskState = TaskState::Idle;
+                return TaskState::Error;
+            }
+
+            if (line.empty())
+            {
+                bDoneReading = true;
+            }
+            else
+            {
+                m_TaskOutput.push_back(line);
+            }
+        } while (!bDoneReading);
+
+        // Check if the completion key is in the output. If so, our second 'echo' command has run,
+        // so we know the task is complete.
+        int iCompletionKey = -1;
+        for (size_t i = 0; i < m_TaskOutput.size(); ++i)
+        {
+            if (m_TaskOutput.at(i).find(TASK_COMPLETION_KEY) != std::string::npos)
+            {
+                iCompletionKey = static_cast<int>(i);
+                break;
+            }
+        }
+
+        if (iCompletionKey != -1)
+        {
+            // Remove completion key from task output.
+            m_TaskOutput.resize(iCompletionKey);
+
+            m_TaskState = TaskState::Idle;
+            return TaskState::Done;
+        }
+
+        return m_TaskState;
+    }
+
+    const std::vector<std::string>& CmdShell::PeekTaskOutput()
+    {
+        return m_TaskOutput;
+    }
+
     bool CmdShell::SendCommand(const std::string& command)
     {
         // Terminate command with newline to simulate pressing 'Enter'.
@@ -99,8 +172,8 @@ namespace hscpp
             return false;
         }
 
-        int nBytesToWrite = newlineCommand.size();
         int offset = 0;
+        DWORD nBytesToWrite = static_cast<DWORD>(newlineCommand.size());
         const char* pStr = newlineCommand.c_str();
 
         while (nBytesToWrite > 0)
@@ -146,7 +219,8 @@ namespace hscpp
             if (nBytesAvailable > 0)
             {
                 DWORD nBytesRead = 0;
-                if (!ReadFile(m_hStdoutRead, m_ReadBuffer.data(), m_ReadBuffer.size(), &nBytesRead, NULL))
+                if (!ReadFile(m_hStdoutRead, m_ReadBuffer.data(),
+                    static_cast<DWORD>(m_ReadBuffer.size()), &nBytesRead, NULL))
                 {
                     Log::Write(LogLevel::Error, "%s: Failed to read from cmd process. [%s]\n",
                         __func__, GetLastErrorString().c_str());
@@ -165,12 +239,7 @@ namespace hscpp
             m_LeftoverCmdOutput = m_LeftoverCmdOutput.substr(iNewline + 1);
         }
 
-        // Toss out the carriage return.
-        if (output.size() >= 2 && output.at(output.size() - 2) == '\r')
-        {
-            output.erase(output.begin() + output.size() - 2);
-        }
-
+        // Success, note that no data may have been available, in which case output is empty.
         return true;
     }
 

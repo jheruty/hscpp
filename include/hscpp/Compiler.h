@@ -31,8 +31,19 @@ namespace hscpp
         void Update();
 
     private:
-        std::string GetVisualStudioPath();
+        enum class CompilerTask
+        {
+            GetVsPath,
+            SetVcVarsAll,
+        };
 
+        void StartVsPathTask();
+
+        bool HandleTaskComplete(CompilerTask task);
+        bool HandleGetVsPathTaskComplete(const std::vector<std::string>& output);
+        bool HandleSetVcVarsAllTaskComplete(std::vector<std::string> output);
+
+        bool m_Initialized = false;
         CmdShell m_CmdShell;
     };
 

@@ -101,7 +101,7 @@ namespace hscpp
         events.clear();
 
         // Trigger WatchCallback if a file change was detected.
-        WaitForMultipleObjectsEx(m_DirectoryHandles.size(), m_DirectoryHandles.data(), false, 0, true);
+        WaitForMultipleObjectsEx(static_cast<DWORD>(m_DirectoryHandles.size()), m_DirectoryHandles.data(), false, 0, true);
 
         // We will gather the events that occur over the next m_PollFrequency ms. This makes it
         // easier to deal with temporary files that occur during saving, as one can be reasonably
