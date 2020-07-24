@@ -11,11 +11,12 @@ namespace hscpp
         std::string vsPath = GetVisualStudioPath();
     }
 
-    void Compiler::Compile(const std::vector<std::string>& files, const std::vector<std::string>& includeDirectories)
+    void Compiler::Compile(const std::vector<std::filesystem::path>& files,
+        const std::vector<std::filesystem::path>& includeDirectories)
     {
         for (const auto& file : files)
         {
-            m_CmdShell.SendCommand("echo " + file);
+            m_CmdShell.SendCommand("echo " + file.generic_string());
         }
     }
 
@@ -58,7 +59,7 @@ namespace hscpp
                 __func__, compilerVersion.c_str());
         }
 
-        // VS2017 and up ship with vswhere.exe, which can be used to find the Visual Studio install path.
+        // VS2017 and up ships with vswhere.exe, which can be used to find the Visual Studio install path.
         std::string query = "%ProgramFiles(x86)/Microsoft Visual Studio/Installer/vswhere"
             " -version " + compilerVersion +
             " -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64"

@@ -21,7 +21,7 @@ namespace hscpp
         HANDLE m_hStdoutRead = INVALID_HANDLE_VALUE;
         HANDLE m_hStdinWrite = INVALID_HANDLE_VALUE;
 
-        std::array<char, 512> m_ReadBuffer;
+        std::array<char, 512> m_ReadBuffer = { 0 };
         std::string m_LeftoverCmdOutput;
     };
 }

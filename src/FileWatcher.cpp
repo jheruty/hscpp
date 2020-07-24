@@ -15,13 +15,13 @@ namespace hscpp
         ClearAllWatches();
     }
 
-    bool FileWatcher::AddWatch(const std::string& directory, bool bRecursive)
+    bool FileWatcher::AddWatch(const std::filesystem::path& directory, bool bRecursive)
     {
         auto pWatch = std::make_unique<DirectoryWatch>();
 
         // FILE_FLAG_BACKUP_SEMANTICS is necessary to open a directory.
-        HANDLE hDirectory = CreateFileA(
-            directory.c_str(),
+        HANDLE hDirectory = CreateFile(
+            directory.native().c_str(),
             FILE_LIST_DIRECTORY,
             FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
             NULL,
@@ -56,7 +56,7 @@ namespace hscpp
         return true;
     }
 
-    bool FileWatcher::RemoveWatch(const std::string& directory)
+    bool FileWatcher::RemoveWatch(const std::filesystem::path& directory)
     {
         auto watchIt = std::find_if(m_Watchers.begin(), m_Watchers.end(),
             [directory](const std::unique_ptr<DirectoryWatch>& pWatch) {
@@ -151,7 +151,6 @@ namespace hscpp
 
         FILE_NOTIFY_INFORMATION* pNotify = nullptr;
         DirectoryWatch* pWatch = reinterpret_cast<DirectoryWatch*>(overlapped);
-        char filenameBuf[MAX_PATH];
 
         size_t offset = 0;
         do
@@ -159,21 +158,10 @@ namespace hscpp
             pNotify = reinterpret_cast<FILE_NOTIFY_INFORMATION*>(&pWatch->buffer[offset]);
             offset += pNotify->NextEntryOffset;
 
-            int size = WideCharToMultiByte(
-                CP_ACP,
-                0,
-                pNotify->FileName,
-                pNotify->FileNameLength / sizeof(WCHAR),
-                filenameBuf,
-                MAX_PATH - 1,
-                NULL,
-                NULL);
-
-            filenameBuf[size] = 0;
+            std::wstring filename(pNotify->FileName, pNotify->FileNameLength / sizeof(WCHAR));
 
             Event event;
-            event.directory = pWatch->directory;
-            event.file = filenameBuf;
+            event.filepath = pWatch->directory / filename;
 
             switch (pNotify->Action)
             {

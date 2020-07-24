@@ -13,5 +13,5 @@ namespace\
         }\
     };\
 \
-Registration registration##T;\
+    Registration registration##T;\
 }

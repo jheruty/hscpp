@@ -5,6 +5,7 @@
 #include <vector>
 #include <memory>
 #include <chrono>
+#include <filesystem>
 
 namespace hscpp
 {
@@ -22,16 +23,13 @@ namespace hscpp
         struct Event
         {
             EventType type = EventType::None;
-            std::string directory;
-            std::string file;
-
-            std::string FullPath() const { return directory + "/" + file; }
+            std::filesystem::path filepath;
         };
 
         ~FileWatcher();
 
-        bool AddWatch(const std::string& directory, bool bRecursive);
-        bool RemoveWatch(const std::string& directory);
+        bool AddWatch(const std::filesystem::path& directory, bool bRecursive);
+        bool RemoveWatch(const std::filesystem::path& directory);
         void ClearAllWatches();
 
         void SetPollFrequencyMs(int ms);
@@ -48,7 +46,7 @@ namespace hscpp
             // Buffer passed into ReadDirectoryChangesW must be aligned on DWORD boundary.
             alignas(sizeof(DWORD)) uint8_t buffer[32 * 1024];
 
-            std::string directory;
+            std::filesystem::path directory;
             HANDLE hDirectory = INVALID_HANDLE_VALUE;
             bool bRecursive = false;
 
