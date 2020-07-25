@@ -26,7 +26,11 @@ namespace hscpp
         if (m_FileEvents.size() > 0)
         {
             auto files = GetChangedFiles();
-            m_Compiler.Compile(files, m_IncludeDirectories);
+
+            Compiler::CompileInfo info;
+            info.files = files;
+
+            m_Compiler.Compile(info);
         }
 
         m_Compiler.Update();
@@ -36,7 +40,7 @@ namespace hscpp
     {
         // When Visual Studio saves, it can create several events for a single file, so use a
         // set to remove these duplicates.
-        std::unordered_set<std::string> files;
+        std::unordered_set<std::wstring> files;
         for (const auto& event : m_FileEvents)
         {
             if (event.type == FileWatcher::EventType::Removed)
@@ -64,7 +68,7 @@ namespace hscpp
             {
             case FileWatcher::EventType::Added:
             case FileWatcher::EventType::Modified:
-                files.insert(canonicalPath.u8string());
+                files.insert(canonicalPath.wstring());
                 break;
             default:
                 assert(false);

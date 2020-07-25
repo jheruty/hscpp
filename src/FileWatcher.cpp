@@ -163,25 +163,32 @@ namespace hscpp
             Event event;
             event.filepath = pWatch->directory / filename;
 
-            switch (pNotify->Action)
+            // Check that this is a regular file, to ignore updates to directories. Pass in an
+            // std::error_code to suppress exceptions. It is possible temporary files have been
+            // deleted since the notification.
+            std::error_code stdError;
+            if (std::filesystem::is_regular_file(event.filepath, stdError))
             {
-            case FILE_ACTION_ADDED:
-            case FILE_ACTION_RENAMED_NEW_NAME:
-                event.type = EventType::Added;
-                break;
-            case FILE_ACTION_REMOVED:
-            case FILE_ACTION_RENAMED_OLD_NAME:
-                event.type = EventType::Removed;
-                break;
-            case FILE_ACTION_MODIFIED:
-                event.type = EventType::Modified;
-                break;
-            default:
-                assert(false);
-                break;
-            }
+                switch (pNotify->Action)
+                {
+                case FILE_ACTION_ADDED:
+                case FILE_ACTION_RENAMED_NEW_NAME:
+                    event.type = EventType::Added;
+                    break;
+                case FILE_ACTION_REMOVED:
+                case FILE_ACTION_RENAMED_OLD_NAME:
+                    event.type = EventType::Removed;
+                    break;
+                case FILE_ACTION_MODIFIED:
+                    event.type = EventType::Modified;
+                    break;
+                default:
+                    assert(false);
+                    break;
+                }
 
-            pWatch->pFileWatcher->PushPendingEvent(event);
+                pWatch->pFileWatcher->PushPendingEvent(event);
+            }
 
         } while (pNotify->NextEntryOffset != 0);
 

@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <fstream>
 
 #include "hscpp/Compiler.h"
 #include "hscpp/Log.h"
@@ -6,6 +7,7 @@
 
 namespace hscpp
 {
+    const static std::string COMMAND_FILENAME = "cmdfile";
 
     Compiler::Compiler()
     {
@@ -13,14 +15,31 @@ namespace hscpp
         StartVsPathTask();
     }
 
-    void Compiler::Compile(const std::vector<std::filesystem::path>& files,
-        const std::vector<std::filesystem::path>& includeDirectories)
+    bool Compiler::Compile(const CompileInfo& info)
     {
         if (!m_Initialized)
         {
             Log::Write(LogLevel::Debug, "%s: Compiler is not initialized, skipping compilation.\n", __func__);
-            return;
+            return false;
         }
+
+        m_CompileInfo = info;
+
+        // Create a new, temporary build directory.
+        if (!CreateBuildDirectory())
+        {
+            return false;
+        }
+
+        // The command shell uses ANSI, and cl doesn't appear to support reading filenames from UTF-8.
+        // To get around this, write filenames to a separate file that cl can read from. This allows
+        // us to compile files whose names contain Unicode characters.
+        if (!CreateClCommandFile())
+        {
+            return false;
+        }
+
+
     }
 
     void Compiler::Update()
@@ -44,6 +63,65 @@ namespace hscpp
             assert(false);
             break;
         }
+    }
+
+    bool Compiler::CreateBuildDirectory()
+    {
+        std::string guid = CreateGuid();
+        std::filesystem::path temp = std::filesystem::temp_directory_path();
+
+        m_BuildDirectory = temp / guid;
+
+        if (!CreateDirectory(m_BuildDirectory.native().c_str(), NULL))
+        {
+            Log::Write(LogLevel::Error, "%s: Failed to create directory '%s'. [%s]\n",
+                __func__, m_BuildDirectory.string().c_str(), GetLastErrorString().c_str());
+            return false;
+        }
+
+        std::error_code error;
+        m_BuildDirectory = std::filesystem::canonical(m_BuildDirectory, error);
+
+        if (error.value() != ERROR_SUCCESS)
+        {
+            Log::Write(LogLevel::Error, "%s: Failed to create canonical path for temp build directory.\n", __func__);
+            return false;
+        }
+
+        return true;
+    }
+
+    bool Compiler::CreateClCommandFile()
+    {
+        std::filesystem::path commandFilepath = m_BuildDirectory / COMMAND_FILENAME;
+        std::ofstream commandFile(commandFilepath.native().c_str(), std::ios_base::binary);
+
+        if (!commandFile.is_open())
+        {
+            Log::Write(LogLevel::Error, "%s: Failed to create command file.\n", __func__);
+            return false;
+        }
+
+        // Add the UTF-8 BOM. This is required for cl to read the file correctly.
+        commandFile << (uint8_t)0xEF;
+        commandFile << (uint8_t)0xBB;
+        commandFile << (uint8_t)0xBF;
+        commandFile.close();
+
+        // Reopen file to write filenames.
+        commandFile.open(commandFilepath.native().c_str(), std::ios::app);
+        if (!commandFile.is_open())
+        {
+            Log::Write(LogLevel::Error, "%s: Failed to open command file.\n", __func__);
+            return false;
+        }
+
+        for (const auto& file : m_CompileInfo.files)
+        {
+            commandFile << file.u8string() << std::endl;
+        }
+
+        return true;
     }
 
     void Compiler::StartVsPathTask()

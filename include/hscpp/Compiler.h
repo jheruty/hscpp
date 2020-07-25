@@ -27,7 +27,7 @@ namespace hscpp
 
         Compiler();
         
-        void Compile(const std::vector<std::filesystem::path>& files, const std::vector<std::filesystem::path>& includeDirectories);
+        bool Compile(const CompileInfo& info);
         void Update();
 
     private:
@@ -37,14 +37,20 @@ namespace hscpp
             SetVcVarsAll,
         };
 
-        void StartVsPathTask();
+        bool m_Initialized = false;
+        CmdShell m_CmdShell;
 
+        CompileInfo m_CompileInfo;
+        std::filesystem::path m_BuildDirectory;
+
+        bool CreateBuildDirectory();
+        bool CreateClCommandFile();
+
+        void StartVsPathTask();
         bool HandleTaskComplete(CompilerTask task);
         bool HandleGetVsPathTaskComplete(const std::vector<std::string>& output);
         bool HandleSetVcVarsAllTaskComplete(std::vector<std::string> output);
 
-        bool m_Initialized = false;
-        CmdShell m_CmdShell;
     };
 
 }

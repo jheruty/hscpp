@@ -6,8 +6,7 @@
 
 
 void Printer::Update()
-{
-
+{ 
 }
 
 HSCPP_REGISTER_HOTSWAPPABLE(Printer, "Printer");

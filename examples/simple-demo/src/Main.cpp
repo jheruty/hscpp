@@ -7,6 +7,7 @@
 #include "hscpp/Constructors.h"
 #include "hscpp/Swappable.h"
 #include "Printer.h"
+#include "hscpp/StringUtil.h"
 
 int main() 
 {
@@ -17,6 +18,8 @@ int main()
     swapper.AddSourceDirectory("./src", true);
 
     hscpp::ISwappable* pSwappable = hscpp::Constructors::Create(hscpp::Swappable<Printer>::s_Key);
+
+    std::string guid = hscpp::CreateGuid();
 
     while (true)
     {
