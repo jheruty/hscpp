@@ -5,7 +5,6 @@
 #include "hscpp/Hotswapper.h"
 #include "hscpp/FileWatcher.h"
 #include "hscpp/Constructors.h"
-#include "hscpp/Swappable.h"
 #include "Printer.h"
 #include "hscpp/StringUtil.h"
 
@@ -17,9 +16,11 @@ int main()
     swapper.AddIncludeDirectory("../../include");
     swapper.AddSourceDirectory("./src", true);
 
-    hscpp::ISwappable* pSwappable = hscpp::Constructors::Create(hscpp::Swappable<Printer>::s_Key);
+    Printer* pPrinter = static_cast<Printer*>(hscpp::Constructors::Create("Printer"));
 
     std::string guid = hscpp::CreateGuid();
+
+    Printer p;
 
     while (true)
     {

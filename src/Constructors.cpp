@@ -5,7 +5,7 @@
 namespace hscpp
 {
 
-    hscpp::ISwappable* Constructors::Create(const std::string& key)
+    void* Constructors::Create(const std::string& key)
     {
         auto constructorIt = GetConstructorsByKey().find(key);
         if (constructorIt != GetConstructorsByKey().end()) {

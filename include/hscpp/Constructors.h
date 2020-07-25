@@ -5,8 +5,6 @@
 #include <memory>
 #include <typeindex>
 
-#include "Swappable.h"
-
 namespace hscpp
 {
     //============================================================================
@@ -17,7 +15,7 @@ namespace hscpp
     {
     public:
         virtual ~IConstructor() {};
-        virtual ISwappable* Construct() = 0;
+        virtual void* Construct() = 0;
     };
 
     //============================================================================
@@ -28,11 +26,11 @@ namespace hscpp
     class Constructor : public IConstructor
     {
     public:
-        virtual ISwappable* Construct() override;
+        virtual void* Construct() override;
     };
 
     template <typename T>
-    ISwappable* hscpp::Constructor<T>::Construct()
+    void* hscpp::Constructor<T>::Construct()
     {
         return new T();
     }
@@ -47,7 +45,7 @@ namespace hscpp
         template <typename T>
         static void RegisterConstructor(const std::string& key);
 
-        static ISwappable* Create(const std::string& key);
+        static void* Create(const std::string& key);
 
     private:
         // Avoid static initialization order issues by placing static variables within functions.
@@ -61,7 +59,6 @@ namespace hscpp
         GetConstructors().push_back(std::make_unique<Constructor<T>>());
         size_t iConstructor = GetConstructors().size() - 1;
 
-        Swappable<T>::s_Key = key;
         GetConstructorsByKey()[key] = iConstructor;
     }
 

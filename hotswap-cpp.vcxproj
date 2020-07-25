@@ -176,7 +176,6 @@
     <ClInclude Include="include\hscpp\Register.h" />
     <ClInclude Include="include\hscpp\SharedModuleMemory.h" />
     <ClInclude Include="include\hscpp\StringUtil.h" />
-    <ClInclude Include="include\hscpp\Swappable.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Allocator.cpp" />

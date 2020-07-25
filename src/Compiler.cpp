@@ -103,9 +103,9 @@ namespace hscpp
         }
 
         // Add the UTF-8 BOM. This is required for cl to read the file correctly.
-        commandFile << (uint8_t)0xEF;
-        commandFile << (uint8_t)0xBB;
-        commandFile << (uint8_t)0xBF;
+        commandFile << static_cast<uint8_t>(0xEF);
+        commandFile << static_cast<uint8_t>(0xBB);
+        commandFile << static_cast<uint8_t>(0xBF);
         commandFile.close();
 
         // Reopen file to write filenames.

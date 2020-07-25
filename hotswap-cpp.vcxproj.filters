@@ -12,7 +12,6 @@
     <ClInclude Include="include\hscpp\Log.h" />
     <ClInclude Include="include\hscpp\Register.h" />
     <ClInclude Include="include\hscpp\Constructors.h" />
-    <ClInclude Include="include\hscpp\Swappable.h" />
     <ClInclude Include="include\hscpp\SharedModuleMemory.h" />
     <ClInclude Include="include\hscpp\CmdShell.h" />
   </ItemGroup>

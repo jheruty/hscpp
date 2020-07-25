@@ -1,8 +1,20 @@
 #pragma once
 
-#include "hscpp/Swappable.h"
+#include "hscpp/Register.h"
 
-class Printer : public hscpp::Swappable<Printer>
+static const char key[] = "Printer";
+
+//constexpr std::string_view sv = "Printer";
+//static const char key2[] = sv;
+
+class Printer
 {
+    HSCPP_TRACK(Printer, "Printer");
+
+public:
+    Printer();
     virtual void Update();
+
+private:
+    int value = 10;
 };
