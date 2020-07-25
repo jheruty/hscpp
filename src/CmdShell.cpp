@@ -93,12 +93,21 @@ namespace hscpp
 
     void CmdShell::StartTask(const std::string& command, int taskId)
     {
-        SendCommand(command);
-        SendCommand("echo " + TASK_COMPLETION_KEY);
+        bool bSuccess = false;
 
-        m_TaskState = TaskState::Running;
+        bSuccess &= SendCommand(command);
+        bSuccess &= SendCommand("echo " + TASK_COMPLETION_KEY);
+
+        if (!bSuccess)
+        {
+            m_TaskState = TaskState::Error;
+        }
+        else
+        {
+            m_TaskState = TaskState::Running;
+        }
+
         m_TaskId = taskId;
-
         m_TaskOutput.clear();
     }
 
@@ -110,6 +119,12 @@ namespace hscpp
     CmdShell::TaskState CmdShell::Update(int& taskId)
     {
         taskId = m_TaskId;
+
+        if (m_TaskState == TaskState::Error)
+        {
+            m_TaskState = TaskState::Idle;
+            return TaskState::Error;
+        }
 
         // Read as many output lines as possible from the cmd subprocess.
         bool bDoneReading = false;
