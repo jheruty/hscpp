@@ -1,39 +1,40 @@
 #pragma once
 
 #include <unordered_map>
-#include <vector>
 
+#include "hscpp/ModuleSharedState.h"
 #include "hscpp/Constructors.h"
-#include "hscpp/ITracker.h"
+#include "hscpp/Tracker.h"
 
 namespace hscpp
 {
-
-    // All functions implemented inline, so that this is compiled into a hotswapped module simply
-    // by including Registration.h
-    class SharedModuleMemory
+    class __declspec(dllexport) ModuleInterface
     {
-    public:        
-        _declspec(dllexport) static void SetTrackersByKey(
+    public:
+        static void SetTrackersByKey(
             std::unordered_map<std::string, std::vector<ITracker*>>* pTrackersByKey)
         {
-            // Trackers are shared across all modules.
-            m_pTrackersByKey = pTrackersByKey;
+            ModuleSharedState::s_pTrackersByKey = pTrackersByKey;
         }
 
-        _declspec(dllexport) static void SwapObjects()
+        static void SetAllocator(IAllocator* pAllocator)
+        {
+            ModuleSharedState::s_pAllocator = pAllocator;
+        }
+
+        static void PerformRuntimeSwap()
         {
             // Get constructors registered within this module.
-            auto constructorsByKey = Constructors::GetConstructorsByKey();
+            auto& constructorsByKey = Constructors::GetConstructorsByKey();
 
             for (const auto& constructorPair : constructorsByKey)
             {
                 // Find tracked objects corresponding to this constructor. If not found, this must
                 // be a new class, so no instances have been created yet.
                 std::string key = constructorPair.first;
-                
-                auto trackedObjectsPair = m_pTrackersByKey->find(key);
-                if (trackedObjectsPair != m_pTrackersByKey->end())
+
+                auto trackedObjectsPair = ModuleSharedState::s_pTrackersByKey->find(key);
+                if (trackedObjectsPair != ModuleSharedState::s_pTrackersByKey->end())
                 {
                     std::vector<ITracker*>& trackedObjects = trackedObjectsPair->second;
 
@@ -57,25 +58,6 @@ namespace hscpp
                 }
             }
         }
-
-        static void RegisterTracker(ITracker* pTracker)
-        {
-            (*m_pTrackersByKey)[pTracker->GetKey()].push_back(pTracker);
-        }
-
-        static void UnregisterTracker(ITracker* pTracker)
-        {
-            std::vector<ITracker*>& trackers = (*m_pTrackersByKey)[pTracker->GetKey()];
-
-            auto trackerIt = std::find(trackers.begin(), trackers.end(), pTracker);
-            if (trackerIt != trackers.end())
-            {
-                trackers.erase(trackerIt);
-            }
-        }
-
-    private:
-        inline static std::unordered_map<std::string, std::vector<ITracker*>>* m_pTrackersByKey;
     };
 
 }

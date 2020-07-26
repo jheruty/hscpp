@@ -5,14 +5,14 @@
 #include "hscpp/Hotswapper.h"
 #include "hscpp/Log.h"
 #include "hscpp/StringUtil.h"
-#include "hscpp/SharedModuleMemory.h"
+#include "hscpp/ModuleInterface.h"
 
 namespace hscpp
 {
 
     Hotswapper::Hotswapper()
     {
-        SharedModuleMemory::SetTrackersByKey(&m_TrackersByKey);
+        ModuleInterface::SetTrackersByKey(&m_TrackersByKey);
     }
 
     void Hotswapper::AddIncludeDirectory(const std::filesystem::path& directory)

@@ -3,12 +3,14 @@
 #include <functional>
 
 #include "hscpp/Constructors.h"
-#include "hscpp/ITracker.h"
-#include "hscpp/SharedModuleMemory.h"
+#include "hscpp/ModuleSharedState.h"
 
 namespace hscpp
 {
 
+    //============================================================================
+    // Register
+    //============================================================================
 
     template <typename T, const char* Key>
     class Register
@@ -22,6 +24,22 @@ namespace hscpp
 
         void ForceInitialization() {};
     };
+
+
+    //============================================================================
+    // ITracker
+    //============================================================================
+
+    class ITracker
+    {
+    public:
+        virtual void FreeTrackedObject() = 0;
+        virtual std::string GetKey() = 0;
+    };
+
+    //============================================================================
+    // Tracker 
+    //============================================================================
 
     template <typename T, const char* Key>
     class Tracker : public ITracker
@@ -41,16 +59,25 @@ namespace hscpp
             // Pointer to the instance we are tracking.
             m_pTrackedObj = pTrackedObj;
 
-            SharedModuleMemory::RegisterTracker(this);
+            // Register self.
+            (*ModuleSharedState::s_pTrackersByKey)[Key].push_back(this);
         }
 
         ~Tracker()
         {
-            SharedModuleMemory::UnregisterTracker(this);
+            // Unregister self.
+            std::vector<ITracker*>& trackers = (*ModuleSharedState::s_pTrackersByKey)[Key];
+
+            auto trackerIt = std::find(trackers.begin(), trackers.end(), this);
+            if (trackerIt != trackers.end())
+            {
+                trackers.erase(trackerIt);
+            }
         }
 
         virtual void FreeTrackedObject() override
         {
+            // Destroying the tracked object will also destroy the tracker it owns.
             delete m_pTrackedObj;
         }
 

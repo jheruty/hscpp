@@ -6,10 +6,10 @@
 #include "hscpp/FileWatcher.h"
 #include "hscpp/Constructors.h"
 #include "hscpp/StringUtil.h"
-#include "hscpp/SharedModuleMemory.h"
 
 #include "Printer1.h"
 #include "Printer2.h"
+#include "hscpp/ModuleInterface.h"
 
 int main() 
 {
@@ -25,10 +25,11 @@ int main()
     std::string guid = hscpp::CreateGuid();
 
     //Printer p;
-
+    delete p2;
     while (true)
     {
         swapper.Update();
+        hscpp::ModuleInterface::PerformRuntimeSwap();
     }
 
     return 0;

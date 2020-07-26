@@ -7,7 +7,7 @@
 
 #include "hscpp/FileWatcher.h"
 #include "hscpp/Compiler.h"
-#include "hscpp/ITracker.h"
+#include "hscpp/Tracker.h"
 
 namespace hscpp
 {
