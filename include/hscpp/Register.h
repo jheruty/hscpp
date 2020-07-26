@@ -44,6 +44,11 @@ namespace hscpp
             SharedModuleMemory::RegisterTracker(this);
         }
 
+        ~Tracker()
+        {
+            SharedModuleMemory::UnregisterTracker(this);
+        }
+
         virtual void FreeTrackedObject() override
         {
             delete m_pTrackedObj;

@@ -13,7 +13,7 @@ namespace hscpp
     // by including Registration.h
     class SharedModuleMemory
     {
-    public:
+    public:        
         _declspec(dllexport) static void SetTrackersByKey(
             std::unordered_map<std::string, std::vector<ITracker*>>* pTrackersByKey)
         {
@@ -61,6 +61,17 @@ namespace hscpp
         static void RegisterTracker(ITracker* pTracker)
         {
             (*m_pTrackersByKey)[pTracker->GetKey()].push_back(pTracker);
+        }
+
+        static void UnregisterTracker(ITracker* pTracker)
+        {
+            std::vector<ITracker*>& trackers = (*m_pTrackersByKey)[pTracker->GetKey()];
+
+            auto trackerIt = std::find(trackers.begin(), trackers.end(), pTracker);
+            if (trackerIt != trackers.end())
+            {
+                trackers.erase(trackerIt);
+            }
         }
 
     private:
