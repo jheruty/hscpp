@@ -39,11 +39,12 @@ namespace hscpp
             return false;
         }
 
-        std::string cmd = "cl /std:c++17 /D WIN32 /EHa /LD /I C:\\Users\\jheru\\Documents\\Projects\\hotswap-cpp\\include "
+        std::string cmd = "cl /std:c++17 /D WIN32 /EHa /nologo /Z7 /FC /MDd /LDd /I C:\\Users\\jheru\\Documents\\Projects\\hotswap-cpp\\include "
             "/I C:\\Users\\jheru\\Documents\\Projects\\hotswap-cpp\\examples\\simple-demo\\include @" + m_BuildDirectory.string() + "\\cmdfile";
         m_CmdShell.StartTask(cmd, static_cast<int>(CompilerTask::Compile));
 
         m_iCompileOutput = 0;
+        m_CompiledModule.clear();
     }
 
     void Compiler::Update()
@@ -77,6 +78,19 @@ namespace hscpp
             assert(false);
             break;
         }
+    }
+
+    bool Compiler::HasCompiledModule()
+    {
+        return !m_CompiledModule.empty();
+    }
+
+    std::filesystem::path Compiler::ReadCompiledModule()
+    {
+        std::filesystem::path module = m_CompiledModule;
+        m_CompiledModule.clear();
+
+        return module;
     }
 
     bool Compiler::CreateBuildDirectory()
@@ -185,7 +199,7 @@ namespace hscpp
         case CompilerTask::SetVcVarsAll:
             return HandleSetVcVarsAllTaskComplete(output);
         case CompilerTask::Compile:
-            break;
+            return HandleCompileTaskComplete();
         default:
             assert(false);
             break;
@@ -267,6 +281,13 @@ namespace hscpp
 
         Log::Write(LogLevel::Error, "%s: Failed to initialize environment.\n", __func__);
         return false;
+    }
+
+    bool Compiler::HandleCompileTaskComplete()
+    {
+        m_CompiledModule = "C:\\Users\\jheru\\Documents\\Projects\\hotswap-cpp\\examples\\simple-demo\\Printer2.dll"; // TODO
+        //Sleep(1);
+        return true;
     }
 
 }

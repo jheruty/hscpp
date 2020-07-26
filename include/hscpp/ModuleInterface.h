@@ -4,25 +4,30 @@
 
 #include "hscpp/ModuleSharedState.h"
 #include "hscpp/Constructors.h"
-#include "hscpp/Tracker.h"
+#include "hscpp/ITracker.h"
+
+#define HSCPP_API __declspec(dllexport)
 
 namespace hscpp
 {
-    class __declspec(dllexport) ModuleInterface
+    // Interface into the module. Functions are marked 'virtual' to force using the new module's
+    // methods. Otherwise, these functions may be inlined, and the main executable will use the
+    // old definitions.
+    class ModuleInterface
     {
     public:
-        static void SetTrackersByKey(
+        virtual void SetTrackersByKey(
             std::unordered_map<std::string, std::vector<ITracker*>>* pTrackersByKey)
         {
             ModuleSharedState::s_pTrackersByKey = pTrackersByKey;
         }
 
-        static void SetAllocator(IAllocator* pAllocator)
+        virtual void SetAllocator(IAllocator* pAllocator)
         {
             ModuleSharedState::s_pAllocator = pAllocator;
         }
 
-        static void PerformRuntimeSwap()
+        virtual void PerformRuntimeSwap()
         {
             // Get constructors registered within this module.
             auto& constructorsByKey = Constructors::GetConstructorsByKey();
@@ -59,5 +64,13 @@ namespace hscpp
             }
         }
     };
+}
 
+extern "C"
+{
+    HSCPP_API inline hscpp::ModuleInterface* Hscpp_GetModuleInterface()
+    {
+        static hscpp::ModuleInterface moduleInterface;
+        return &moduleInterface;
+    }
 }

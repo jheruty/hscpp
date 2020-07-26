@@ -4,6 +4,7 @@
 
 #include "hscpp/Constructors.h"
 #include "hscpp/ModuleSharedState.h"
+#include "hscpp/ModuleInterface.h" // Added so it is included in module build.
 
 namespace hscpp
 {
@@ -25,18 +26,6 @@ namespace hscpp
         void ForceInitialization() {};
     };
 
-
-    //============================================================================
-    // ITracker
-    //============================================================================
-
-    class ITracker
-    {
-    public:
-        virtual void FreeTrackedObject() = 0;
-        virtual std::string GetKey() = 0;
-    };
-
     //============================================================================
     // Tracker 
     //============================================================================
@@ -53,7 +42,7 @@ namespace hscpp
 
         Tracker(T* pTrackedObj)
         {
-            // The compiler may remove statics that are not explicitly used.
+            // The compiler may remove statics that are not explicitly referenced.
             s_Register.ForceInitialization();
 
             // Pointer to the instance we are tracking.

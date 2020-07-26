@@ -30,6 +30,9 @@ namespace hscpp
         bool Compile(const CompileInfo& info);
         void Update();
 
+        bool HasCompiledModule();
+        std::filesystem::path ReadCompiledModule();
+
     private:
         enum class CompilerTask
         {
@@ -44,7 +47,8 @@ namespace hscpp
         CompileInfo m_CompileInfo;
         std::filesystem::path m_BuildDirectory;
 
-        size_t m_iCompileOutput;
+        size_t m_iCompileOutput = 0;
+        std::filesystem::path m_CompiledModule;
 
         bool CreateBuildDirectory();
         bool CreateClCommandFile();
@@ -53,6 +57,7 @@ namespace hscpp
         bool HandleTaskComplete(CompilerTask task);
         bool HandleGetVsPathTaskComplete(const std::vector<std::string>& output);
         bool HandleSetVcVarsAllTaskComplete(std::vector<std::string> output);
+        bool HandleCompileTaskComplete();
 
     };
 

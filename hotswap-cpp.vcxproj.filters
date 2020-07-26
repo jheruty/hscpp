@@ -15,6 +15,7 @@
     <ClInclude Include="include\hscpp\ModuleInterface.h" />
     <ClInclude Include="include\hscpp\ModuleSharedState.h" />
     <ClInclude Include="include\hscpp\Tracker.h" />
+    <ClInclude Include="include\hscpp\ITracker.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Hotswapper.cpp" />

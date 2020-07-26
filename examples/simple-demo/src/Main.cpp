@@ -25,11 +25,10 @@ int main()
     std::string guid = hscpp::CreateGuid();
 
     //Printer p;
-    delete p2;
+    //delete p2;
     while (true)
     {
         swapper.Update();
-        hscpp::ModuleInterface::PerformRuntimeSwap();
     }
 
     return 0;

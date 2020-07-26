@@ -12,7 +12,7 @@ namespace hscpp
 
     Hotswapper::Hotswapper()
     {
-        ModuleInterface::SetTrackersByKey(&m_TrackersByKey);
+        Hscpp_GetModuleInterface()->SetTrackersByKey(&m_TrackersByKey);
     }
 
     void Hotswapper::AddIncludeDirectory(const std::filesystem::path& directory)
@@ -40,6 +40,24 @@ namespace hscpp
         }
 
         m_Compiler.Update();
+
+        if (m_Compiler.HasCompiledModule())
+        {
+            auto path = m_Compiler.ReadCompiledModule();
+            HMODULE library = LoadLibrary(path.native().c_str());
+            if (library != NULL)
+            {
+                typedef ModuleInterface* (__cdecl* proc)(void);
+                auto func = (proc)GetProcAddress(library, "Hscpp_GetModuleInterface");
+                if (func != nullptr)
+                {
+                    ModuleInterface* pIface = func();
+                    pIface->SetTrackersByKey(&m_TrackersByKey);
+                    pIface->PerformRuntimeSwap();
+                }
+                int dum = 0;
+            }
+        }
     }
 
     std::vector<std::filesystem::path> Hotswapper::GetChangedFiles()
