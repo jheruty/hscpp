@@ -2,9 +2,11 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="src\Main.cpp" />
-    <ClCompile Include="src\喜び\喜び.cpp" />
+    <ClCompile Include="src\Printer2.cpp" />
+    <ClCompile Include="src\Printer1.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\Printer.h" />
+    <ClInclude Include="include\Printer1.h" />
+    <ClInclude Include="include\Printer2.h" />
   </ItemGroup>
 </Project>

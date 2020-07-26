@@ -35,6 +35,7 @@ namespace hscpp
         {
             GetVsPath,
             SetVcVarsAll,
+            Compile,
         };
 
         bool m_Initialized = false;
@@ -42,6 +43,8 @@ namespace hscpp
 
         CompileInfo m_CompileInfo;
         std::filesystem::path m_BuildDirectory;
+
+        size_t m_iCompileOutput;
 
         bool CreateBuildDirectory();
         bool CreateClCommandFile();

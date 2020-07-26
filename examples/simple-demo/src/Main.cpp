@@ -5,8 +5,11 @@
 #include "hscpp/Hotswapper.h"
 #include "hscpp/FileWatcher.h"
 #include "hscpp/Constructors.h"
-#include "Printer.h"
 #include "hscpp/StringUtil.h"
+#include "hscpp/SharedModuleMemory.h"
+
+#include "Printer1.h"
+#include "Printer2.h"
 
 int main() 
 {
@@ -16,11 +19,12 @@ int main()
     swapper.AddIncludeDirectory("../../include");
     swapper.AddSourceDirectory("./src", true);
 
-    Printer* pPrinter = static_cast<Printer*>(hscpp::Constructors::Create("Printer"));
+    auto p = new Printer1();
+    auto p2 = new Printer2();
 
     std::string guid = hscpp::CreateGuid();
 
-    Printer p;
+    //Printer p;
 
     while (true)
     {

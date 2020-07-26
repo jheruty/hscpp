@@ -9,6 +9,7 @@ namespace hscpp
         Trace,
         Debug,
         Info,
+        Warning,
         Error,
     };
 

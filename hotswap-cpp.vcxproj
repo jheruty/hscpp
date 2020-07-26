@@ -172,6 +172,7 @@
     <ClInclude Include="include\hscpp\Constructors.h" />
     <ClInclude Include="include\hscpp\FileWatcher.h" />
     <ClInclude Include="include\hscpp\Hotswapper.h" />
+    <ClInclude Include="include\hscpp\ITracker.h" />
     <ClInclude Include="include\hscpp\Log.h" />
     <ClInclude Include="include\hscpp\Register.h" />
     <ClInclude Include="include\hscpp\SharedModuleMemory.h" />
@@ -181,7 +182,6 @@
     <ClCompile Include="src\Allocator.cpp" />
     <ClCompile Include="src\CmdShell.cpp" />
     <ClCompile Include="src\Compiler.cpp" />
-    <ClCompile Include="src\Constructors.cpp" />
     <ClCompile Include="src\FileWatcher.cpp" />
     <ClCompile Include="src\Hotswapper.cpp" />
     <ClCompile Include="src\Log.cpp" />

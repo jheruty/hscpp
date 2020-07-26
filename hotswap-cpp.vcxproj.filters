@@ -14,6 +14,7 @@
     <ClInclude Include="include\hscpp\Constructors.h" />
     <ClInclude Include="include\hscpp\SharedModuleMemory.h" />
     <ClInclude Include="include\hscpp\CmdShell.h" />
+    <ClInclude Include="include\hscpp\ITracker.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Allocator.cpp" />
@@ -22,7 +23,6 @@
     <ClCompile Include="src\Log.cpp" />
     <ClCompile Include="src\StringUtil.cpp" />
     <ClCompile Include="src\Compiler.cpp" />
-    <ClCompile Include="src\Constructors.cpp" />
     <ClCompile Include="src\SharedModuleMemory.cpp" />
     <ClCompile Include="src\CmdShell.cpp" />
   </ItemGroup>

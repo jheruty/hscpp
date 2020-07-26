@@ -20,7 +20,8 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Main.cpp" />
-    <ClCompile Include="src\喜び\喜び.cpp" />
+    <ClCompile Include="src\Printer1.cpp" />
+    <ClCompile Include="src\Printer2.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\hotswap-cpp.vcxproj">
@@ -28,7 +29,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\Printer.h" />
+    <ClInclude Include="include\Printer2.h" />
+    <ClInclude Include="include\Printer1.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

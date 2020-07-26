@@ -39,13 +39,27 @@ namespace hscpp
             return false;
         }
 
+        std::string cmd = "cl /std:c++17 /D WIN32 /EHa /LD /I C:\\Users\\jheru\\Documents\\Projects\\hotswap-cpp\\include "
+            "/I C:\\Users\\jheru\\Documents\\Projects\\hotswap-cpp\\examples\\simple-demo\\include @" + m_BuildDirectory.string() + "\\cmdfile";
+        m_CmdShell.StartTask(cmd, static_cast<int>(CompilerTask::Compile));
 
+        m_iCompileOutput = 0;
     }
 
     void Compiler::Update()
     {
         int taskId;
         CmdShell::TaskState taskState = m_CmdShell.Update(taskId);
+
+        // If compiling, write out output in real time.
+        if (static_cast<CompilerTask>(taskId) == CompilerTask::Compile)
+        {
+            const std::vector<std::string>& output = m_CmdShell.PeekTaskOutput();
+            for (m_iCompileOutput; m_iCompileOutput < output.size(); ++m_iCompileOutput)
+            {
+                Log::Write(LogLevel::Info, "%s", output.at(m_iCompileOutput).c_str());
+            }
+        }
 
         switch (taskState)
         {
@@ -170,6 +184,8 @@ namespace hscpp
             return HandleGetVsPathTaskComplete(output);
         case CompilerTask::SetVcVarsAll:
             return HandleSetVcVarsAllTaskComplete(output);
+        case CompilerTask::Compile:
+            break;
         default:
             assert(false);
             break;

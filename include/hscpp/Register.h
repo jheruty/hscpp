@@ -2,7 +2,9 @@
 
 #include <functional>
 
-#include "Constructors.h"
+#include "hscpp/Constructors.h"
+#include "hscpp/ITracker.h"
+#include "hscpp/SharedModuleMemory.h"
 
 namespace hscpp
 {
@@ -18,33 +20,38 @@ namespace hscpp
             hscpp::Constructors::RegisterConstructor<T>(Key);
         }
 
-        static int s_ForceInitialization;
+        void ForceInitialization() {};
     };
 
     template <typename T, const char* Key>
-    int hscpp::Register<T, Key>::s_ForceInitialization;
-
-    template <typename T, const char* Key>
-    class Tracker
+    class Tracker : public ITracker
     {
     public:
         std::function<void()> OnBeforeSwap;
         std::function<void()> OnAfterSwap;
 
+        Tracker(const Tracker& rhs) = delete;
+        Tracker& operator=(const Tracker& rhs) = delete;
+
         Tracker(T* pTrackedObj)
         {
             // The compiler may remove statics that are not explicitly used.
-            Register<T, Key>::s_ForceInitialization = 0xFF;
+            s_Register.ForceInitialization();
 
             // Pointer to the instance we are tracking.
             m_pTrackedObj = pTrackedObj;
 
-            // TODO: Register with module memory.
+            SharedModuleMemory::RegisterTracker(this);
         }
 
-        ~Tracker()
+        virtual void FreeTrackedObject() override
         {
-            // TODO: Deregister with module memory. 
+            delete m_pTrackedObj;
+        }
+
+        virtual std::string GetKey() override
+        {
+            return Key;
         }
 
     private:
