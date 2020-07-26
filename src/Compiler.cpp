@@ -15,7 +15,7 @@ namespace hscpp
         StartVsPathTask();
     }
 
-    bool Compiler::Compile(const CompileInfo& info)
+    bool Compiler::StartBuild(const CompileInfo& info)
     {
         if (!m_Initialized)
         {
@@ -41,7 +41,7 @@ namespace hscpp
 
         std::string cmd = "cl /std:c++17 /D WIN32 /EHa /nologo /Z7 /FC /MDd /LDd /I C:\\Users\\jheru\\Documents\\Projects\\hotswap-cpp\\include "
             "/I C:\\Users\\jheru\\Documents\\Projects\\hotswap-cpp\\examples\\simple-demo\\include @" + m_BuildDirectory.string() + "\\cmdfile";
-        m_CmdShell.StartTask(cmd, static_cast<int>(CompilerTask::Compile));
+        m_CmdShell.StartTask(cmd, static_cast<int>(CompilerTask::Build));
 
         m_iCompileOutput = 0;
         m_CompiledModule.clear();
@@ -53,7 +53,7 @@ namespace hscpp
         CmdShell::TaskState taskState = m_CmdShell.Update(taskId);
 
         // If compiling, write out output in real time.
-        if (static_cast<CompilerTask>(taskId) == CompilerTask::Compile)
+        if (static_cast<CompilerTask>(taskId) == CompilerTask::Build)
         {
             const std::vector<std::string>& output = m_CmdShell.PeekTaskOutput();
             for (m_iCompileOutput; m_iCompileOutput < output.size(); ++m_iCompileOutput)
@@ -198,8 +198,8 @@ namespace hscpp
             return HandleGetVsPathTaskComplete(output);
         case CompilerTask::SetVcVarsAll:
             return HandleSetVcVarsAllTaskComplete(output);
-        case CompilerTask::Compile:
-            return HandleCompileTaskComplete();
+        case CompilerTask::Build:
+            return HandleBuildTaskComplete();
         default:
             assert(false);
             break;
@@ -283,7 +283,7 @@ namespace hscpp
         return false;
     }
 
-    bool Compiler::HandleCompileTaskComplete()
+    bool Compiler::HandleBuildTaskComplete()
     {
         m_CompiledModule = "C:\\Users\\jheru\\Documents\\Projects\\hotswap-cpp\\examples\\simple-demo\\Printer2.dll"; // TODO
         //Sleep(1);

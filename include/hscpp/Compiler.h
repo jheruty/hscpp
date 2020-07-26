@@ -27,7 +27,7 @@ namespace hscpp
 
         Compiler();
         
-        bool Compile(const CompileInfo& info);
+        bool StartBuild(const CompileInfo& info);
         void Update();
 
         bool HasCompiledModule();
@@ -38,7 +38,7 @@ namespace hscpp
         {
             GetVsPath,
             SetVcVarsAll,
-            Compile,
+            Build,
         };
 
         bool m_Initialized = false;
@@ -57,7 +57,7 @@ namespace hscpp
         bool HandleTaskComplete(CompilerTask task);
         bool HandleGetVsPathTaskComplete(const std::vector<std::string>& output);
         bool HandleSetVcVarsAllTaskComplete(std::vector<std::string> output);
-        bool HandleCompileTaskComplete();
+        bool HandleBuildTaskComplete();
 
     };
 
