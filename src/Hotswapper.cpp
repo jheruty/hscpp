@@ -11,8 +11,28 @@ namespace hscpp
 {
 
     const static std::string HSCPP_TEMP_DIRECTORY_NAME = "HSCPP_7c9279ff-25af-488c-a634-b6aa68f47a65";
-    const static std::vector<Compiler::CompileOption> DEFAULT_COMPILE_OPTIONS = {
-        {},
+    
+    // Users may not override these file options.
+    const static std::unordered_set<std::string> FORBIDDEN_COMPILE_OPTIONS = {
+        "Fe", // Name of compiled module.
+        "Fo", // Name of directory to place all object files.
+    };
+    
+    const static std::vector<std::string> DEFAULT_COMPILE_OPTIONS = {
+        "/std:c++17", // Use C++17 standard.
+        "/Z7", // Add full debugging information.
+        "/FC", // Print full filepath in diagnostic messages.
+        "/MP", // Build with multiple processes.
+#ifdef _DEBUG
+        // Debug flags.
+        "/MDd", // Use multithreaded debug DLL version of run-time library.
+        "/LD", // Create debug DLL. 
+#else
+        // Release flags.
+        "/MD", // Use multithreaded release DLL version of run-time library.
+        "/Zo", // Enable enhanced debugging for optimized code.
+        "/LD", // Create release DLL.
+#endif
     };
 
     Hotswapper::Hotswapper()
@@ -52,17 +72,17 @@ namespace hscpp
         return m_SourceDirectories;
     }
 
-    void Hotswapper::AddCompileOption(const Compiler::CompileOption& option)
+    void Hotswapper::AddCompileOption(const std::string& option)
     {
 
     }
 
-    void Hotswapper::RemoveCompileOption(const Compiler::CompileOption& option)
+    void Hotswapper::RemoveCompileOption(const std::string& option)
     {
 
     }
 
-    std::vector<hscpp::Compiler::CompileOption> Hotswapper::GetCompileOptions()
+    std::vector<std::string> Hotswapper::GetCompileOptions()
     {
         return m_CompileOptions;
     }

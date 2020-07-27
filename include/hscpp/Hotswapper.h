@@ -24,9 +24,9 @@ namespace hscpp
         void RemoveSourceDirectory(const std::filesystem::path& directory);
         std::vector<std::filesystem::path> GetSourceDirectories();
 
-        void AddCompileOption(const Compiler::CompileOption& option);
-        void RemoveCompileOption(const Compiler::CompileOption& option);
-        std::vector<Compiler::CompileOption> GetCompileOptions();
+        void AddCompileOption(const std::string& option);
+        void RemoveCompileOption(const std::string& option);
+        std::vector<std::string> GetCompileOptions();
 
         void Update();
     private:
@@ -35,7 +35,7 @@ namespace hscpp
         std::filesystem::path m_BuildDirectory;
         std::vector<std::filesystem::path> m_IncludeDirectories;
         std::vector<std::filesystem::path> m_SourceDirectories;
-        std::vector<Compiler::CompileOption> m_CompileOptions;
+        std::vector<std::string> m_CompileOptions;
 
         FileWatcher m_FileWatcher;
         std::vector<FileWatcher::Event> m_FileEvents;

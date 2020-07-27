@@ -8,6 +8,7 @@
 namespace hscpp
 {
     const static std::string COMMAND_FILENAME = "cmdfile";
+    const static std::string MODULE_FILENAME = "module.dll";
 
     Compiler::Compiler()
     {
@@ -31,12 +32,13 @@ namespace hscpp
             return false;
         }
 
-        std::string cmd = "cl /std:c++17 /D WIN32 /EHa /nologo /Z7 /FC /MDd /LDd /I C:\\Users\\jheru\\Documents\\Projects\\hotswap-cpp\\include "
-            "/I C:\\Users\\jheru\\Documents\\Projects\\hotswap-cpp\\examples\\simple-demo\\include @" + info.buildDirectory.string() + "\\cmdfile";
-        m_CmdShell.StartTask(cmd, static_cast<int>(CompilerTask::Build));
+        // Create compile command.
+        std::string cmd = "cl @\"" + info.buildDirectory.string() + "\\" + COMMAND_FILENAME + "\" ";
 
         m_iCompileOutput = 0;
         m_CompiledModule.clear();
+
+        m_CmdShell.StartTask(cmd, static_cast<int>(CompilerTask::Build));
 
         return true;
     }
@@ -104,7 +106,7 @@ namespace hscpp
         commandFile << static_cast<uint8_t>(0xBF);
         commandFile.close();
 
-        // Reopen file to write filenames.
+        // Reopen file and write command.
         commandFile.open(commandFilepath.native().c_str(), std::ios::app);
         if (!commandFile.is_open())
         {
@@ -112,9 +114,24 @@ namespace hscpp
             return false;
         }
 
+        for (const auto& option : info.compileOptions)
+        {
+            commandFile << option << std::endl;
+        }
+
+        m_CompilingModule = info.buildDirectory / MODULE_FILENAME;
+        commandFile << "/Fe" << "\"" << m_CompilingModule.u8string() << "\"" << std::endl;
+
+        commandFile << "/Fo" << "\"" << info.buildDirectory.u8string() << "\"" << std::endl;
+
+        for (const auto& includeDirectory : info.includeDirectories)
+        {
+            commandFile << "/I " << "\"" << includeDirectory.u8string() << "\"" << std::endl;
+        }
+
         for (const auto& file : info.files)
         {
-            commandFile << file.u8string() << std::endl;
+            commandFile << "\"" << file.u8string() << "\"" << std::endl;
         }
 
         return true;
@@ -253,8 +270,9 @@ namespace hscpp
 
     bool Compiler::HandleBuildTaskComplete()
     {
-        m_CompiledModule = "C:\\Users\\jheru\\Documents\\Projects\\hotswap-cpp\\examples\\simple-demo\\Printer2.dll"; // TODO
-        //Sleep(1);
+        m_CompiledModule = m_CompilingModule;
+        m_CompilingModule.clear();
+
         return true;
     }
 

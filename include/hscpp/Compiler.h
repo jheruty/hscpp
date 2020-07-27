@@ -12,18 +12,12 @@ namespace hscpp
     class Compiler
     {
     public:
-        struct CompileOption
-        {
-            std::string option;
-            std::string arg;
-        };
-
         struct CompileInfo
         {
             std::filesystem::path buildDirectory;
             std::vector<std::filesystem::path> files;
             std::vector<std::filesystem::path> includeDirectories;
-            std::vector<CompileOption> compileOptions;
+            std::vector<std::string> compileOptions;
         };
 
         Compiler();
@@ -46,6 +40,7 @@ namespace hscpp
         CmdShell m_CmdShell;
 
         size_t m_iCompileOutput = 0;
+        std::filesystem::path m_CompilingModule;
         std::filesystem::path m_CompiledModule;
 
         bool CreateClCommandFile(const CompileInfo& info);
