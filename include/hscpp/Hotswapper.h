@@ -17,22 +17,35 @@ namespace hscpp
         Hotswapper();
 
         void AddIncludeDirectory(const std::filesystem::path& directory);
+        void RemoveIncludeDirectory(const std::filesystem::path& directory);
+        std::vector<std::filesystem::path> GetIncludeDirectories();
+
         void AddSourceDirectory(const std::filesystem::path& directory, bool bRecursive);
+        void RemoveSourceDirectory(const std::filesystem::path& directory);
+        std::vector<std::filesystem::path> GetSourceDirectories();
+
+        void AddCompileOption(const Compiler::CompileOption& option);
+        void RemoveCompileOption(const Compiler::CompileOption& option);
+        std::vector<Compiler::CompileOption> GetCompileOptions();
 
         void Update();
     private:
         std::filesystem::path m_HscppTempDirectory;
 
+        std::filesystem::path m_BuildDirectory;
+        std::vector<std::filesystem::path> m_IncludeDirectories;
+        std::vector<std::filesystem::path> m_SourceDirectories;
+        std::vector<Compiler::CompileOption> m_CompileOptions;
+
         FileWatcher m_FileWatcher;
         std::vector<FileWatcher::Event> m_FileEvents;
 
         Compiler m_Compiler;
-        Compiler::CompileInfo m_CompileInfo;
 
         std::unordered_map<std::string, std::vector<ITracker*>> m_TrackersByKey;
 
         bool CreateHscppTempDirectory();
-        bool CreateBuildDirectory(std::filesystem::path& buildDirectory);
+        bool CreateBuildDirectory();
 
         std::vector<std::filesystem::path> GetChangedFiles();
 

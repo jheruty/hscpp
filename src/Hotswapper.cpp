@@ -11,16 +11,30 @@ namespace hscpp
 {
 
     const static std::string HSCPP_TEMP_DIRECTORY_NAME = "HSCPP_7c9279ff-25af-488c-a634-b6aa68f47a65";
+    const static std::vector<Compiler::CompileOption> DEFAULT_COMPILE_OPTIONS = {
+        {},
+    };
 
     Hotswapper::Hotswapper()
     {
+        m_CompileOptions = DEFAULT_COMPILE_OPTIONS;
         Hscpp_GetModuleInterface()->SetTrackersByKey(&m_TrackersByKey);
     }
 
     void Hotswapper::AddIncludeDirectory(const std::filesystem::path& directory)
     {
         m_FileWatcher.AddWatch(directory, false);
-        m_CompileInfo.includeDirectories.push_back(directory);
+        m_IncludeDirectories.push_back(directory);
+    }
+
+    void Hotswapper::RemoveIncludeDirectory(const std::filesystem::path& directory)
+    {
+        m_FileWatcher.RemoveWatch(directory); // TODO: 
+    }
+
+    std::vector<std::filesystem::path> Hotswapper::GetIncludeDirectories()
+    {
+        return m_IncludeDirectories;
     }
 
     void Hotswapper::AddSourceDirectory(const std::filesystem::path& directory, bool bRecursive)
@@ -28,15 +42,45 @@ namespace hscpp
         m_FileWatcher.AddWatch(directory, bRecursive);
     }
 
+    void Hotswapper::RemoveSourceDirectory(const std::filesystem::path& directory)
+    {
+
+    }
+
+    std::vector<std::filesystem::path> Hotswapper::GetSourceDirectories()
+    {
+        return m_SourceDirectories;
+    }
+
+    void Hotswapper::AddCompileOption(const Compiler::CompileOption& option)
+    {
+
+    }
+
+    void Hotswapper::RemoveCompileOption(const Compiler::CompileOption& option)
+    {
+
+    }
+
+    std::vector<hscpp::Compiler::CompileOption> Hotswapper::GetCompileOptions()
+    {
+        return m_CompileOptions;
+    }
+
     void Hotswapper::Update()
     {
         m_FileWatcher.PollChanges(m_FileEvents);
         if (m_FileEvents.size() > 0)
         {
-            if (CreateBuildDirectory(m_CompileInfo.buildDirectory))
+            if (CreateBuildDirectory())
             {
-                m_CompileInfo.files = GetChangedFiles();
-                m_Compiler.StartBuild(m_CompileInfo);
+                Compiler::CompileInfo info;
+                info.buildDirectory = m_BuildDirectory;
+                info.files = GetChangedFiles();
+                info.includeDirectories = m_IncludeDirectories;
+                info.compileOptions = m_CompileOptions;
+
+                m_Compiler.StartBuild(info);
             }
         }
 
@@ -74,7 +118,7 @@ namespace hscpp
         return true;
     }
 
-    bool Hotswapper::CreateBuildDirectory(std::filesystem::path& buildDirectory)
+    bool Hotswapper::CreateBuildDirectory()
     {
         if (m_HscppTempDirectory.empty())
         {
@@ -85,13 +129,13 @@ namespace hscpp
         }
 
         std::string guid = CreateGuid();
-        buildDirectory = m_HscppTempDirectory / guid;
+        m_BuildDirectory = m_HscppTempDirectory / guid;
 
         std::error_code error;
-        if (!std::filesystem::create_directory(buildDirectory, error))
+        if (!std::filesystem::create_directory(m_BuildDirectory, error))
         {
             Log::Write(LogLevel::Error, "%s: Failed to create directory '%s'. [%s]\n",
-                __func__, buildDirectory.string().c_str(), GetErrorString(error.value()).c_str());
+                __func__, m_BuildDirectory.string().c_str(), GetErrorString(error.value()).c_str());
             return false;
         }
 
