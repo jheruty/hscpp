@@ -38,7 +38,7 @@ namespace hscpp
         m_Compiler.Update();
         if (m_Compiler.HasCompiledModule())
         {
-            PerformRuntimeSwap(m_Compiler.ConsumeModule());
+            PerformRuntimeSwap(m_Compiler.PopModule());
         }
     }
 

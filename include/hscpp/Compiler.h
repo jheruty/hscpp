@@ -32,7 +32,7 @@ namespace hscpp
         void Update();
 
         bool HasCompiledModule();
-        std::filesystem::path ConsumeModule();
+        std::filesystem::path PopModule();
 
     private:
         enum class CompilerTask

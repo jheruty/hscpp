@@ -45,6 +45,8 @@ namespace hscpp
 
         m_iCompileOutput = 0;
         m_CompiledModule.clear();
+
+        return true;
     }
 
     void Compiler::Update()
@@ -85,7 +87,7 @@ namespace hscpp
         return !m_CompiledModule.empty();
     }
 
-    std::filesystem::path Compiler::ConsumeModule()
+    std::filesystem::path Compiler::PopModule()
     {
         std::filesystem::path module = m_CompiledModule;
         m_CompiledModule.clear();

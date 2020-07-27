@@ -14,7 +14,7 @@ Printer2::Printer2()
         });
 
     std::cout << "Here I a!";
-    std::cout << "Here you be+";
+    std::cout << "Here you be";
 }
 
 void Printer2::Update()
