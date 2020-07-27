@@ -5,6 +5,9 @@
 #include <memory>
 #include <typeindex>
 
+#include "hscpp/IAllocator.h"
+#include "hscpp/ModuleSharedState.h"
+
 namespace hscpp
 {
     //============================================================================
@@ -15,7 +18,7 @@ namespace hscpp
     {
     public:
         virtual ~IConstructor() {};
-        virtual void* Construct() = 0;
+        virtual void* Construct(uint64_t id) = 0;
     };
 
     //============================================================================
@@ -26,13 +29,24 @@ namespace hscpp
     class Constructor : public IConstructor
     {
     public:
-        virtual void* Construct() override;
+        virtual void* Construct(uint64_t id) override;
     };
 
     template <typename T>
-    void* hscpp::Constructor<T>::Construct()
+    void* hscpp::Constructor<T>::Construct(uint64_t id)
     {
-        return new T();
+        if (ModuleSharedState::s_pAllocator == nullptr)
+        {
+            return new T();
+        }
+        else
+        {
+            uint64_t size = sizeof(std::aligned_storage<sizeof(T)>::type);
+            uint8_t* pMem = ModuleSharedState::s_pAllocator->Allocate(size, id);
+            T* pT = new (pMem) T;
+
+            return pT;
+        }
     }
 
     //============================================================================
@@ -53,12 +67,12 @@ namespace hscpp
             GetConstructorsByKey()[key] = iConstructor;
         }
 
-        static void* Create(const std::string& key)
+        static void* Create(const std::string& key, uint64_t id)
         {
             IConstructor* constructor = GetConstructor(key);
             if (constructor != nullptr)
             {
-                return constructor->Construct();
+                return constructor->Construct(id);
             }
 
             return nullptr;

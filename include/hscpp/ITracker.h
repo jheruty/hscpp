@@ -8,7 +8,7 @@ namespace hscpp
     class ITracker
     {
     public:
-        virtual void FreeTrackedObject() = 0;
+        virtual uint64_t FreeTrackedObject() = 0;
         virtual std::string GetKey() = 0;
     };
 }

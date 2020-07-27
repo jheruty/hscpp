@@ -11,8 +11,8 @@
 namespace hscpp
 {
     // Interface into the module. Functions are marked 'virtual' to force using the new module's
-    // methods. Otherwise, these functions may be inlined, and the main executable will use the
-    // old definitions.
+    // methods. Otherwise, symbol resolution will be ambiguous, and the main executable will
+    // continue to use its own implementation.
     class ModuleInterface
     {
     public:
@@ -42,12 +42,13 @@ namespace hscpp
                 if (trackedObjectsPair != ModuleSharedState::s_pTrackersByKey->end())
                 {
                     std::vector<ITracker*>& trackedObjects = trackedObjectsPair->second;
+                    std::vector<uint64_t> ids;
 
                     // Free the old objects; they will be swapped out with new instances.
                     size_t nInstances = trackedObjects.size();
                     for (ITracker* pTracker : trackedObjects)
                     {
-                        pTracker->FreeTrackedObject();
+                        ids.push_back(pTracker->FreeTrackedObject());
                     }
 
                     trackedObjects.clear();
@@ -58,7 +59,8 @@ namespace hscpp
 
                     for (size_t i = 0; i < nInstances; ++i)
                     {
-                        pConstructor->Construct();
+                        pConstructor->Construct(ids.back());
+                        ids.pop_back();
                     }
                 }
             }

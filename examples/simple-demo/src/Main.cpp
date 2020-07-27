@@ -10,25 +10,25 @@
 #include "Printer1.h"
 #include "Printer2.h"
 #include "hscpp/ModuleInterface.h"
+#include "Ref.h"
+#include "Memory.h"
+#include "Allocator.h"
 
 int main() 
 {
-    hscpp::Hotswapper swapper;
+    auto allocator = std::make_unique<Allocator>();
+    hscpp::Hotswapper swapper(std::move(allocator));
 
     swapper.AddIncludeDirectory("./include");
     swapper.AddIncludeDirectory("../../include");
     swapper.AddSourceDirectory("./src", true);
 
-    auto p = new Printer1();
-    auto p2 = new Printer2();
+    Ref<Printer1> p = TAllocator::Allocate<Printer1>();
 
-    std::string guid = hscpp::CreateGuid();
-
-    //Printer p;
-    //delete p2;
     while (true)
     {
         swapper.Update();
+        p->Update();
     }
 
     return 0;

@@ -8,5 +8,7 @@ class Printer1
 
 public:
     Printer1();
+    ~Printer1();
+
     virtual void Update();
 };

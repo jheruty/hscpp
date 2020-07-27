@@ -37,8 +37,13 @@ namespace hscpp
 
     Hotswapper::Hotswapper()
     {
-        m_CompileOptions = DEFAULT_COMPILE_OPTIONS;
-        Hscpp_GetModuleInterface()->SetTrackersByKey(&m_TrackersByKey);
+        Initialize();
+    }
+
+    Hotswapper::Hotswapper(std::unique_ptr<IAllocator> pAllocator)
+    {
+        m_pAllocator = std::move(pAllocator);
+        Initialize();
     }
 
     void Hotswapper::AddIncludeDirectory(const std::filesystem::path& directory)
@@ -109,6 +114,13 @@ namespace hscpp
         {
             PerformRuntimeSwap(m_Compiler.PopModule());
         }
+    }
+
+    void Hotswapper::Initialize()
+    {
+        m_CompileOptions = DEFAULT_COMPILE_OPTIONS;
+        Hscpp_GetModuleInterface()->SetTrackersByKey(&m_TrackersByKey);
+        Hscpp_GetModuleInterface()->SetAllocator(m_pAllocator.get());
     }
 
     bool Hotswapper::CreateHscppTempDirectory()
@@ -234,6 +246,7 @@ namespace hscpp
         }
 
         pModuleInterface->SetTrackersByKey(&m_TrackersByKey);
+        pModuleInterface->SetAllocator(m_pAllocator.get());
         pModuleInterface->PerformRuntimeSwap();
 
         return true;

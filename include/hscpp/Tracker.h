@@ -64,10 +64,19 @@ namespace hscpp
             }
         }
 
-        virtual void FreeTrackedObject() override
+        virtual uint64_t FreeTrackedObject() override
         {
-            // Destroying the tracked object will also destroy the tracker it owns.
-            delete m_pTrackedObj;
+            if (ModuleSharedState::s_pAllocator == nullptr)
+            {
+                // Destroying the tracked object will also destroy the tracker it owns.
+                delete m_pTrackedObj;
+                return 0;
+            }
+            else
+            {
+                m_pTrackedObj->~T();
+                return ModuleSharedState::s_pAllocator->Free(reinterpret_cast<uint8_t*>(m_pTrackedObj));
+            }
         }
 
         virtual std::string GetKey() override

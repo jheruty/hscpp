@@ -7,7 +7,11 @@ namespace hscpp
     class IAllocator
     {
     public:
-        virtual uintptr_t Allocate(uint64_t size) = 0;
-        virtual void Free(uintptr_t id) = 0;
+        virtual ~IAllocator() {};
+        virtual uint8_t* Allocate(uint64_t size, uint64_t id) = 0;
+        virtual uint64_t Free(uint8_t* pMemory) = 0;
     };
+
+    template <typename T>
+    class Allocator;
 }

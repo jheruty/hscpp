@@ -15,6 +15,7 @@ namespace hscpp
     {
     public:
         Hotswapper();
+        Hotswapper(std::unique_ptr<IAllocator> pAllocator);
 
         void AddIncludeDirectory(const std::filesystem::path& directory);
         void RemoveIncludeDirectory(const std::filesystem::path& directory);
@@ -27,6 +28,8 @@ namespace hscpp
         void AddCompileOption(const std::string& option);
         void RemoveCompileOption(const std::string& option);
         std::vector<std::string> GetCompileOptions();
+
+        // TODO: Add linker options, directory, and libraries.
 
         void Update();
     private:
@@ -43,6 +46,9 @@ namespace hscpp
         Compiler m_Compiler;
 
         std::unordered_map<std::string, std::vector<ITracker*>> m_TrackersByKey;
+        std::unique_ptr<IAllocator> m_pAllocator;
+
+        void Initialize();
 
         bool CreateHscppTempDirectory();
         bool CreateBuildDirectory();
