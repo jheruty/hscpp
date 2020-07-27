@@ -45,14 +45,10 @@ namespace hscpp
         bool m_Initialized = false;
         CmdShell m_CmdShell;
 
-        CompileInfo m_CompileInfo;
-        std::filesystem::path m_BuildDirectory;
-
         size_t m_iCompileOutput = 0;
         std::filesystem::path m_CompiledModule;
 
-        bool CreateBuildDirectory();
-        bool CreateClCommandFile();
+        bool CreateClCommandFile(const CompileInfo& info);
 
         void StartVsPathTask();
         bool HandleTaskComplete(CompilerTask task);

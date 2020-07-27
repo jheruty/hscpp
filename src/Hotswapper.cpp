@@ -10,6 +10,8 @@
 namespace hscpp
 {
 
+    const static std::string HSCPP_TEMP_DIRECTORY_NAME = "HSCPP_7c9279ff-25af-488c-a634-b6aa68f47a65";
+
     Hotswapper::Hotswapper()
     {
         Hscpp_GetModuleInterface()->SetTrackersByKey(&m_TrackersByKey);
@@ -31,8 +33,11 @@ namespace hscpp
         m_FileWatcher.PollChanges(m_FileEvents);
         if (m_FileEvents.size() > 0)
         {
-            m_CompileInfo.files = GetChangedFiles();
-            m_Compiler.StartBuild(m_CompileInfo);
+            if (CreateBuildDirectory(m_CompileInfo.buildDirectory))
+            {
+                m_CompileInfo.files = GetChangedFiles();
+                m_Compiler.StartBuild(m_CompileInfo);
+            }
         }
 
         m_Compiler.Update();
@@ -40,6 +45,57 @@ namespace hscpp
         {
             PerformRuntimeSwap(m_Compiler.PopModule());
         }
+    }
+
+    bool Hotswapper::CreateHscppTempDirectory()
+    {
+        std::error_code error;
+        std::filesystem::path temp = std::filesystem::temp_directory_path(error);
+
+        if (error.value() != ERROR_SUCCESS)
+        {
+            Log::Write(LogLevel::Error, "%s: Failed to find temp directory path. [%s]\n",
+                __func__, GetErrorString(error.value()).c_str());
+            return false;
+        }
+
+        std::filesystem::path hscppTemp = temp / HSCPP_TEMP_DIRECTORY_NAME;
+
+        std::filesystem::remove_all(hscppTemp, error);
+        if (!std::filesystem::create_directory(hscppTemp, error))
+        {
+            Log::Write(LogLevel::Error, "%s: Failed to create directory '%s'. [%s]\n",
+                __func__, hscppTemp.string().c_str(), GetErrorString(error.value()).c_str());
+            return false;
+        }
+
+        m_HscppTempDirectory = hscppTemp;
+
+        return true;
+    }
+
+    bool Hotswapper::CreateBuildDirectory(std::filesystem::path& buildDirectory)
+    {
+        if (m_HscppTempDirectory.empty())
+        {
+            if (!CreateHscppTempDirectory())
+            {
+                return false;
+            }
+        }
+
+        std::string guid = CreateGuid();
+        buildDirectory = m_HscppTempDirectory / guid;
+
+        std::error_code error;
+        if (!std::filesystem::create_directory(buildDirectory, error))
+        {
+            Log::Write(LogLevel::Error, "%s: Failed to create directory '%s'. [%s]\n",
+                __func__, buildDirectory.string().c_str(), GetErrorString(error.value()).c_str());
+            return false;
+        }
+
+        return true;
     }
 
     std::vector<std::filesystem::path> Hotswapper::GetChangedFiles()

@@ -21,17 +21,21 @@ namespace hscpp
 
         void Update();
     private:
+        std::filesystem::path m_HscppTempDirectory;
+
         FileWatcher m_FileWatcher;
         std::vector<FileWatcher::Event> m_FileEvents;
 
         Compiler m_Compiler;
         Compiler::CompileInfo m_CompileInfo;
 
-        std::vector<std::filesystem::path> m_IncludeDirectories;
-
         std::unordered_map<std::string, std::vector<ITracker*>> m_TrackersByKey;
 
+        bool CreateHscppTempDirectory();
+        bool CreateBuildDirectory(std::filesystem::path& buildDirectory);
+
         std::vector<std::filesystem::path> GetChangedFiles();
+
         bool PerformRuntimeSwap(const std::filesystem::path& moduleFilepath);
     };
 }

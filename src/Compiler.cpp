@@ -23,24 +23,16 @@ namespace hscpp
             return false;
         }
 
-        m_CompileInfo = info;
-
-        // Create a new, temporary build directory.
-        if (!CreateBuildDirectory())
-        {
-            return false;
-        }
-
         // The command shell uses ANSI, and cl doesn't appear to support reading filenames from UTF-8.
         // To get around this, write filenames to a separate file that cl can read from. This allows
         // us to compile files whose names contain Unicode characters.
-        if (!CreateClCommandFile())
+        if (!CreateClCommandFile(info))
         {
             return false;
         }
 
         std::string cmd = "cl /std:c++17 /D WIN32 /EHa /nologo /Z7 /FC /MDd /LDd /I C:\\Users\\jheru\\Documents\\Projects\\hotswap-cpp\\include "
-            "/I C:\\Users\\jheru\\Documents\\Projects\\hotswap-cpp\\examples\\simple-demo\\include @" + m_BuildDirectory.string() + "\\cmdfile";
+            "/I C:\\Users\\jheru\\Documents\\Projects\\hotswap-cpp\\examples\\simple-demo\\include @" + info.buildDirectory.string() + "\\cmdfile";
         m_CmdShell.StartTask(cmd, static_cast<int>(CompilerTask::Build));
 
         m_iCompileOutput = 0;
@@ -95,35 +87,9 @@ namespace hscpp
         return module;
     }
 
-    bool Compiler::CreateBuildDirectory()
+    bool Compiler::CreateClCommandFile(const CompileInfo& info)
     {
-        std::string guid = CreateGuid();
-        std::filesystem::path temp = std::filesystem::temp_directory_path();
-
-        m_BuildDirectory = temp / guid;
-
-        if (!CreateDirectory(m_BuildDirectory.native().c_str(), NULL))
-        {
-            Log::Write(LogLevel::Error, "%s: Failed to create directory '%s'. [%s]\n",
-                __func__, m_BuildDirectory.string().c_str(), GetLastErrorString().c_str());
-            return false;
-        }
-
-        std::error_code error;
-        m_BuildDirectory = std::filesystem::canonical(m_BuildDirectory, error);
-
-        if (error.value() != ERROR_SUCCESS)
-        {
-            Log::Write(LogLevel::Error, "%s: Failed to create canonical path for temp build directory.\n", __func__);
-            return false;
-        }
-
-        return true;
-    }
-
-    bool Compiler::CreateClCommandFile()
-    {
-        std::filesystem::path commandFilepath = m_BuildDirectory / COMMAND_FILENAME;
+        std::filesystem::path commandFilepath = info.buildDirectory / COMMAND_FILENAME;
         std::ofstream commandFile(commandFilepath.native().c_str(), std::ios_base::binary);
 
         if (!commandFile.is_open())
@@ -146,7 +112,7 @@ namespace hscpp
             return false;
         }
 
-        for (const auto& file : m_CompileInfo.files)
+        for (const auto& file : info.files)
         {
             commandFile << file.u8string() << std::endl;
         }
