@@ -18,7 +18,7 @@ namespace hscpp
     void Hotswapper::AddIncludeDirectory(const std::filesystem::path& directory)
     {
         m_FileWatcher.AddWatch(directory, false);
-        m_IncludeDirectories.push_back(directory);
+        m_CompileInfo.includeDirectories.push_back(directory);
     }
 
     void Hotswapper::AddSourceDirectory(const std::filesystem::path& directory, bool bRecursive)
@@ -31,32 +31,14 @@ namespace hscpp
         m_FileWatcher.PollChanges(m_FileEvents);
         if (m_FileEvents.size() > 0)
         {
-            auto files = GetChangedFiles();
-
-            Compiler::CompileInfo info;
-            info.files = files;
-
-            m_Compiler.Compile(info);
+            m_CompileInfo.files = GetChangedFiles();
+            m_Compiler.StartBuild(m_CompileInfo);
         }
 
         m_Compiler.Update();
-
         if (m_Compiler.HasCompiledModule())
         {
-            auto path = m_Compiler.ReadCompiledModule();
-            HMODULE library = LoadLibrary(path.native().c_str());
-            if (library != NULL)
-            {
-                typedef ModuleInterface* (__cdecl* proc)(void);
-                auto func = (proc)GetProcAddress(library, "Hscpp_GetModuleInterface");
-                if (func != nullptr)
-                {
-                    ModuleInterface* pIface = func();
-                    pIface->SetTrackersByKey(&m_TrackersByKey);
-                    pIface->PerformRuntimeSwap();
-                }
-                int dum = 0;
-            }
+            PerformRuntimeSwap(m_Compiler.ConsumeModule());
         }
     }
 
@@ -101,6 +83,40 @@ namespace hscpp
         }
 
         return std::vector<std::filesystem::path>(files.begin(), files.end());
+    }
+
+    bool Hotswapper::PerformRuntimeSwap(const std::filesystem::path& moduleFilepath)
+    {
+        HMODULE hModule = LoadLibrary(moduleFilepath.native().c_str());
+        if (hModule == nullptr)
+        {
+            Log::Write(LogLevel::Error, "%s: Failed to load module %s. [%s]\n",
+                __func__, moduleFilepath.string().c_str(), GetLastErrorString().c_str());
+            return false;
+        }
+
+        typedef ModuleInterface* (__cdecl* Hsccp_GetModuleInterfaceProc)(void);
+        auto getModuleInterfaceProc = reinterpret_cast<Hsccp_GetModuleInterfaceProc>(
+            GetProcAddress(hModule, "Hscpp_GetModuleInterface"));
+
+        if (getModuleInterfaceProc == nullptr)
+        {
+            Log::Write(LogLevel::Error, "%s: Failed to load Hscpp_GetModuleInterface procedure. [%s]\n",
+                __func__, GetLastErrorString().c_str());
+            return false;
+        }
+
+        ModuleInterface* pModuleInterface = getModuleInterfaceProc();
+        if (pModuleInterface == nullptr)
+        {
+            Log::Write(LogLevel::Error, "%s: Failed to get point to module interface.\n", __func__);
+            return false;
+        }
+
+        pModuleInterface->SetTrackersByKey(&m_TrackersByKey);
+        pModuleInterface->PerformRuntimeSwap();
+
+        return true;
     }
 
 }

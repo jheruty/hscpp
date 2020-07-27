@@ -25,10 +25,13 @@ namespace hscpp
         std::vector<FileWatcher::Event> m_FileEvents;
 
         Compiler m_Compiler;
+        Compiler::CompileInfo m_CompileInfo;
 
         std::vector<std::filesystem::path> m_IncludeDirectories;
+
         std::unordered_map<std::string, std::vector<ITracker*>> m_TrackersByKey;
 
         std::vector<std::filesystem::path> GetChangedFiles();
+        bool PerformRuntimeSwap(const std::filesystem::path& moduleFilepath);
     };
 }

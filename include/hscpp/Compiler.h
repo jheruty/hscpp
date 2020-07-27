@@ -20,6 +20,7 @@ namespace hscpp
 
         struct CompileInfo
         {
+            std::filesystem::path buildDirectory;
             std::vector<std::filesystem::path> files;
             std::vector<std::filesystem::path> includeDirectories;
             std::vector<CompileOption> compileOptions;
@@ -31,7 +32,7 @@ namespace hscpp
         void Update();
 
         bool HasCompiledModule();
-        std::filesystem::path ReadCompiledModule();
+        std::filesystem::path ConsumeModule();
 
     private:
         enum class CompilerTask

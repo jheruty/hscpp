@@ -85,7 +85,7 @@ namespace hscpp
         return !m_CompiledModule.empty();
     }
 
-    std::filesystem::path Compiler::ReadCompiledModule()
+    std::filesystem::path Compiler::ConsumeModule()
     {
         std::filesystem::path module = m_CompiledModule;
         m_CompiledModule.clear();
