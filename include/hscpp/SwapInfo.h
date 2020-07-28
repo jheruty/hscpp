@@ -14,8 +14,6 @@ namespace hscpp
 
     class SwapInfo
     {
-        friend class ModuleInterface;
-
     public:
         SwapPhase Phase() const
         {
@@ -40,6 +38,9 @@ namespace hscpp
         }
 
     private:
+        // m_Id and m_Phase are set in ModuleInterface during swapping.
+        friend class ModuleInterface;
+
         SwapPhase m_Phase;
         uint64_t m_Id;
         Serializer m_Serializer;
