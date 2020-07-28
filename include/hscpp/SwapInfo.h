@@ -6,8 +6,7 @@
 
 namespace hscpp
 {
-
-    enum class SwapType
+    enum class SwapPhase
     {
         BeforeSwap,
         AfterSwap,
@@ -18,9 +17,9 @@ namespace hscpp
         friend class ModuleInterface;
 
     public:
-        SwapType Type() const
+        SwapPhase Phase() const
         {
-            return m_Type;
+            return m_Phase;
         }
 
         uint64_t Id() const
@@ -41,7 +40,7 @@ namespace hscpp
         }
 
     private:
-        SwapType m_Type;
+        SwapPhase m_Phase;
         uint64_t m_Id;
         Serializer m_Serializer;
     };

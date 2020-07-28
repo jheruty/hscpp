@@ -1,6 +1,8 @@
 #pragma once
 
 #include <unordered_map>
+#include <vector>
+#include <assert.h>
 
 #include "hscpp/ModuleSharedState.h"
 #include "hscpp/Constructors.h"
@@ -41,27 +43,31 @@ namespace hscpp
                 auto trackedObjectsPair = ModuleSharedState::s_pTrackersByKey->find(key);
                 if (trackedObjectsPair != ModuleSharedState::s_pTrackersByKey->end())
                 {
+                    // Get tracked objects, and make a copy. As objects are freed, their tracker
+                    // will be erased from the trackedObjects vector.
                     std::vector<ITracker*>& trackedObjects = trackedObjectsPair->second;
                     std::vector<ITracker*> oldTrackedObjects = trackedObjects;
 
-                    std::vector<std::unique_ptr<SwapInfo>> swapInfos;
-                    std::vector<uint64_t> memoryIds;
+                    size_t nInstances = trackedObjects.size();
+
+                    std::vector<SwapInfo> swapInfos(nInstances);
+                    std::vector<uint64_t> memoryIds(nInstances);
 
                     // Free the old objects; they will be swapped out with new instances.
-                    size_t nInstances = trackedObjects.size();
                     for (size_t i = 0; i < nInstances; ++i)
                     {
+                        swapInfos.at(i).m_Id = i;
+                        swapInfos.at(i).m_Phase = SwapPhase::BeforeSwap;
+
                         ITracker* pTracker = oldTrackedObjects.at(i);
 
-                        swapInfos.push_back(std::make_unique<SwapInfo>());
-                        swapInfos.back()->m_Id = i;
-                        swapInfos.back()->m_Type = SwapType::BeforeSwap;
-
-                        pTracker->CallSwapHandler(*swapInfos.back());
-                        memoryIds.push_back(pTracker->FreeTrackedObject());
+                        pTracker->CallSwapHandler(swapInfos.at(i));
+                        memoryIds.at(i) = pTracker->FreeTrackedObject();
                     }
 
-                    trackedObjects.clear();
+                    // Freeing the tracked objects should have also deleted their tracker, so this
+                    // list should now be empty.
+                    assert(trackedObjects.empty());
 
                     // Create new instances from the new constructors. These will automatically
                     // register themselves into the m_pTrackersByKey map.
@@ -70,10 +76,12 @@ namespace hscpp
                     for (size_t i = 0; i < nInstances; ++i)
                     {
                         pConstructor->Construct(memoryIds.at(i));
+
+                        // After construction, a new tracker should have been added to trackedObjects.
                         ITracker* pTracker = trackedObjects.at(i);
 
-                        swapInfos.at(i)->m_Type = SwapType::AfterSwap;
-                        pTracker->CallSwapHandler(*swapInfos.at(i));
+                        swapInfos.at(i).m_Phase = SwapPhase::AfterSwap;
+                        pTracker->CallSwapHandler(swapInfos.at(i));
                     }
                 }
             }

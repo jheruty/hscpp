@@ -35,6 +35,7 @@ namespace hscpp
     class Tracker : public ITracker
     {
     public:
+        // The SwapHandler is an optional, user-set callback that will be called on runtime swaps.
         std::function<void(SwapInfo& swapInfo)> SwapHandler;
 
         Tracker(const Tracker& rhs) = delete;
@@ -66,9 +67,9 @@ namespace hscpp
 
         virtual uint64_t FreeTrackedObject() override
         {
+            // Destroying the tracked object will also destroy the tracker it owns.
             if (ModuleSharedState::s_pAllocator == nullptr)
             {
-                // Destroying the tracked object will also destroy the tracker it owns.
                 delete m_pTrackedObj;
                 return 0;
             }
