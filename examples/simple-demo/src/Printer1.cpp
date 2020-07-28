@@ -2,18 +2,25 @@
 
 #include "hscpp/Tracker.h"
 #include "Printer1.h"
+#include <chrono>
+#include <thread>
 
 Printer1::Printer1()
 {
-    //HSCPP_ON_BEFORE_SWAP([]() {
-    //    std::cout << "About to swap Printer1!" << std::endl;
-    //    });
-
-    //HSCPP_ON_AFTER_SWAP([]() {
-    //    std::cout << "Swap Printer1 complete!" << std::endl;
-    //    });
-
-    std::cout << "CONSTRUCTING";
+    HSCPP_SET_SWAP_HANDLER(
+        [this](hscpp::SwapInfo& info) {
+            switch (info.Type())
+            {
+            case hscpp::SwapType::BeforeSwap:
+                info.Serialize("m_Value", m_Value);
+                break;
+            case hscpp::SwapType::AfterSwap:
+                info.Unserialize("m_Value", m_Value);
+                break;
+            default:
+                break;
+            }
+        });
 }
 
 Printer1::~Printer1()
@@ -23,5 +30,7 @@ Printer1::~Printer1()
 
 void Printer1::Update()
 {
-    std::cout << "It works!";
+    std::cout << ++m_Value << std::endl;
+    ++m_Value;
+    std::this_thread::sleep_for(std::chrono::milliseconds(100));
 }

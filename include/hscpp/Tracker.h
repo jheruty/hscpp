@@ -4,6 +4,7 @@
 
 #include "hscpp/Constructors.h"
 #include "hscpp/ModuleSharedState.h"
+#include "hscpp/SwapInfo.h"
 #include "hscpp/ModuleInterface.h" // Added so it is included in module build.
 
 namespace hscpp
@@ -34,8 +35,7 @@ namespace hscpp
     class Tracker : public ITracker
     {
     public:
-        std::function<void()> OnBeforeSwap;
-        std::function<void()> OnAfterSwap;
+        std::function<void(SwapInfo& swapInfo)> SwapHandler;
 
         Tracker(const Tracker& rhs) = delete;
         Tracker& operator=(const Tracker& rhs) = delete;
@@ -79,6 +79,14 @@ namespace hscpp
             }
         }
 
+        virtual void CallSwapHandler(SwapInfo& info) override
+        {
+            if (SwapHandler != nullptr)
+            {
+                SwapHandler(info);
+            }
+        }
+
         virtual std::string GetKey() override
         {
             return Key;
@@ -100,16 +108,12 @@ namespace hscpp
 inline static const char hscpp_ClassKey[] = key;\
 hscpp::Tracker<type, hscpp_ClassKey> hscpp_ClassTracker = hscpp::Tracker<type, hscpp_ClassKey>(this);
 
-#define HSCPP_ON_BEFORE_SWAP(...) \
-hscpp_ClassTracker.OnBeforeSwap = __VA_ARGS__;
-
-#define HSCPP_ON_AFTER_SWAP(...) \
-hscpp_ClassTracker.OnAfterSwap = __VA_ARGS__;
+#define HSCPP_SET_SWAP_HANDLER(...) \
+hscpp_ClassTracker.SwapHandler = __VA_ARGS__;
 
 #else
 
 #define HSCPP_TRACK(type, key)
-#define HSCPP_ON_BEFORE_SWAP(...)
-#define HSCPP_ON_AFTER_SWAP(...)
+#define HSCPP_SET_SWAP_HANDLER(...)
 
 #endif

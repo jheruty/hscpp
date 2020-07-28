@@ -42,13 +42,23 @@ namespace hscpp
                 if (trackedObjectsPair != ModuleSharedState::s_pTrackersByKey->end())
                 {
                     std::vector<ITracker*>& trackedObjects = trackedObjectsPair->second;
-                    std::vector<uint64_t> ids;
+                    std::vector<ITracker*> oldTrackedObjects = trackedObjects;
+
+                    std::vector<std::unique_ptr<SwapInfo>> swapInfos;
+                    std::vector<uint64_t> memoryIds;
 
                     // Free the old objects; they will be swapped out with new instances.
                     size_t nInstances = trackedObjects.size();
-                    for (ITracker* pTracker : trackedObjects)
+                    for (size_t i = 0; i < nInstances; ++i)
                     {
-                        ids.push_back(pTracker->FreeTrackedObject());
+                        ITracker* pTracker = oldTrackedObjects.at(i);
+
+                        swapInfos.push_back(std::make_unique<SwapInfo>());
+                        swapInfos.back()->m_Id = i;
+                        swapInfos.back()->m_Type = SwapType::BeforeSwap;
+
+                        pTracker->CallSwapHandler(*swapInfos.back());
+                        memoryIds.push_back(pTracker->FreeTrackedObject());
                     }
 
                     trackedObjects.clear();
@@ -59,8 +69,11 @@ namespace hscpp
 
                     for (size_t i = 0; i < nInstances; ++i)
                     {
-                        pConstructor->Construct(ids.back());
-                        ids.pop_back();
+                        pConstructor->Construct(memoryIds.at(i));
+                        ITracker* pTracker = trackedObjects.at(i);
+
+                        swapInfos.at(i)->m_Type = SwapType::AfterSwap;
+                        pTracker->CallSwapHandler(*swapInfos.at(i));
                     }
                 }
             }

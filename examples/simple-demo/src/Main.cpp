@@ -24,11 +24,15 @@ int main()
     swapper.AddSourceDirectory("./src", true);
 
     Ref<Printer1> p = TAllocator::Allocate<Printer1>();
+    Ref<Printer1> p2 = TAllocator::Allocate<Printer1>();
+    Ref<Printer1> p3 = TAllocator::Allocate<Printer1>();
 
     while (true)
     {
         swapper.Update();
         p->Update();
+        p2->Update();
+        p3->Update();
     }
 
     return 0;

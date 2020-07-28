@@ -176,6 +176,8 @@
     <ClInclude Include="include\hscpp\Log.h" />
     <ClInclude Include="include\hscpp\ModuleInterface.h" />
     <ClInclude Include="include\hscpp\ModuleSharedState.h" />
+    <ClInclude Include="include\hscpp\Serializer.h" />
+    <ClInclude Include="include\hscpp\SwapInfo.h" />
     <ClInclude Include="include\hscpp\Tracker.h" />
     <ClInclude Include="include\hscpp\StringUtil.h" />
   </ItemGroup>
