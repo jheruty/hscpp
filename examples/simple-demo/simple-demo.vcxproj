@@ -19,24 +19,17 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Allocator.cpp" />
-    <ClCompile Include="src\Main.cpp" />
-    <ClCompile Include="src\Memory.cpp" />
-    <ClCompile Include="src\Printer1.cpp" />
-    <ClCompile Include="src\Printer2.cpp" />
-    <ClCompile Include="src\Ref.cpp" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\..\hotswap-cpp.vcxproj">
       <Project>{f472e445-8b47-4fb5-b13e-c0aa9a7cfcd4}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\Allocator.h" />
-    <ClInclude Include="include\Memory.h" />
-    <ClInclude Include="include\Printer2.h" />
-    <ClInclude Include="include\Printer1.h" />
-    <ClInclude Include="include\Ref.h" />
+    <ClCompile Include="src\Main.cpp" />
+    <ClCompile Include="src\Printer.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\Printer.h" />
+    <ClInclude Include="src\SimpleDemoData.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
@@ -108,7 +101,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)../../include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)../../include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>

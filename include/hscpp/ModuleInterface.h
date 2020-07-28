@@ -29,6 +29,11 @@ namespace hscpp
             ModuleSharedState::s_pAllocator = pAllocator;
         }
 
+        virtual void SetGlobalUserData(void* pGlobalUserData)
+        {
+            ModuleSharedState::s_pGlobalUserData = pGlobalUserData;
+        }
+
         virtual void PerformRuntimeSwap()
         {
             // Get constructors registered within this module.

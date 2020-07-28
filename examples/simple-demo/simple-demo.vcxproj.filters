@@ -2,17 +2,10 @@
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <ClCompile Include="src\Main.cpp" />
-    <ClCompile Include="src\Printer2.cpp" />
-    <ClCompile Include="src\Printer1.cpp" />
-    <ClCompile Include="src\Ref.cpp" />
-    <ClCompile Include="src\Memory.cpp" />
-    <ClCompile Include="src\Allocator.cpp" />
+    <ClCompile Include="src\Printer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="include\Printer1.h" />
-    <ClInclude Include="include\Printer2.h" />
-    <ClInclude Include="include\Ref.h" />
-    <ClInclude Include="include\Memory.h" />
-    <ClInclude Include="include\Allocator.h" />
+    <ClInclude Include="src\Printer.h" />
+    <ClInclude Include="src\SimpleDemoData.h" />
   </ItemGroup>
 </Project>

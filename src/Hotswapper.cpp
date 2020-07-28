@@ -11,7 +11,7 @@ namespace hscpp
 {
 
     const static std::string HSCPP_TEMP_DIRECTORY_NAME = "HSCPP_7c9279ff-25af-488c-a634-b6aa68f47a65";
-    
+
     // Users may not override these file options.
     const static std::unordered_set<std::string> FORBIDDEN_COMPILE_OPTIONS = {
         "Fe", // Name of compiled module.
@@ -37,13 +37,25 @@ namespace hscpp
 
     Hotswapper::Hotswapper()
     {
-        Initialize();
+        m_CompileOptions = DEFAULT_COMPILE_OPTIONS;
+
+        // Add hotswap-cpp include directory as a default include directory, since parts of the
+        // library will need to be compiled into each new module.
+        m_IncludeDirectories.push_back(GetHscppIncludePath());
+
+        Hscpp_GetModuleInterface()->SetTrackersByKey(&m_TrackersByKey);
     }
 
-    Hotswapper::Hotswapper(std::unique_ptr<IAllocator> pAllocator)
+    void Hotswapper::SetAllocator(std::unique_ptr<IAllocator> pAllocator)
     {
         m_pAllocator = std::move(pAllocator);
-        Initialize();
+        Hscpp_GetModuleInterface()->SetAllocator(m_pAllocator.get());
+    }
+
+    void Hotswapper::SetGlobalUserData(void* pGlobalUserData)
+    {
+        m_pGlobalUserData = pGlobalUserData;
+        Hscpp_GetModuleInterface()->SetGlobalUserData(m_pGlobalUserData);
     }
 
     void Hotswapper::AddIncludeDirectory(const std::filesystem::path& directory)
@@ -114,13 +126,6 @@ namespace hscpp
         {
             PerformRuntimeSwap(m_Compiler.PopModule());
         }
-    }
-
-    void Hotswapper::Initialize()
-    {
-        m_CompileOptions = DEFAULT_COMPILE_OPTIONS;
-        Hscpp_GetModuleInterface()->SetTrackersByKey(&m_TrackersByKey);
-        Hscpp_GetModuleInterface()->SetAllocator(m_pAllocator.get());
     }
 
     bool Hotswapper::CreateHscppTempDirectory()
@@ -245,6 +250,7 @@ namespace hscpp
             return false;
         }
 
+        pModuleInterface->SetGlobalUserData(m_pGlobalUserData);
         pModuleInterface->SetTrackersByKey(&m_TrackersByKey);
         pModuleInterface->SetAllocator(m_pAllocator.get());
         pModuleInterface->PerformRuntimeSwap();

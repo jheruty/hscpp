@@ -1,39 +1,37 @@
-#include <iostream>
 #include <thread>
 #include <chrono>
+#include <filesystem>
 
 #include "hscpp/Hotswapper.h"
-#include "hscpp/FileWatcher.h"
-#include "hscpp/Constructors.h"
-#include "hscpp/StringUtil.h"
+#include "SimpleDemoData.h"
+#include "Printer.h"
 
-#include "Printer1.h"
-#include "Printer2.h"
-#include "hscpp/ModuleInterface.h"
-#include "Ref.h"
-#include "Memory.h"
-#include "Allocator.h"
-
-int main() 
+int main()
 {
-    auto allocator = std::make_unique<Allocator>();
-    hscpp::Hotswapper swapper(std::move(allocator));
+    hscpp::Hotswapper hotswapper;
 
-    swapper.AddIncludeDirectory("./include");
-    swapper.AddIncludeDirectory("../../include");
-    swapper.AddSourceDirectory("./src", true);
+    // Watch the current directory for changes.
+    hotswapper.AddIncludeDirectory(std::filesystem::current_path());
+    hotswapper.AddSourceDirectory(std::filesystem::current_path(), true);
 
-    Ref<Printer1> p = TAllocator::Allocate<Printer1>();
-    Ref<Printer1> p2 = TAllocator::Allocate<Printer1>();
-    Ref<Printer1> p3 = TAllocator::Allocate<Printer1>();
+    // When an object is recompiled, a new DLL is linked into the running program with its own
+    // statics and globals. You can give a pointer to user-defined data which will be shared
+    // across all modules, since normal statics and globals will be lost.
+    SimpleDemoData data;
+    hotswapper.SetGlobalUserData(&data);
+
+    // Create a couple new Printers, and let them know their index into pInstances.
+    data.pInstances[0] = new Printer("PrinterA", 0);
+    data.pInstances[1] = new Printer("PrinterB", 1);
 
     while (true)
     {
-        swapper.Update();
-        p->Update();
-        p2->Update();
-        p3->Update();
-    }
+        // Update the Hotswapper, which will load a new DLL on changes.
+        hotswapper.Update();
 
-    return 0;
+        data.pInstances[0]->Update();
+        data.pInstances[1]->Update();
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    }
 }

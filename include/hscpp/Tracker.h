@@ -112,9 +112,12 @@ hscpp::Tracker<type, hscpp_ClassKey> hscpp_ClassTracker = hscpp::Tracker<type, h
 #define HSCPP_SET_SWAP_HANDLER(...) \
 hscpp_ClassTracker.SwapHandler = __VA_ARGS__;
 
+#define hscpp_func virtual
+
 #else
 
 #define HSCPP_TRACK(type, key)
 #define HSCPP_SET_SWAP_HANDLER(...)
+#define hscpp_func
 
 #endif

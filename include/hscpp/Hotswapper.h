@@ -15,7 +15,9 @@ namespace hscpp
     {
     public:
         Hotswapper();
-        Hotswapper(std::unique_ptr<IAllocator> pAllocator);
+
+        void SetAllocator(std::unique_ptr<IAllocator> pAllocator);
+        void SetGlobalUserData(void* pGlobalUserData);
 
         void AddIncludeDirectory(const std::filesystem::path& directory);
         void RemoveIncludeDirectory(const std::filesystem::path& directory);
@@ -47,8 +49,14 @@ namespace hscpp
 
         std::unordered_map<std::string, std::vector<ITracker*>> m_TrackersByKey;
         std::unique_ptr<IAllocator> m_pAllocator;
+        void* m_pGlobalUserData = nullptr; // The library user owns this memory.
 
-        void Initialize();
+        std::filesystem::path GetHscppIncludePath()
+        {
+            // __FILE__ returns "<path>/include/hscpp/Hotswapper.h". We want "<path>/include".
+            std::filesystem::path currentPath = __FILE__;
+            return currentPath.parent_path().parent_path();
+        }
 
         bool CreateHscppTempDirectory();
         bool CreateBuildDirectory();
