@@ -23,8 +23,6 @@ namespace hscpp
             // This will be executed on module load.
             hscpp::Constructors::RegisterConstructor<T>(Key);
         }
-
-        void ForceInitialization() {};
     };
 
     //============================================================================
@@ -43,9 +41,6 @@ namespace hscpp
 
         Tracker(T* pTrackedObj)
         {
-            // The compiler may remove statics that are not explicitly referenced.
-            s_Register.ForceInitialization();
-
             // Pointer to the instance we are tracking.
             m_pTrackedObj = pTrackedObj;
 
@@ -94,18 +89,22 @@ namespace hscpp
         }
 
     private:
-        static Register<T, Key> s_Register;
+        inline static Register<T, Key> s_Register;
         T* m_pTrackedObj;
     };
 
-    template <typename T, const char* Key>
-    hscpp::Register<T, Key> hscpp::Tracker<T, Key>::s_Register;
+}
 
+// Forward declare AllocationResolver.
+namespace hscpp
+{
+    class AllocationResolver;
 }
 
 #ifndef HSCPP_DISABLE
 
 #define HSCPP_TRACK(type, key) \
+friend class hscpp::AllocationResolver; \
 inline static const char hscpp_ClassKey[] = key;\
 hscpp::Tracker<type, hscpp_ClassKey> hscpp_ClassTracker = hscpp::Tracker<type, hscpp_ClassKey>(this);
 

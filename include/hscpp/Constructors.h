@@ -61,21 +61,22 @@ namespace hscpp
         template <typename T>
         static void RegisterConstructor(const std::string& key)
         {
+            GetConstructorKeys().push_back(key);
+
             GetConstructors().push_back(std::make_unique<Constructor<T>>());
             size_t iConstructor = GetConstructors().size() - 1;
 
             GetConstructorsByKey()[key] = iConstructor;
         }
 
-        static void* Create(const std::string& key, uint64_t id)
+        static size_t GetNumberOfKeys()
         {
-            IConstructor* constructor = GetConstructor(key);
-            if (constructor != nullptr)
-            {
-                return constructor->Construct(id);
-            }
+            return GetConstructorKeys().size();
+        }
 
-            return nullptr;
+        static std::string GetKey(size_t iKey)
+        {
+            return GetConstructorKeys().at(iKey);
         }
 
         static IConstructor* GetConstructor(const std::string& key)
@@ -89,7 +90,14 @@ namespace hscpp
             return nullptr;
         }
 
+    private:
         // Avoid static initialization order issues by placing static variables within functions.
+        static std::vector<std::string>& GetConstructorKeys()
+        {
+            static std::vector<std::string> keys;
+            return keys;
+        }
+
         static std::vector<std::unique_ptr<IConstructor>>& GetConstructors()
         {
             static std::vector<std::unique_ptr<hscpp::IConstructor>> constructors;

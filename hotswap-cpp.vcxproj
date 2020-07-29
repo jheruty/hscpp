@@ -166,6 +166,7 @@
     <None Include=".gitignore" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\hscpp\AllocationResolver.h" />
     <ClInclude Include="include\hscpp\IAllocator.h" />
     <ClInclude Include="include\hscpp\CmdShell.h" />
     <ClInclude Include="include\hscpp\Compiler.h" />
@@ -175,6 +176,7 @@
     <ClInclude Include="include\hscpp\ITracker.h" />
     <ClInclude Include="include\hscpp\Log.h" />
     <ClInclude Include="include\hscpp\ModuleInterface.h" />
+    <ClInclude Include="include\hscpp\ModuleManager.h" />
     <ClInclude Include="include\hscpp\ModuleSharedState.h" />
     <ClInclude Include="include\hscpp\Serializer.h" />
     <ClInclude Include="include\hscpp\SwapInfo.h" />
@@ -182,11 +184,13 @@
     <ClInclude Include="include\hscpp\StringUtil.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\AllocationResolver.cpp" />
     <ClCompile Include="src\CmdShell.cpp" />
     <ClCompile Include="src\Compiler.cpp" />
     <ClCompile Include="src\FileWatcher.cpp" />
     <ClCompile Include="src\Hotswapper.cpp" />
     <ClCompile Include="src\Log.cpp" />
+    <ClCompile Include="src\ModuleManager.cpp" />
     <ClCompile Include="src\StringUtil.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

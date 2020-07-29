@@ -42,20 +42,16 @@ namespace hscpp
         // Add hotswap-cpp include directory as a default include directory, since parts of the
         // library will need to be compiled into each new module.
         m_IncludeDirectories.push_back(GetHscppIncludePath());
-
-        Hscpp_GetModuleInterface()->SetTrackersByKey(&m_TrackersByKey);
     }
 
     void Hotswapper::SetAllocator(std::unique_ptr<IAllocator> pAllocator)
     {
-        m_pAllocator = std::move(pAllocator);
-        Hscpp_GetModuleInterface()->SetAllocator(m_pAllocator.get());
+        m_ModuleManager.SetAllocator(std::move(pAllocator));
     }
 
     void Hotswapper::SetGlobalUserData(void* pGlobalUserData)
     {
-        m_pGlobalUserData = pGlobalUserData;
-        Hscpp_GetModuleInterface()->SetGlobalUserData(m_pGlobalUserData);
+        m_ModuleManager.SetGlobalUserData(pGlobalUserData);
     }
 
     void Hotswapper::AddIncludeDirectory(const std::filesystem::path& directory)
@@ -124,7 +120,7 @@ namespace hscpp
         m_Compiler.Update();
         if (m_Compiler.HasCompiledModule())
         {
-            PerformRuntimeSwap(m_Compiler.PopModule());
+            m_ModuleManager.PerformRuntimeSwap(m_Compiler.PopModule());
         }
     }
 
@@ -220,42 +216,6 @@ namespace hscpp
         }
 
         return std::vector<std::filesystem::path>(files.begin(), files.end());
-    }
-
-    bool Hotswapper::PerformRuntimeSwap(const std::filesystem::path& moduleFilepath)
-    {
-        HMODULE hModule = LoadLibrary(moduleFilepath.native().c_str());
-        if (hModule == nullptr)
-        {
-            Log::Write(LogLevel::Error, "%s: Failed to load module %s. [%s]\n",
-                __func__, moduleFilepath.string().c_str(), GetLastErrorString().c_str());
-            return false;
-        }
-
-        typedef ModuleInterface* (__cdecl* Hsccp_GetModuleInterfaceProc)(void);
-        auto getModuleInterfaceProc = reinterpret_cast<Hsccp_GetModuleInterfaceProc>(
-            GetProcAddress(hModule, "Hscpp_GetModuleInterface"));
-
-        if (getModuleInterfaceProc == nullptr)
-        {
-            Log::Write(LogLevel::Error, "%s: Failed to load Hscpp_GetModuleInterface procedure. [%s]\n",
-                __func__, GetLastErrorString().c_str());
-            return false;
-        }
-
-        ModuleInterface* pModuleInterface = getModuleInterfaceProc();
-        if (pModuleInterface == nullptr)
-        {
-            Log::Write(LogLevel::Error, "%s: Failed to get point to module interface.\n", __func__);
-            return false;
-        }
-
-        pModuleInterface->SetGlobalUserData(m_pGlobalUserData);
-        pModuleInterface->SetTrackersByKey(&m_TrackersByKey);
-        pModuleInterface->SetAllocator(m_pAllocator.get());
-        pModuleInterface->PerformRuntimeSwap();
-
-        return true;
     }
 
 }

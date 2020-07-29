@@ -8,6 +8,8 @@
 #include "hscpp/FileWatcher.h"
 #include "hscpp/Compiler.h"
 #include "hscpp/Tracker.h"
+#include "hscpp/AllocationResolver.h"
+#include "hscpp/ModuleManager.h"
 
 namespace hscpp
 {
@@ -34,6 +36,10 @@ namespace hscpp
         // TODO: Add linker options, directory, and libraries.
 
         void Update();
+
+        template <typename T>
+        T* Allocate(uint64_t id = 0);
+
     private:
         std::filesystem::path m_HscppTempDirectory;
 
@@ -46,10 +52,9 @@ namespace hscpp
         std::vector<FileWatcher::Event> m_FileEvents;
 
         Compiler m_Compiler;
+        ModuleManager m_ModuleManager;
 
-        std::unordered_map<std::string, std::vector<ITracker*>> m_TrackersByKey;
-        std::unique_ptr<IAllocator> m_pAllocator;
-        void* m_pGlobalUserData = nullptr; // The library user owns this memory.
+        AllocationResolver m_AllocationResolver = AllocationResolver(&m_ModuleManager);
 
         std::filesystem::path GetHscppIncludePath()
         {
@@ -62,7 +67,12 @@ namespace hscpp
         bool CreateBuildDirectory();
 
         std::vector<std::filesystem::path> GetChangedFiles();
-
-        bool PerformRuntimeSwap(const std::filesystem::path& moduleFilepath);
     };
+
+    template <typename T>
+    T* hscpp::Hotswapper::Allocate(uint64_t id /*= 0*/)
+    {
+        return m_AllocationResolver.Allocate<T>(id);
+    }
+
 }

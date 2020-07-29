@@ -34,16 +34,29 @@ namespace hscpp
             ModuleSharedState::s_pGlobalUserData = pGlobalUserData;
         }
 
+        virtual std::unordered_map<std::string, IConstructor*> GetConstructorsByKey()
+        {
+            std::unordered_map<std::string, IConstructor*> constructorsByKey;
+
+            size_t nConstructorKeys = Constructors::GetNumberOfKeys();
+            for (size_t iKey = 0; iKey < nConstructorKeys; ++iKey)
+            {
+                std::string key = Constructors::GetKey(iKey);
+                constructorsByKey[key] = Constructors::GetConstructor(key);
+            }
+
+            return constructorsByKey;
+        }
+
         virtual void PerformRuntimeSwap()
         {
             // Get constructors registered within this module.
-            auto& constructorsByKey = Constructors::GetConstructorsByKey();
-
-            for (const auto& constructorPair : constructorsByKey)
+            size_t nConstructorKeys = Constructors::GetNumberOfKeys();
+            for (size_t iKey = 0; iKey < nConstructorKeys; ++iKey)
             {
                 // Find tracked objects corresponding to this constructor. If not found, this must
                 // be a new class, so no instances have been created yet.
-                std::string key = constructorPair.first;
+                std::string key = Constructors::GetKey(iKey);
 
                 auto trackedObjectsPair = ModuleSharedState::s_pTrackersByKey->find(key);
                 if (trackedObjectsPair != ModuleSharedState::s_pTrackersByKey->end())
