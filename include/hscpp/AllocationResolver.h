@@ -66,11 +66,13 @@ namespace hscpp
         typename std::enable_if<IsTracked<T>::no, T*>::type
         Allocate(uint64_t id)
         {
+            IAllocator* pAllocator = m_pModuleManager->GetAllocator();
+
             // This is a non-tracked type. Perform a normal allocation.
-            if (ModuleSharedState::s_pAllocator != nullptr)
+            if (pAllocator != nullptr)
             {
                 uint64_t size = sizeof(std::aligned_storage<sizeof(T)>::type);
-                uint8_t* pMem = ModuleSharedState::s_pAllocator->Allocate(size, id);
+                uint8_t* pMem = pAllocator->Allocate(size, id);
                 T* pT = new (pMem) T;
 
                 return pT;

@@ -20,6 +20,11 @@ namespace hscpp
         Hscpp_GetModuleInterface()->SetAllocator(m_pAllocator.get());
     }
 
+    hscpp::IAllocator* ModuleManager::GetAllocator()
+    {
+        return m_pAllocator.get();
+    }
+
     void ModuleManager::SetGlobalUserData(void* pGlobalUserData)
     {
         m_pGlobalUserData = pGlobalUserData;

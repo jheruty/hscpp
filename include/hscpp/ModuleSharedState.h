@@ -16,7 +16,6 @@ namespace hscpp
 
     private:
         friend class ModuleInterface;
-        friend class AllocationResolver;
 
         template <typename T, const char* Key>
         friend class Tracker;

@@ -17,6 +17,8 @@ namespace hscpp
         ModuleManager();
 
         void SetAllocator(std::unique_ptr<IAllocator> pAllocator);
+        IAllocator* GetAllocator();
+
         void SetGlobalUserData(void* pGlobalUserData);
 
         void* Allocate(const std::string& key, uint64_t id);
