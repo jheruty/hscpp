@@ -60,39 +60,19 @@ namespace hscpp
         m_IncludeDirectories.push_back(directory);
     }
 
-    void Hotswapper::RemoveIncludeDirectory(const std::filesystem::path& directory)
-    {
-        m_FileWatcher.RemoveWatch(directory); // TODO: 
-    }
-
-    std::vector<std::filesystem::path> Hotswapper::GetIncludeDirectories()
-    {
-        return m_IncludeDirectories;
-    }
-
     void Hotswapper::AddSourceDirectory(const std::filesystem::path& directory, bool bRecursive)
     {
         m_FileWatcher.AddWatch(directory, bRecursive);
     }
 
-    void Hotswapper::RemoveSourceDirectory(const std::filesystem::path& directory)
-    {
-
-    }
-
-    std::vector<std::filesystem::path> Hotswapper::GetSourceDirectories()
-    {
-        return m_SourceDirectories;
-    }
-
     void Hotswapper::AddCompileOption(const std::string& option)
     {
-
+        m_CompileOptions.push_back(option);
     }
 
-    void Hotswapper::RemoveCompileOption(const std::string& option)
+    void Hotswapper::SetCompileOptions(const std::vector<std::string>& options)
     {
-
+        m_CompileOptions = options;
     }
 
     std::vector<std::string> Hotswapper::GetCompileOptions()

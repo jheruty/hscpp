@@ -22,15 +22,10 @@ namespace hscpp
         void SetGlobalUserData(void* pGlobalUserData);
 
         void AddIncludeDirectory(const std::filesystem::path& directory);
-        void RemoveIncludeDirectory(const std::filesystem::path& directory);
-        std::vector<std::filesystem::path> GetIncludeDirectories();
-
         void AddSourceDirectory(const std::filesystem::path& directory, bool bRecursive);
-        void RemoveSourceDirectory(const std::filesystem::path& directory);
-        std::vector<std::filesystem::path> GetSourceDirectories();
 
         void AddCompileOption(const std::string& option);
-        void RemoveCompileOption(const std::string& option);
+        void SetCompileOptions(const std::vector<std::string>& options);
         std::vector<std::string> GetCompileOptions();
 
         // TODO: Add linker options, directory, and libraries.
@@ -56,18 +51,21 @@ namespace hscpp
 
         AllocationResolver m_AllocationResolver = AllocationResolver(&m_ModuleManager);
 
-        std::filesystem::path GetHscppIncludePath()
-        {
-            // __FILE__ returns "<path>/include/hscpp/Hotswapper.h". We want "<path>/include".
-            std::filesystem::path currentPath = __FILE__;
-            return currentPath.parent_path().parent_path();
-        }
+        std::filesystem::path GetHscppIncludePath();
 
         bool CreateHscppTempDirectory();
         bool CreateBuildDirectory();
 
         std::vector<std::filesystem::path> GetChangedFiles();
     };
+
+    // Inline this function, so that __FILE__ is within the include directory.
+    inline std::filesystem::path Hotswapper::GetHscppIncludePath()
+    {
+        // __FILE__ returns "<path>/include/hscpp/Hotswapper.h". We want "<path>/include".
+        std::filesystem::path currentPath = __FILE__;
+        return currentPath.parent_path().parent_path();
+    }
 
     template <typename T>
     T* hscpp::Hotswapper::Allocate(uint64_t id /*= 0*/)
