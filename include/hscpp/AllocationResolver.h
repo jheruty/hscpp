@@ -72,7 +72,11 @@ namespace hscpp
             if (pAllocator != nullptr)
             {
                 uint64_t size = sizeof(std::aligned_storage<sizeof(T)>::type);
-                return pAllocator->Hscpp_Allocate(size);
+
+                AllocationInfo info = pAllocator->Hscpp_Allocate(size);
+                T* pT = new (info.pMemory) T;
+
+                return info;
             }
 
             AllocationInfo info;
