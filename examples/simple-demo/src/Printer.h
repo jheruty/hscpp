@@ -18,8 +18,9 @@ public:
 
     // Functions must be virtual in order for a swapped object to call the new implementation.
     // The "hscpp_func" macro evaluates to "virtual" if HSCPP_DISABLE is not defined. If
-    // HSCPP_DISABLE is defined, hscpp_func will evaluate to nothing.
-    hscpp_func void Update();
+    // HSCPP_DISABLE is defined, hscpp_func will evaluate to nothing. Similarly, hscpp_final
+    // will do the same thing for "final".
+    hscpp_virtual void Update();
 
 private:
     std::string m_Name;

@@ -31,15 +31,15 @@ namespace hscpp
         Hscpp_GetModuleInterface()->SetGlobalUserData(m_pGlobalUserData);
     }
 
-    void* ModuleManager::Allocate(const std::string& key, uint64_t id)
+    AllocationInfo ModuleManager::Allocate(const std::string& key)
     {
         auto constructorIt = m_ConstructorsByKey.find(key);
         if (constructorIt != m_ConstructorsByKey.end())
         {
-            return constructorIt->second->Construct(id);
+            return constructorIt->second->Allocate();
         }
 
-        return nullptr;
+        return AllocationInfo();
     }
 
     bool ModuleManager::PerformRuntimeSwap(const std::filesystem::path& moduleFilepath)

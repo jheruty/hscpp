@@ -21,7 +21,7 @@ namespace hscpp
 
         void SetGlobalUserData(void* pGlobalUserData);
 
-        void* Allocate(const std::string& key, uint64_t id);
+        AllocationInfo Allocate(const std::string& key);
         bool PerformRuntimeSwap(const std::filesystem::path& moduleFilepath);
 
     private:

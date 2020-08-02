@@ -71,7 +71,7 @@ namespace hscpp
             else
             {
                 m_pTrackedObj->~T();
-                return ModuleSharedState::s_pAllocator->Free(reinterpret_cast<uint8_t*>(m_pTrackedObj));
+                return ModuleSharedState::s_pAllocator->Hscpp_Free(reinterpret_cast<uint8_t*>(m_pTrackedObj));
             }
         }
 
@@ -111,12 +111,12 @@ hscpp::Tracker<type, hscpp_ClassKey> hscpp_ClassTracker = hscpp::Tracker<type, h
 #define HSCPP_SET_SWAP_HANDLER(...) \
 hscpp_ClassTracker.SwapHandler = __VA_ARGS__;
 
-#define hscpp_func virtual
+#define hscpp_virtual virtual
 
 #else
 
 #define HSCPP_TRACK(type, key)
 #define HSCPP_SET_SWAP_HANDLER(...)
-#define hscpp_func
+#define hscpp_virtual
 
 #endif

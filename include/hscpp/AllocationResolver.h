@@ -53,18 +53,18 @@ namespace hscpp
         AllocationResolver(ModuleManager* pModuleManager);
 
         template <typename T>
-        typename std::enable_if<IsTracked<T>::yes, T*>::type
-        Allocate(uint64_t id)
+        typename std::enable_if<IsTracked<T>::yes, AllocationInfo>::type
+        Allocate()
         {
             // This type has an hscpp_ClassTracker member, and it is assumed it has been registered
             // with HSCPP_TRACK. Allocate it using an hscpp Constructor.
             const char* pKey = T::hscpp_ClassKey;
-            return static_cast<T*>(m_pModuleManager->Allocate(pKey, id));
+            return m_pModuleManager->Allocate(pKey);
         }
 
         template <typename T>
-        typename std::enable_if<IsTracked<T>::no, T*>::type
-        Allocate(uint64_t id)
+        typename std::enable_if<IsTracked<T>::no, AllocationInfo>::type
+        Allocate()
         {
             IAllocator* pAllocator = m_pModuleManager->GetAllocator();
 
@@ -72,13 +72,13 @@ namespace hscpp
             if (pAllocator != nullptr)
             {
                 uint64_t size = sizeof(std::aligned_storage<sizeof(T)>::type);
-                uint8_t* pMem = pAllocator->Allocate(size, id);
-                T* pT = new (pMem) T;
-
-                return pT;
+                return pAllocator->Hscpp_Allocate(size);
             }
 
-            return new T();
+            AllocationInfo info;
+            info.pMemory = reinterpret_cast<uint8_t*>(new T());
+            
+            return info;
         }
 
     private:

@@ -4,6 +4,7 @@
 #include <string>
 #include <memory>
 #include <typeindex>
+#include <functional>
 
 #include "hscpp/IAllocator.h"
 #include "hscpp/ModuleSharedState.h"
@@ -18,7 +19,8 @@ namespace hscpp
     {
     public:
         virtual ~IConstructor() {};
-        virtual void* Construct(uint64_t id) = 0;
+        virtual AllocationInfo Allocate() = 0;
+        virtual AllocationInfo AllocateSwap(uint64_t id) = 0;
     };
 
     //============================================================================
@@ -29,25 +31,39 @@ namespace hscpp
     class Constructor : public IConstructor
     {
     public:
-        virtual void* Construct(uint64_t id) override;
+        virtual AllocationInfo Allocate() override
+        {
+            return Allocate([](uint64_t size) {
+                return ModuleSharedState::s_pAllocator->Hscpp_Allocate(size);
+                });
+        }
+
+        virtual AllocationInfo AllocateSwap(uint64_t id) override
+        {
+            return Allocate([id](uint64_t size) {
+                return ModuleSharedState::s_pAllocator->Hscpp_AllocateSwap(id, size);
+                });
+        }
+
+    private:
+        AllocationInfo Allocate(const std::function<AllocationInfo(uint64_t size)> allocatorCb)
+        {
+            if (ModuleSharedState::s_pAllocator == nullptr)
+            {
+                AllocationInfo info;
+                info.pMemory = reinterpret_cast<uint8_t*>(new T());
+                return info;
+            }
+            else
+            {
+                uint64_t size = sizeof(std::aligned_storage<sizeof(T)>::type);
+                AllocationInfo info = allocatorCb(size);
+                T* pT = new (info.pMemory) T;
+
+                return info;
+            }
+        }
     };
-
-    template <typename T>
-    void* hscpp::Constructor<T>::Construct(uint64_t id)
-    {
-        if (ModuleSharedState::s_pAllocator == nullptr)
-        {
-            return new T();
-        }
-        else
-        {
-            uint64_t size = sizeof(std::aligned_storage<sizeof(T)>::type);
-            uint8_t* pMem = ModuleSharedState::s_pAllocator->Allocate(size, id);
-            T* pT = new (pMem) T;
-
-            return pT;
-        }
-    }
 
     //============================================================================
     // Constructors

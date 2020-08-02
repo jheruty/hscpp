@@ -93,7 +93,7 @@ namespace hscpp
 
                     for (size_t i = 0; i < nInstances; ++i)
                     {
-                        pConstructor->Construct(memoryIds.at(i));
+                        pConstructor->AllocateSwap(memoryIds.at(i));
 
                         // After construction, a new tracker should have been added to trackedObjects.
                         ITracker* pTracker = trackedObjects.at(i);

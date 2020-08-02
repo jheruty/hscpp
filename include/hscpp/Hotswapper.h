@@ -33,7 +33,7 @@ namespace hscpp
         void Update();
 
         template <typename T>
-        T* Allocate(uint64_t id = 0);
+        AllocationInfo Allocate();
 
     private:
         std::filesystem::path m_HscppTempDirectory;
@@ -68,9 +68,9 @@ namespace hscpp
     }
 
     template <typename T>
-    T* hscpp::Hotswapper::Allocate(uint64_t id /*= 0*/)
+    AllocationInfo hscpp::Hotswapper::Allocate()
     {
-        return m_AllocationResolver.Allocate<T>(id);
+        return m_AllocationResolver.Allocate<T>();
     }
 
 }
