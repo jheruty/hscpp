@@ -16,7 +16,7 @@ namespace hscpp
     public:
         ModuleManager();
 
-        void SetAllocator(std::unique_ptr<IAllocator> pAllocator);
+        void SetAllocator(IAllocator* pAllocator);
         IAllocator* GetAllocator();
 
         void SetGlobalUserData(void* pGlobalUserData);
@@ -26,8 +26,10 @@ namespace hscpp
 
     private:
         std::unordered_map<std::string, std::vector<ITracker*>> m_TrackersByKey;
-        std::unique_ptr<IAllocator> m_pAllocator;
-        void* m_pGlobalUserData = nullptr; // The library user owns this memory.
+        
+        // The library user owns this memory.
+        IAllocator* m_pAllocator = nullptr;
+        void* m_pGlobalUserData = nullptr;
 
         std::unordered_map<std::string, IConstructor*> m_ConstructorsByKey;
     };

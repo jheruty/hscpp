@@ -18,7 +18,7 @@ namespace hscpp
     public:
         Hotswapper();
 
-        void SetAllocator(std::unique_ptr<IAllocator> pAllocator);
+        void SetAllocator(IAllocator* pAllocator);
         void SetGlobalUserData(void* pGlobalUserData);
 
         void AddIncludeDirectory(const std::filesystem::path& directory);

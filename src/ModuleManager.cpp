@@ -14,15 +14,15 @@ namespace hscpp
         m_ConstructorsByKey = Hscpp_GetModuleInterface()->GetConstructorsByKey();
     }
 
-    void ModuleManager::SetAllocator(std::unique_ptr<IAllocator> pAllocator)
+    void ModuleManager::SetAllocator(IAllocator* pAllocator)
     {
-        m_pAllocator = std::move(pAllocator);
-        Hscpp_GetModuleInterface()->SetAllocator(m_pAllocator.get());
+        m_pAllocator = pAllocator;
+        Hscpp_GetModuleInterface()->SetAllocator(pAllocator);
     }
 
     hscpp::IAllocator* ModuleManager::GetAllocator()
     {
-        return m_pAllocator.get();
+        return m_pAllocator;
     }
 
     void ModuleManager::SetGlobalUserData(void* pGlobalUserData)
@@ -70,9 +70,9 @@ namespace hscpp
             return false;
         }
 
-        pModuleInterface->SetGlobalUserData(m_pGlobalUserData);
         pModuleInterface->SetTrackersByKey(&m_TrackersByKey);
-        pModuleInterface->SetAllocator(m_pAllocator.get());
+        pModuleInterface->SetAllocator(m_pAllocator);
+        pModuleInterface->SetGlobalUserData(m_pGlobalUserData);
         pModuleInterface->PerformRuntimeSwap();
 
         // Patch our current constructors to include the newly created constructors.

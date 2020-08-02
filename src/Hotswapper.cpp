@@ -44,9 +44,9 @@ namespace hscpp
         m_IncludeDirectories.push_back(GetHscppIncludePath());
     }
 
-    void Hotswapper::SetAllocator(std::unique_ptr<IAllocator> pAllocator)
+    void Hotswapper::SetAllocator(IAllocator* pAllocator)
     {
-        m_ModuleManager.SetAllocator(std::move(pAllocator));
+        m_ModuleManager.SetAllocator(pAllocator);
     }
 
     void Hotswapper::SetGlobalUserData(void* pGlobalUserData)
