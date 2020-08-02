@@ -8,6 +8,8 @@
 #include "hscpp/Hotswapper.h"
 #include "hscpp-example-utils/Ref.h"
 
+// Memory allocator that is meant to map ids to memory addresses. Kept simple to better demonstrate
+// the concept.
 class MemoryManager : public hscpp::IAllocator
 {
 public:
@@ -34,6 +36,8 @@ public:
         }
         else
         {
+            // If hscpp is enabled, we always want to allocate through the hscpp::Hotswapper, as it
+            // will use the latest constructor for a given type.
             hscpp::AllocationInfo info = instance.m_pSwapper->Allocate<T>();
 
             Ref<T> ref;
@@ -53,19 +57,18 @@ public:
             Block& block = instance.m_Blocks.at(ref.id);
             block.bFree = true;
 
-#ifdef _DEBUG
-            std::memset(block.pMemory, 0, block.capacity);
-#endif
-
             T* pObject = reinterpret_cast<T*>(block.pMemory);
             pObject->~T();
+
+            // Zero out memory to cause crashes when dereferencing dangling pointers.
+            std::memset(block.pMemory, 0, block.capacity);
         }
     }
 
     static uint8_t* GetMemory(size_t id);
 
     //============================================================================
-    // IAllocator implementation.
+    // hscpp::IAllocator implementation.
     //============================================================================
     hscpp::AllocationInfo Hscpp_Allocate(uint64_t size) override;
     hscpp::AllocationInfo Hscpp_AllocateSwap(uint64_t previousId, uint64_t size) override;

@@ -150,6 +150,7 @@
   <ItemGroup>
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="TrackedPrinter.cpp" />
+    <ClCompile Include="UntrackedPrinter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\hotswap-cpp.vcxproj">
@@ -160,7 +161,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="IUpdateable.h" />
     <ClInclude Include="TrackedPrinter.h" />
+    <ClInclude Include="UntrackedPrinter.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

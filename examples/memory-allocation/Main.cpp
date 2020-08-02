@@ -3,12 +3,12 @@
 #include <conio.h>
 
 #include "hscpp/Hotswapper.h"
-#include "hscpp/AllocationResolver.h"
 #include "hscpp-example-utils/Ref.h"
 #include "hscpp-example-utils/MemoryManager.h"
 
 #include "TrackedPrinter.h"
-
+#include "UntrackedPrinter.h"
+#include "IUpdateable.h"
 
 int main()
 {
@@ -35,25 +35,39 @@ int main()
     // to the object breaking.
     //
     // For Refs to work, a custom allocator must be provided, so that hscpp knows the object's id.
-    Ref<TrackedPrinter> printer1 = MemoryManager::Allocate<TrackedPrinter>();
-    Ref<TrackedPrinter> printer2 = MemoryManager::Allocate<TrackedPrinter>();
+    Ref<TrackedPrinter> trackedPrinter = MemoryManager::Allocate<TrackedPrinter>();
 
-    printer1->Init(1);
-    printer2->Init(2);
+    int trackedCounter = 0;
+    trackedPrinter->Init(++trackedCounter);
+
+    // Untracked objects are allocated the same as untracked objects, but they won't be recompiled
+    // when their source code changes.
+    Ref<UntrackedPrinter> untrackedPrinter = MemoryManager::Allocate<UntrackedPrinter>();
+
+    int untrackedCounter = 0;
+    untrackedPrinter->Init(++untrackedCounter);
+
+    std::vector<Ref<IUpdatable>> m_UpdatableObjects;
+    m_UpdatableObjects.push_back(trackedPrinter.As<IUpdatable>());
+    m_UpdatableObjects.push_back(untrackedPrinter.As<IUpdatable>());
 
     auto then = std::chrono::system_clock::now();
     while (true)
     {
         swapper.Update();
 
-        printer1->Update();
-        printer2->Update();
+        for (auto& ref : m_UpdatableObjects)
+        {
+            ref->Update();
+        }
 
         if (_kbhit())
         {
             int keycode = _getch();
             if (keycode == 'a')
             {
+                std::cout << "Keypress 'a'" << std::endl;
+
                 // As a demo, make a change and and press 'a' to reconstruct a TrackedPrinter.
                 // you should see a new Printer implementation is spawned. Then, stop the program,
                 // and comment out this the code at the start of main:
@@ -66,10 +80,29 @@ int main()
                 //
                 // For this reason, you'll want to use swapper.Allocate<T>() when allocating objects
                 // with hscpp (see MemoryManager).
-                MemoryManager::Allocate<TrackedPrinter>();
+                Ref<TrackedPrinter> newTrackedPrinter = MemoryManager::Allocate<TrackedPrinter>();
+                Ref<UntrackedPrinter> newUntrackedPrinter = MemoryManager::Allocate<UntrackedPrinter>();
+
+                newTrackedPrinter->Init(++trackedCounter);
+                newUntrackedPrinter->Init(++untrackedCounter);
+
+                m_UpdatableObjects.push_back(newTrackedPrinter.As<IUpdatable>());
+                m_UpdatableObjects.push_back(newUntrackedPrinter.As<IUpdatable>());
+            }
+            else if (keycode == 'q')
+            {
+                break;
             }
         }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
+
+
+    for (auto& ref : m_UpdatableObjects)
+    {
+        MemoryManager::Free(ref);
+    }
+
+    m_UpdatableObjects.clear();
 }
