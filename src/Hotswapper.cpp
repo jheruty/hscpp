@@ -26,7 +26,7 @@ namespace hscpp
 #ifdef _DEBUG
         // Debug flags.
         "/MDd", // Use multithreaded debug DLL version of run-time library.
-        "/LD", // Create debug DLL. 
+        "/LDd", // Create debug DLL. 
 #else
         // Release flags.
         "/MD", // Use multithreaded release DLL version of run-time library.
