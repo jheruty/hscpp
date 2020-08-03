@@ -28,6 +28,10 @@ namespace hscpp
         void SetCompileOptions(const std::vector<std::string>& options);
         std::vector<std::string> GetCompileOptions();
 
+        void AddFileExtension(const std::filesystem::path& extension);
+        void SetFileExtensions(const std::vector<std::filesystem::path>& extensions);
+        std::vector<std::filesystem::path> GetFileExtensions();
+
         // TODO: Add linker options, directory, and libraries.
 
         void Update();
@@ -42,6 +46,7 @@ namespace hscpp
         std::vector<std::filesystem::path> m_IncludeDirectories;
         std::vector<std::filesystem::path> m_SourceDirectories;
         std::vector<std::string> m_CompileOptions;
+        std::vector<std::filesystem::path> m_FileExtensions;
 
         FileWatcher m_FileWatcher;
         std::vector<FileWatcher::Event> m_FileEvents;

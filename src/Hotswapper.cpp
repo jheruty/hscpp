@@ -35,9 +35,20 @@ namespace hscpp
 #endif
     };
 
+    const static std::vector<std::filesystem::path> DEFAULT_FILE_EXTENSIONS = {
+        ".h",
+        ".hh",
+        ".hpp",
+        ".cpp",
+        ".c",
+        ".cc",
+        ".cxx",
+    };
+
     Hotswapper::Hotswapper()
     {
         m_CompileOptions = DEFAULT_COMPILE_OPTIONS;
+        m_FileExtensions = DEFAULT_FILE_EXTENSIONS;
 
         // Add hotswap-cpp include directory as a default include directory, since parts of the
         // library will need to be compiled into each new module.
@@ -80,6 +91,21 @@ namespace hscpp
         return m_CompileOptions;
     }
 
+    void Hotswapper::AddFileExtension(const std::filesystem::path& extension)
+    {
+        m_FileExtensions.push_back(extension);
+    }
+
+    void Hotswapper::SetFileExtensions(const std::vector<std::filesystem::path>& extensions)
+    {
+        m_FileExtensions = extensions;
+    }
+
+    std::vector<std::filesystem::path> Hotswapper::GetFileExtensions()
+    {
+        return m_FileExtensions;
+    }
+
     void Hotswapper::Update()
     {
         m_FileWatcher.PollChanges(m_FileEvents);
@@ -93,7 +119,10 @@ namespace hscpp
                 info.includeDirectories = m_IncludeDirectories;
                 info.compileOptions = m_CompileOptions;
 
-                m_Compiler.StartBuild(info);
+                if (!info.files.empty())
+                {
+                    m_Compiler.StartBuild(info);
+                }
             }
         }
 
@@ -178,8 +207,16 @@ namespace hscpp
             }
             else if (error.value() != ERROR_SUCCESS)
             {
-                Log::Write(LogLevel::Error, "%s: Failed to get canonical path of %s. [%s]\n",
-                    __func__, event.filepath.c_str(), GetLastErrorString().c_str());
+                Log::Write(LogLevel::Error, "%s: Failed to get canonical path of '%s'. [%s]\n",
+                    __func__, event.filepath.string().c_str(), GetLastErrorString().c_str());
+                continue;
+            }
+
+            std::filesystem::path extension = canonicalPath.extension();
+            if (std::find(m_FileExtensions.begin(), m_FileExtensions.end(), extension) == m_FileExtensions.end())
+            {
+                Log::Write(LogLevel::Trace, "%s: File '%s' will be skipped; it's extension is not being watched.\n",
+                    __func__, canonicalPath.string().c_str());
                 continue;
             }
 
