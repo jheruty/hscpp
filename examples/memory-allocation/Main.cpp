@@ -23,7 +23,7 @@ int main()
     // most up-to-date constructor.
     MemoryManager::Instance().SetHotswapper(&swapper);
 
-    // You can optionally set a memory allocator. If provided, hscpp will call Allocate, Reallocate
+    // You can optionally set a memory allocator. If provided, hscpp will call Allocate, AllocateSwap,
     // and Free, as per the hscpp::IAllocator interface. If no allocator is provided, hscpp uses
     // the standard 'new' and 'delete'.
     swapper.SetAllocator(&MemoryManager::Instance());

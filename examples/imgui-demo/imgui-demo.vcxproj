@@ -10,24 +10,11 @@
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\hotswap-cpp.vcxproj">
-      <Project>{f472e445-8b47-4fb5-b13e-c0aa9a7cfcd4}</Project>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="src\Main.cpp" />
-    <ClCompile Include="src\Printer.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="src\Printer.h" />
-    <ClInclude Include="src\SimpleDemoData.h" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{7d6bc217-eda7-4c79-89ed-c8025e29dd5e}</ProjectGuid>
-    <RootNamespace>simpledemo</RootNamespace>
+    <ProjectGuid>{8a0922e7-5909-40ec-aa54-b10106efd4ee}</ProjectGuid>
+    <RootNamespace>imguidemo</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -68,9 +55,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)../../include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\include;$(ProjectDir)..\lib\imgui;$(ProjectDir)..\lib\glfw\include;$(ProjectDir)..\lib\gl3w\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -85,9 +71,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>$(ProjectDir)../../include</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <AdditionalIncludeDirectories>$(ProjectDir)..\..\include;$(ProjectDir)..\lib\imgui;$(ProjectDir)..\lib\glfw\include;$(ProjectDir)..\lib\gl3w\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -96,6 +81,26 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
   </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\hotswap-cpp.vcxproj">
+      <Project>{f472e445-8b47-4fb5-b13e-c0aa9a7cfcd4}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\hscpp-example-utils\hscpp-example-utils.vcxproj">
+      <Project>{35afe111-d181-42e9-85ac-0d8602533829}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\lib\gl3w\gl3w.vcxproj">
+      <Project>{a675794b-ef4d-4056-96df-5b90b709de2e}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\lib\glfw\glfw.vcxproj">
+      <Project>{ab154d3c-1d16-3482-8c91-c1e2e8749fe8}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\lib\imgui\imgui.vcxproj">
+      <Project>{461d7c31-ccda-422b-99f6-6ca4a4643344}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Main.cpp" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
