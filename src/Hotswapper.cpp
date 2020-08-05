@@ -35,7 +35,7 @@ namespace hscpp
 #endif
     };
 
-    const static std::vector<std::filesystem::path> DEFAULT_FILE_EXTENSIONS = {
+    const static std::vector<std::string> DEFAULT_FILE_EXTENSIONS = {
         ".h",
         ".hh",
         ".hpp",
@@ -45,14 +45,24 @@ namespace hscpp
         ".cxx",
     };
 
-    Hotswapper::Hotswapper()
+    Hotswapper::Hotswapper(bool bUseDefaults /* = true */)
     {
-        m_CompileOptions = DEFAULT_COMPILE_OPTIONS;
-        m_FileExtensions = DEFAULT_FILE_EXTENSIONS;
+        if (bUseDefaults)
+        {
+            for (const auto& option : DEFAULT_COMPILE_OPTIONS)
+            {
+                Add(option, m_NextCompileOptionHandle, m_CompileOptionsByHandle);
+            }
 
-        // Add hotswap-cpp include directory as a default include directory, since parts of the
-        // library will need to be compiled into each new module.
-        m_IncludeDirectories.push_back(GetHscppIncludePath());
+            for (const auto& extension : DEFAULT_FILE_EXTENSIONS)
+            {
+                Add(extension, m_NextFileExtensionHandle, m_FileExtensionsByHandle);
+            }
+
+            // Add hotswap-cpp include directory as a default include directory, since parts of the
+            // library will need to be compiled into each new module.
+            Add(GetHscppIncludePath(), m_NextIncludeDirectoryHandle, m_IncludeDirectoriesByHandle);
+        }
     }
 
     void Hotswapper::SetAllocator(IAllocator* pAllocator)
@@ -65,47 +75,6 @@ namespace hscpp
         m_ModuleManager.SetGlobalUserData(pGlobalUserData);
     }
 
-    void Hotswapper::AddIncludeDirectory(const std::filesystem::path& directory)
-    {
-        m_FileWatcher.AddWatch(directory, false);
-        m_IncludeDirectories.push_back(directory);
-    }
-
-    void Hotswapper::AddSourceDirectory(const std::filesystem::path& directory, bool bRecursive)
-    {
-        m_FileWatcher.AddWatch(directory, bRecursive);
-    }
-
-    void Hotswapper::AddCompileOption(const std::string& option)
-    {
-        m_CompileOptions.push_back(option);
-    }
-
-    void Hotswapper::SetCompileOptions(const std::vector<std::string>& options)
-    {
-        m_CompileOptions = options;
-    }
-
-    std::vector<std::string> Hotswapper::GetCompileOptions()
-    {
-        return m_CompileOptions;
-    }
-
-    void Hotswapper::AddFileExtension(const std::filesystem::path& extension)
-    {
-        m_FileExtensions.push_back(extension);
-    }
-
-    void Hotswapper::SetFileExtensions(const std::vector<std::filesystem::path>& extensions)
-    {
-        m_FileExtensions = extensions;
-    }
-
-    std::vector<std::filesystem::path> Hotswapper::GetFileExtensions()
-    {
-        return m_FileExtensions;
-    }
-
     void Hotswapper::Update()
     {
         m_FileWatcher.PollChanges(m_FileEvents);
@@ -116,8 +85,8 @@ namespace hscpp
                 Compiler::CompileInfo info;
                 info.buildDirectory = m_BuildDirectory;
                 info.files = GetChangedFiles();
-                info.includeDirectories = m_IncludeDirectories;
-                info.compileOptions = m_CompileOptions;
+                info.includeDirectories = AsVector(m_IncludeDirectoriesByHandle);
+                info.compileOptions = AsVector(m_CompileOptionsByHandle);
 
                 if (!info.files.empty())
                 {
@@ -132,6 +101,146 @@ namespace hscpp
             m_ModuleManager.PerformRuntimeSwap(m_Compiler.PopModule());
         }
     }
+
+    //============================================================================
+    // Add & Remove Functions
+    //============================================================================
+
+    int Hotswapper::AddIncludeDirectory(const std::filesystem::path& directory)
+    {
+        m_FileWatcher.AddWatch(directory, false);
+        return Add(directory, m_NextIncludeDirectoryHandle, m_IncludeDirectoriesByHandle);
+    }
+
+    bool Hotswapper::RemoveIncludeDirectory(int handle)
+    {
+        auto it = m_IncludeDirectoriesByHandle.find(handle);
+        if (it != m_IncludeDirectoriesByHandle.end())
+        {
+            m_FileWatcher.RemoveWatch(it->second);
+        }
+
+        return Remove(handle, m_IncludeDirectoriesByHandle);
+    }
+
+    void Hotswapper::EnumerateIncludeDirectories(const std::function<void(int handle, const std::filesystem::path& directory)>& cb)
+    {
+        Enumerate(cb, m_IncludeDirectoriesByHandle);
+    }
+
+    void Hotswapper::ClearIncludeDirectories()
+    {
+        m_IncludeDirectoriesByHandle.clear();
+    }
+
+    int Hotswapper::AddSourceDirectory(const std::filesystem::path& directory, bool bRecursive)
+    {
+        m_FileWatcher.AddWatch(directory, bRecursive);
+        return Add(directory, m_NextSourceDirectoryHandle, m_SourceDirectoriesByHandle);
+    }
+
+    bool Hotswapper::RemoveSourceDirectory(int handle)
+    {
+        auto it = m_SourceDirectoriesByHandle.find(handle);
+        if (it != m_SourceDirectoriesByHandle.end())
+        {
+            m_FileWatcher.RemoveWatch(it->second);
+        }
+
+        return Remove(handle, m_SourceDirectoriesByHandle);
+    }
+
+    void Hotswapper::EnumerateSourceDirectories(const std::function<void(int handle, const std::filesystem::path& directory)>& cb)
+    {
+        Enumerate(cb, m_SourceDirectoriesByHandle);
+    }
+
+    void Hotswapper::ClearSourceDirectories()
+    {
+        m_SourceDirectoriesByHandle.clear();
+    }
+
+    int Hotswapper::AddLibrary(const std::filesystem::path& libraryPath)
+    {
+        return Add(libraryPath, m_NextLibraryHandle, m_LibrariesByHandle);
+    }
+
+    bool Hotswapper::RemoveLibrary(int handle)
+    {
+        return Remove(handle, m_LibrariesByHandle);
+    }
+
+    void Hotswapper::EnumerateLibraries(const std::function<void(int handle, const std::filesystem::path& libraryPath)>& cb)
+    {
+        Enumerate(cb, m_LibrariesByHandle);
+    }
+
+    void Hotswapper::ClearLibraries()
+    {
+        m_LibrariesByHandle.clear();
+    }
+
+    int Hotswapper::AddCompileOption(const std::string& option)
+    {
+        return Add(option, m_NextCompileOptionHandle, m_CompileOptionsByHandle);
+    }
+
+    bool Hotswapper::RemoveCompileOption(int handle)
+    {
+        return Remove(handle, m_CompileOptionsByHandle);
+    }
+
+    void Hotswapper::EnumerateCompileOptions(const std::function<void(int handle, const std::string& option)>& cb)
+    {
+        Enumerate(cb, m_CompileOptionsByHandle);
+    }
+
+    void Hotswapper::ClearCompileOptions()
+    {
+        m_CompileOptionsByHandle.clear();
+    }
+
+    int Hotswapper::AddLinkOption(const std::string& option)
+    {
+        return Add(option, m_NextLinkOptionHandle, m_LinkOptionsByHandle);
+    }
+
+    bool Hotswapper::RemoveLinkOption(int handle)
+    {
+        return Remove(handle, m_LinkOptionsByHandle);
+    }
+
+    void Hotswapper::EnumerateLinkOptions(const std::function<void(int handle, const std::string& option)>& cb)
+    {
+        Enumerate(cb, m_LinkOptionsByHandle);
+    }
+
+    void Hotswapper::ClearLinkOptions()
+    {
+        m_LinkOptionsByHandle.clear();
+    }
+
+    int Hotswapper::AddFileExtension(const std::string& extension)
+    {
+        return Add(extension, m_NextFileExtensionHandle, m_FileExtensionsByHandle);
+    }
+
+    bool Hotswapper::RemoveFileExtension(int handle)
+    {
+        return Remove(handle, m_FileExtensionsByHandle);
+    }
+
+    void Hotswapper::EnumerateFileExtensions(const std::function<void(int handle, const std::string& option)>& cb)
+    {
+        Enumerate(cb, m_FileExtensionsByHandle);
+    }
+
+    void Hotswapper::ClearFileExtensions()
+    {
+        m_FileExtensionsByHandle.clear();
+    }
+
+    //============================================================================
 
     bool Hotswapper::CreateHscppTempDirectory()
     {
@@ -213,9 +322,14 @@ namespace hscpp
             }
 
             std::filesystem::path extension = canonicalPath.extension();
-            if (std::find(m_FileExtensions.begin(), m_FileExtensions.end(), extension) == m_FileExtensions.end())
+            auto extensionIt = std::find_if(m_FileExtensionsByHandle.begin(), m_FileExtensionsByHandle.end(),
+                [extension](auto pair) {
+                    return extension == pair.second;
+                });
+
+            if (extensionIt == m_FileExtensionsByHandle.end())
             {
-                Log::Write(LogLevel::Trace, "%s: File '%s' will be skipped; it's extension is not being watched.\n",
+                Log::Write(LogLevel::Trace, "%s: File '%s' will be skipped; its extension is not being watched.\n",
                     __func__, canonicalPath.string().c_str());
                 continue;
             }
