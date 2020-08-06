@@ -23,25 +23,21 @@ private:
     };
 
 public:
-    static MemoryManager& Instance();
-    
     void SetHotswapper(hscpp::Hotswapper* pSwapper);
 
     template <typename T>
-    static Ref<T> Allocate()
+    Ref<T> Allocate()
     {
-        MemoryManager& instance = MemoryManager::Instance();
-
-        if (instance.m_pSwapper == nullptr)
+        if (m_pSwapper == nullptr)
         {
             size_t size = sizeof(std::aligned_storage<sizeof(T)>::type);
-            size_t iBlock = instance.TakeFirstFreeBlock(size);
+            size_t iBlock = TakeFirstFreeBlock(size);
 
-            T* pT = new (instance.m_Blocks.at(iBlock).pMemory) T;
+            T* pT = new (m_Blocks.at(iBlock).pMemory) T;
 
             Ref<T> ref;
             ref.id = iBlock;
-            ref.pMemoryManager = &instance;
+            ref.pMemoryManager = this;
 
             return ref;
         }
@@ -49,24 +45,22 @@ public:
         {
             // If hscpp is enabled, we always want to allocate through the hscpp::Hotswapper, as it
             // will use the latest constructor for a given type.
-            hscpp::AllocationInfo info = instance.m_pSwapper->Allocate<T>();
+            hscpp::AllocationInfo info = m_pSwapper->Allocate<T>();
 
             Ref<T> ref;
             ref.id = info.id;
-            ref.pMemoryManager = &instance;
+            ref.pMemoryManager = this;
 
             return ref;
         }
     }
 
     template <typename T>
-    static void Free(Ref<T> ref)
+    void Free(Ref<T> ref)
     {
-        MemoryManager& instance = MemoryManager::Instance();
-
-        if (ref.id < instance.m_Blocks.size())
+        if (ref.id < m_Blocks.size())
         {
-            Block& block = instance.m_Blocks.at(ref.id);
+            Block& block = m_Blocks.at(ref.id);
             block.bFree = true;
 
             T* pObject = reinterpret_cast<T*>(block.pMemory);
@@ -78,21 +72,19 @@ public:
     }
 
     template <typename T>
-    static Ref<T> Place(T* pMemory)
+    Ref<T> Place(T* pMemory)
     {
-        MemoryManager& instance = MemoryManager::Instance();
-        
         Block block;
         block.bFree = false;
         block.bExternallyOwned = true;
         block.pMemory = reinterpret_cast<uint8_t*>(pMemory);
 
-        size_t iBlock = instance.m_Blocks.size();
-        instance.m_Blocks.push_back(block);
+        size_t iBlock = m_Blocks.size();
+        m_Blocks.push_back(block);
 
         Ref<T> ref;
         ref.id = iBlock;
-        ref.pMemoryManager = &instance;
+        ref.pMemoryManager = this;
 
         return ref;
     }

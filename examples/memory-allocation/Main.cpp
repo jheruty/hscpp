@@ -21,12 +21,13 @@ int main()
     // object. However, only hscpp knows about this new constructor. The MemoryManager is given a
     // reference to the hscpp::HotSwapper, so that it can use its Allocate<T>() method and choose the
     // most up-to-date constructor.
-    MemoryManager::Instance().SetHotswapper(&swapper);
+    std::unique_ptr<MemoryManager> pMemoryManager = std::make_unique<MemoryManager>();
+    pMemoryManager->SetHotswapper(&swapper);
 
     // You can optionally set a memory allocator. If provided, hscpp will call Allocate, AllocateSwap,
     // and Free, as per the hscpp::IAllocator interface. If no allocator is provided, hscpp uses
     // the standard 'new' and 'delete'.
-    swapper.SetAllocator(&MemoryManager::Instance());
+    swapper.SetAllocator(pMemoryManager.get());
 
     // In the simple-demo example, we rely on using global memory shared across all modules in order
     // to handle when hscpp deletes an old object and creates a new one. Instead we can use the 'Ref'
@@ -35,14 +36,14 @@ int main()
     // to the object breaking.
     //
     // For Refs to work, a custom allocator must be provided, so that hscpp knows the object's id.
-    Ref<TrackedPrinter> trackedPrinter = MemoryManager::Allocate<TrackedPrinter>();
+    Ref<TrackedPrinter> trackedPrinter = pMemoryManager->Allocate<TrackedPrinter>();
 
     int trackedCounter = 0;
     trackedPrinter->Init(++trackedCounter);
 
     // Untracked objects are allocated the same as untracked objects, but they won't be recompiled
     // when their source code changes.
-    Ref<UntrackedPrinter> untrackedPrinter = MemoryManager::Allocate<UntrackedPrinter>();
+    Ref<UntrackedPrinter> untrackedPrinter = pMemoryManager->Allocate<UntrackedPrinter>();
 
     int untrackedCounter = 0;
     untrackedPrinter->Init(++untrackedCounter);
@@ -80,8 +81,8 @@ int main()
                 //
                 // For this reason, you'll want to use swapper.Allocate<T>() when allocating objects
                 // with hscpp (see MemoryManager).
-                Ref<TrackedPrinter> newTrackedPrinter = MemoryManager::Allocate<TrackedPrinter>();
-                Ref<UntrackedPrinter> newUntrackedPrinter = MemoryManager::Allocate<UntrackedPrinter>();
+                Ref<TrackedPrinter> newTrackedPrinter = pMemoryManager->Allocate<TrackedPrinter>();
+                Ref<UntrackedPrinter> newUntrackedPrinter = pMemoryManager->Allocate<UntrackedPrinter>();
 
                 newTrackedPrinter->Init(++trackedCounter);
                 newUntrackedPrinter->Init(++untrackedCounter);
@@ -101,7 +102,7 @@ int main()
 
     for (auto& ref : m_UpdatableObjects)
     {
-        MemoryManager::Free(ref);
+        pMemoryManager->Free(ref);
     }
 
     m_UpdatableObjects.clear();

@@ -49,12 +49,12 @@ static bool SetupGl3w()
     return true;
 }
 
-static bool SetupImGui(GLFWwindow* pWindow, Ref<ImGuiContext>& context)
+static bool SetupImGui(GLFWwindow* pWindow, MemoryManager* pMemoryManager, Ref<ImGuiContext>& context)
 {
     IMGUI_CHECKVERSION();
 
     ImGuiContext* pContext = ImGui::CreateContext();
-    context = MemoryManager::Place(pContext);
+    context = pMemoryManager->Place(pContext);
 
     ImGui::StyleColorsDark();
 
@@ -90,8 +90,9 @@ int main(int, char**)
     swapper.AddLibrary(std::filesystem::current_path().parent_path() / "x64" / configuration / "imgui.lib");
     swapper.AddLibrary(std::filesystem::current_path().parent_path() / "x64" / configuration / "hscpp-example-utils.lib");
 
-    MemoryManager::Instance().SetHotswapper(&swapper);
-    swapper.SetAllocator(&MemoryManager::Instance());
+    std::unique_ptr<MemoryManager> pMemoryManager = std::make_unique<MemoryManager>();
+    pMemoryManager->SetHotswapper(&swapper);
+    swapper.SetAllocator(pMemoryManager.get());
 
     // Initialize ImGui.
     GLFWwindow* pWindow = nullptr;
@@ -108,13 +109,13 @@ int main(int, char**)
     }
 
     Ref<ImGuiContext> context;
-    if (!SetupImGui(pWindow, context))
+    if (!SetupImGui(pWindow, pMemoryManager.get(), context))
     {
         std::cout << "Failed to setup ImGui." << std::endl;
         return -1;
     }
 
-    Ref<Widget> widget = MemoryManager::Allocate<Widget>();
+    Ref<Widget> widget = pMemoryManager->Allocate<Widget>();
     widget->Init(context);
 
     while (!glfwWindowShouldClose(pWindow))

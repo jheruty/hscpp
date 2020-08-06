@@ -12,12 +12,6 @@ uint8_t* MemoryManager::GetMemory(size_t id)
     return nullptr;
 }
 
-MemoryManager& MemoryManager::Instance()
-{
-    static MemoryManager manager;
-    return manager;
-}
-
 void MemoryManager::SetHotswapper(hscpp::Hotswapper* pSwapper)
 {
     m_pSwapper = pSwapper;
@@ -25,9 +19,7 @@ void MemoryManager::SetHotswapper(hscpp::Hotswapper* pSwapper)
 
 hscpp::AllocationInfo MemoryManager::Hscpp_Allocate(uint64_t size)
 {
-    MemoryManager& instance = MemoryManager::Instance();
-
-    size_t iBlock = instance.TakeFirstFreeBlock(size);
+    size_t iBlock = TakeFirstFreeBlock(size);
 
     hscpp::AllocationInfo info;
     info.id = static_cast<uint64_t>(iBlock);
