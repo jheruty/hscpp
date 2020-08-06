@@ -3,16 +3,14 @@
 
 Widget::Widget()
 {
-    auto cb = [](hscpp::SwapInfo& info) {
+    auto cb = [this](hscpp::SwapInfo& info) {
         switch (info.Phase())
         {
         case hscpp::SwapPhase::BeforeSwap:
-            info.Serialize("Context", ImGui::GetCurrentContext());
+            info.Serialize("Context", m_Context);
             break;
         case hscpp::SwapPhase::AfterSwap:
-            ImGuiContext* pContext = nullptr;
-            info.Unserialize("Context", pContext);
-            ImGui::SetCurrentContext(pContext);
+            info.Unserialize("Context", m_Context);
             break;
         }
     };
@@ -20,9 +18,18 @@ Widget::Widget()
     HSCPP_SET_SWAP_HANDLER(cb);
 }
 
+void Widget::Init(Ref<ImGuiContext> context)
+{
+    m_Context = context;
+}
+
 void Widget::Update()
 {
+    ImGui::SetCurrentContext(*m_Context);
+
     ImGui::Begin("Hello");
     ImGui::SetWindowSize({ 100, 100 });
+    int Dummy = 0;
+    ++Dummy;
     ImGui::End();
 }

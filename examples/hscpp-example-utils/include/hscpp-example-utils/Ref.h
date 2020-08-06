@@ -2,22 +2,23 @@
 
 #include <stdint.h>
 
-#include "hscpp-example-utils/GetMemory.h"
+#include "hscpp-example-utils/IMemoryManager.h"
 
 // Maps an id to memory.
 template <typename T>
 struct Ref
 {
     size_t id = 0;
+    IMemoryManager* pMemoryManager = nullptr;
 
     T* operator->()
     {
-        return reinterpret_cast<T*>(GetMemory(id));
+        return reinterpret_cast<T*>(pMemoryManager->GetMemory(id));
     }
 
     T* operator*()
     {
-        return reinterpret_cast<T*>(GetMemory(id));
+        return reinterpret_cast<T*>(pMemoryManager->GetMemory(id));
     }
 
     template <typename U>

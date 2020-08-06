@@ -21,15 +21,12 @@
     <ClInclude Include="include\hscpp-example-utils\Ref.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="include\hscpp-example-utils\GetMemory.h">
+    <ClInclude Include="include\hscpp-example-utils\IMemoryManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\MemoryManager.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="src\GetMemory.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

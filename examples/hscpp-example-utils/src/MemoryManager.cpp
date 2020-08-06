@@ -4,11 +4,9 @@
 
 uint8_t* MemoryManager::GetMemory(size_t id)
 {
-    MemoryManager& instance = MemoryManager::Instance();
-
-    if (id < instance.m_Blocks.size())
+    if (id < m_Blocks.size())
     {
-        return instance.m_Blocks.at(id).pMemory;
+        return m_Blocks.at(id).pMemory;
     }
 
     return nullptr;
@@ -40,8 +38,6 @@ hscpp::AllocationInfo MemoryManager::Hscpp_Allocate(uint64_t size)
 
 hscpp::AllocationInfo MemoryManager::Hscpp_AllocateSwap(uint64_t previousId, uint64_t size)
 {
-    MemoryManager& instance = MemoryManager::Instance();
-
     if (previousId < m_Blocks.size())
     {
         Block& block = m_Blocks.at(previousId);
@@ -87,7 +83,7 @@ size_t MemoryManager::TakeFirstFreeBlock(size_t size)
     {
         Block& block = m_Blocks.at(i);
 
-        if (block.bFree && size < block.capacity)
+        if (block.bFree && !block.bExternallyOwned && size < block.capacity)
         {
             iBlock = i;
             break;

@@ -84,12 +84,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="include\hscpp-example-utils\GetMemory.h" />
+    <ClInclude Include="include\hscpp-example-utils\IMemoryManager.h" />
     <ClInclude Include="include\hscpp-example-utils\MemoryManager.h" />
     <ClInclude Include="include\hscpp-example-utils\Ref.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\GetMemory.cpp" />
     <ClCompile Include="src\MemoryManager.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

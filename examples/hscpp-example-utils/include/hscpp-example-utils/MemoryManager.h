@@ -7,11 +7,21 @@
 #include "hscpp/IAllocator.h"
 #include "hscpp/Hotswapper.h"
 #include "hscpp-example-utils/Ref.h"
+#include "IMemoryManager.h"
 
 // Memory allocator that is meant to map ids to memory addresses. Kept simple to better demonstrate
 // the concept.
-class MemoryManager : public hscpp::IAllocator
+class MemoryManager : public hscpp::IAllocator, public IMemoryManager
 {
+private:
+    struct Block
+    {
+        bool bFree = false;
+        bool bExternallyOwned = false;
+        size_t capacity = 0;
+        uint8_t* pMemory = nullptr;
+    };
+
 public:
     static MemoryManager& Instance();
     
@@ -31,6 +41,7 @@ public:
 
             Ref<T> ref;
             ref.id = iBlock;
+            ref.pMemoryManager = &instance;
 
             return ref;
         }
@@ -42,6 +53,7 @@ public:
 
             Ref<T> ref;
             ref.id = info.id;
+            ref.pMemoryManager = &instance;
 
             return ref;
         }
@@ -65,7 +77,27 @@ public:
         }
     }
 
-    static uint8_t* GetMemory(size_t id);
+    template <typename T>
+    static Ref<T> Place(T* pMemory)
+    {
+        MemoryManager& instance = MemoryManager::Instance();
+        
+        Block block;
+        block.bFree = false;
+        block.bExternallyOwned = true;
+        block.pMemory = reinterpret_cast<uint8_t*>(pMemory);
+
+        size_t iBlock = instance.m_Blocks.size();
+        instance.m_Blocks.push_back(block);
+
+        Ref<T> ref;
+        ref.id = iBlock;
+        ref.pMemoryManager = &instance;
+
+        return ref;
+    }
+
+    uint8_t* GetMemory(size_t id) override;
 
     //============================================================================
     // hscpp::IAllocator implementation.
@@ -75,13 +107,6 @@ public:
     uint64_t Hscpp_Free(uint8_t* pMemory) override;
 
 private:
-    struct Block
-    {
-        bool bFree = false;
-        size_t capacity = 0;
-        uint8_t* pMemory = nullptr;
-    };
-
     size_t TakeFirstFreeBlock(size_t size);
 
     std::vector<Block> m_Blocks;
