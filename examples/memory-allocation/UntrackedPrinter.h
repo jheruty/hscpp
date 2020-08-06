@@ -14,6 +14,8 @@ public:
     UntrackedPrinter();
     ~UntrackedPrinter();
     
+    // hscpp_virtual is just the 'virtual' keyword, so it can be safely used even in untracked
+    // objects when hscpp is enabled.
     hscpp_virtual void Init(int value); 
     virtual void Update() override;
 
