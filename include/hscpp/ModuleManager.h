@@ -21,7 +21,18 @@ namespace hscpp
 
         void SetGlobalUserData(void* pGlobalUserData);
 
-        AllocationInfo Allocate(const std::string& key);
+        // Temporary hack! Put in header to allow MemoryManager example to work.
+        AllocationInfo Allocate(const std::string& key)
+        {
+            auto constructorIt = m_ConstructorsByKey.find(key);
+            if (constructorIt != m_ConstructorsByKey.end())
+            {
+                return constructorIt->second->Allocate();
+            }
+
+            return AllocationInfo();
+        }
+
         bool PerformRuntimeSwap(const std::filesystem::path& moduleFilepath);
 
     private:

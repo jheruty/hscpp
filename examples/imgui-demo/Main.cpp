@@ -16,7 +16,6 @@
 #include "hscpp-example-utils/Ref.h"
 #include "Widget.h"
 
-
 static bool SetupGlfw(GLFWwindow*& pWindow)
 {
     if (!glfwInit())
@@ -90,9 +89,9 @@ int main(int, char**)
     swapper.AddLibrary(std::filesystem::current_path().parent_path() / "x64" / configuration / "imgui.lib");
     swapper.AddLibrary(std::filesystem::current_path().parent_path() / "x64" / configuration / "hscpp-example-utils.lib");
 
-    std::unique_ptr<MemoryManager> pMemoryManager = std::make_unique<MemoryManager>();
-    pMemoryManager->SetHotswapper(&swapper);
-    swapper.SetAllocator(pMemoryManager.get());
+    Ref<MemoryManager> memoryManager = MemoryManager::CreateMemoryManager();
+    memoryManager->SetHotswapper(&swapper);
+    swapper.SetAllocator(&memoryManager);
 
     // Initialize ImGui.
     GLFWwindow* pWindow = nullptr;
@@ -109,14 +108,14 @@ int main(int, char**)
     }
 
     Ref<ImGuiContext> context;
-    if (!SetupImGui(pWindow, pMemoryManager.get(), context))
+    if (!SetupImGui(pWindow, &memoryManager, context))
     {
         std::cout << "Failed to setup ImGui." << std::endl;
         return -1;
     }
 
-    Ref<Widget> widget = pMemoryManager->Allocate<Widget>();
-    widget->Init(context);
+    Ref<Widget> widget = memoryManager->Allocate<Widget>();
+    widget->Init("Widget", context, memoryManager);
 
     while (!glfwWindowShouldClose(pWindow))
     {

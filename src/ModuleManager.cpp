@@ -31,17 +31,6 @@ namespace hscpp
         Hscpp_GetModuleInterface()->SetGlobalUserData(m_pGlobalUserData);
     }
 
-    AllocationInfo ModuleManager::Allocate(const std::string& key)
-    {
-        auto constructorIt = m_ConstructorsByKey.find(key);
-        if (constructorIt != m_ConstructorsByKey.end())
-        {
-            return constructorIt->second->Allocate();
-        }
-
-        return AllocationInfo();
-    }
-
     bool ModuleManager::PerformRuntimeSwap(const std::filesystem::path& moduleFilepath)
     {
         HMODULE hModule = LoadLibrary(moduleFilepath.native().c_str());

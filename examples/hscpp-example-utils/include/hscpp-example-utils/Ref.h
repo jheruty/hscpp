@@ -21,6 +21,11 @@ struct Ref
         return reinterpret_cast<T*>(pMemoryManager->GetMemory(id));
     }
 
+    T* operator&()
+    {
+        return reinterpret_cast<T*>(pMemoryManager->GetMemory(id));
+    }
+
     template <typename U>
     typename std::enable_if<std::is_base_of<U, T>::value, Ref<U>>::type
     As()

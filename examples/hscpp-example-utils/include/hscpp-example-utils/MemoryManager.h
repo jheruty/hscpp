@@ -9,6 +9,8 @@
 #include "hscpp-example-utils/Ref.h"
 #include "IMemoryManager.h"
 
+const static uint64_t MEMORY_MANAGER_ID = (std::numeric_limits<uint64_t>::max)() - 1;
+
 // Memory allocator that is meant to map ids to memory addresses. Kept simple to better demonstrate
 // the concept.
 class MemoryManager : public hscpp::IAllocator, public IMemoryManager
@@ -24,6 +26,17 @@ private:
 
 public:
     void SetHotswapper(hscpp::Hotswapper* pSwapper);
+
+    static Ref<MemoryManager> CreateMemoryManager()
+    {
+        MemoryManager* pMemoryManager = new MemoryManager();
+
+        Ref<MemoryManager> ref;
+        ref.id = MEMORY_MANAGER_ID;
+        ref.pMemoryManager = pMemoryManager;
+
+        return ref;
+    }
 
     template <typename T>
     Ref<T> Allocate()

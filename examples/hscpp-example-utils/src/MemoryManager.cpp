@@ -1,12 +1,17 @@
 #include <assert.h>
 
 #include "hscpp-example-utils/MemoryManager.h"
+#include "hscpp/Hotswapper.h"
 
 uint8_t* MemoryManager::GetMemory(size_t id)
 {
     if (id < m_Blocks.size())
     {
         return m_Blocks.at(id).pMemory;
+    }
+    else if (id == MEMORY_MANAGER_ID)
+    {
+        return reinterpret_cast<uint8_t*>(this);
     }
 
     return nullptr;
