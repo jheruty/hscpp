@@ -17,7 +17,9 @@ namespace hscpp
             std::filesystem::path buildDirectory;
             std::vector<std::filesystem::path> files;
             std::vector<std::filesystem::path> includeDirectories;
+            std::vector<std::filesystem::path> libraries;
             std::vector<std::string> compileOptions;
+            std::vector<std::string> linkOptions;
         };
 
         Compiler();

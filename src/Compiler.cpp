@@ -134,6 +134,21 @@ namespace hscpp
             commandFile << "\"" << file.u8string() << "\"" << std::endl;
         }
 
+        for (const auto& library : info.libraries)
+        {
+            commandFile << "\"" << library.u8string() << "\"" << std::endl;
+        }
+
+        if (!info.linkOptions.empty())
+        {
+            commandFile << "/link " << std::endl;
+        }
+
+        for (const auto& option : info.linkOptions)
+        {
+            commandFile << option << std::endl;
+        }
+
         return true;
     }
 

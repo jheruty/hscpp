@@ -86,7 +86,9 @@ namespace hscpp
                 info.buildDirectory = m_BuildDirectory;
                 info.files = GetChangedFiles();
                 info.includeDirectories = AsVector(m_IncludeDirectoriesByHandle);
+                info.libraries = AsVector(m_LibrariesByHandle);
                 info.compileOptions = AsVector(m_CompileOptionsByHandle);
+                info.linkOptions = AsVector(m_LinkOptionsByHandle);
 
                 if (!info.files.empty())
                 {
