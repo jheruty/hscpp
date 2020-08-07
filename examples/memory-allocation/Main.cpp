@@ -21,7 +21,8 @@ int main()
     // object. However, only hscpp knows about this new constructor. The MemoryManager is given a
     // reference to the hscpp::HotSwapper, so that it can use its Allocate<T>() method and choose the
     // most up-to-date constructor.
-    Ref<MemoryManager> memoryManager = MemoryManager::Create(&swapper);
+    hscpp::AllocationResolver* pAllocationResolver = swapper.GetAllocationResolver();
+    Ref<MemoryManager> memoryManager = MemoryManager::Create(pAllocationResolver);
 
     // You can optionally set a memory allocator. If provided, hscpp will call Allocate, AllocateSwap,
     // and Free, as per the hscpp::IAllocator interface. If no allocator is provided, hscpp uses

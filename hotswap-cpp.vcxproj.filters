@@ -19,6 +19,7 @@
     <ClInclude Include="include\hscpp\module\SwapInfo.h" />
     <ClInclude Include="include\hscpp\module\Tracker.h" />
     <ClInclude Include="include\hscpp\ModuleManager.h" />
+    <ClInclude Include="include\hscpp\StringUtil.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Hotswapper.cpp" />

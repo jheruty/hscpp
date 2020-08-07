@@ -113,6 +113,7 @@
     <ClInclude Include="include\hscpp\module\Serializer.h" />
     <ClInclude Include="include\hscpp\module\SwapInfo.h" />
     <ClInclude Include="include\hscpp\module\Tracker.h" />
+    <ClInclude Include="include\hscpp\StringUtil.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\ModuleManager.cpp" />

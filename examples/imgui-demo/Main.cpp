@@ -110,10 +110,12 @@ int main(int, char**)
         return -1;
     }
 
-    Ref<MemoryManager> memoryManager = MemoryManager::Create(&swapper);
-    Ref<ImGuiContext> imguiContext = memoryManager->Place(pContext);
+    hscpp::AllocationResolver* pAllocationResolver = swapper.GetAllocationResolver();
+    Ref<MemoryManager> memoryManager = MemoryManager::Create(pAllocationResolver);
 
     swapper.SetAllocator(&memoryManager);
+
+    Ref<ImGuiContext> imguiContext = memoryManager->Place(pContext);
 
     Globals::Init(memoryManager, imguiContext);
     swapper.SetGlobalUserData(&Globals::Instance());

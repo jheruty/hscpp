@@ -5,7 +5,7 @@
 #include <type_traits>
 
 #include "hscpp/module/IAllocator.h"
-#include "hscpp/Hotswapper.h"
+#include "hscpp/module/AllocationResolver.h"
 #include "hscpp-example-utils/Ref.h"
 #include "IMemoryManager.h"
 
@@ -25,11 +25,11 @@ private:
     };
 
 public:
-    static Ref<MemoryManager> Create(hscpp::Hotswapper* pSwapper)
+    static Ref<MemoryManager> Create(hscpp::AllocationResolver* pAllocationResolver)
     {
         MemoryManager* pMemoryManager = new MemoryManager();
 
-        pMemoryManager->m_pSwapper = pSwapper;
+        pMemoryManager->m_pHscppAllocationResolver = pAllocationResolver;
 
         Ref<MemoryManager> ref;
         ref.id = MEMORY_MANAGER_ID;
@@ -41,7 +41,7 @@ public:
     template <typename T>
     Ref<T> Allocate()
     {
-        if (m_pSwapper == nullptr)
+        if (m_pHscppAllocationResolver == nullptr)
         {
             size_t size = sizeof(std::aligned_storage<sizeof(T)>::type);
             size_t iBlock = TakeFirstFreeBlock(size);
@@ -58,7 +58,7 @@ public:
         {
             // If hscpp is enabled, we always want to allocate through the hscpp::Hotswapper, as it
             // will use the latest constructor for a given type.
-            hscpp::AllocationInfo info = m_pSwapper->Allocate<T>();
+            hscpp::AllocationInfo info = m_pHscppAllocationResolver->Allocate<T>();
 
             Ref<T> ref;
             ref.id = info.id;
@@ -115,5 +115,5 @@ private:
     size_t TakeFirstFreeBlock(size_t size);
 
     std::vector<Block> m_Blocks;
-    hscpp::Hotswapper* m_pSwapper = nullptr;
+    hscpp::AllocationResolver* m_pHscppAllocationResolver = nullptr;
 };
