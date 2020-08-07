@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "hscpp/SwapInfo.h"
+#include "hscpp/module/SwapInfo.h"
 
 namespace hscpp
 {

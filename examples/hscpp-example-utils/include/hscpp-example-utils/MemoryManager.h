@@ -4,7 +4,7 @@
 #include <vector>
 #include <type_traits>
 
-#include "hscpp/IAllocator.h"
+#include "hscpp/module/IAllocator.h"
 #include "hscpp/Hotswapper.h"
 #include "hscpp-example-utils/Ref.h"
 #include "IMemoryManager.h"

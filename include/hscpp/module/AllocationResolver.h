@@ -4,9 +4,9 @@
 #include <stdint.h>
 #include <type_traits>
 
-#include "hscpp/IAllocator.h"
-#include "hscpp/ModuleSharedState.h"
-#include "hscpp/ModuleManager.h"
+#include "hscpp/module/IAllocator.h"
+#include "hscpp/module/ModuleSharedState.h"
+#include "hscpp/module/Constructors.h"
 
 namespace hscpp
 {
@@ -50,8 +50,6 @@ namespace hscpp
     class AllocationResolver
     {
     public:
-        AllocationResolver(ModuleManager* pModuleManager);
-
         template <typename T>
         typename std::enable_if<IsTracked<T>::yes, AllocationInfo>::type
         Allocate()
@@ -59,21 +57,26 @@ namespace hscpp
             // This type has an hscpp_ClassTracker member, and it is assumed it has been registered
             // with HSCPP_TRACK. Allocate it using an hscpp Constructor.
             const char* pKey = T::hscpp_ClassKey;
-            return m_pModuleManager->Allocate(pKey);
+
+            auto constructorIt = ModuleSharedState::s_pConstructorsByKey->find(pKey);
+            if (constructorIt != ModuleSharedState::s_pConstructorsByKey->end())
+            {
+                return constructorIt->second->Allocate();
+            }
+
+            return AllocationInfo();
         }
 
         template <typename T>
         typename std::enable_if<IsTracked<T>::no, AllocationInfo>::type
         Allocate()
         {
-            IAllocator* pAllocator = m_pModuleManager->GetAllocator();
-
             // This is a non-tracked type. Perform a normal allocation.
-            if (pAllocator != nullptr)
+            if (ModuleSharedState::s_pAllocator != nullptr)
             {
                 uint64_t size = sizeof(std::aligned_storage<sizeof(T)>::type);
 
-                AllocationInfo info = pAllocator->Hscpp_Allocate(size);
+                AllocationInfo info = ModuleSharedState::s_pAllocator->Hscpp_Allocate(size);
                 T* pT = new (info.pMemory) T;
 
                 return info;

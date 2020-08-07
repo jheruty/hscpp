@@ -2,7 +2,7 @@
 
 #include "hscpp-example-utils/Ref.h"
 #include "hscpp-example-utils/MemoryManager.h"
-#include "hscpp/ModuleSharedState.h"
+#include "hscpp/module/ModuleSharedState.h"
 
 class Globals
 {

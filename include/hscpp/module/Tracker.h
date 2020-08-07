@@ -2,10 +2,10 @@
 
 #include <functional>
 
-#include "hscpp/Constructors.h"
-#include "hscpp/ModuleSharedState.h"
-#include "hscpp/SwapInfo.h"
-#include "hscpp/ModuleInterface.h" // Added so it is included in module build.
+#include "hscpp/module/Constructors.h"
+#include "hscpp/module/ModuleSharedState.h"
+#include "hscpp/module/SwapInfo.h"
+#include "hscpp/module/ModuleInterface.h" // Added so it is included in module build.
 
 namespace hscpp
 {

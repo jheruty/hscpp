@@ -6,8 +6,8 @@
 #include <typeindex>
 #include <functional>
 
-#include "hscpp/IAllocator.h"
-#include "hscpp/ModuleSharedState.h"
+#include "hscpp/module/IAllocator.h"
+#include "hscpp/module/ModuleSharedState.h"
 
 namespace hscpp
 {

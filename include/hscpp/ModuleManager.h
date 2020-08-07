@@ -4,9 +4,10 @@
 #include <memory>
 #include <filesystem>
 
-#include "hscpp/ITracker.h"
-#include "hscpp/IAllocator.h"
-#include "hscpp/Constructors.h"
+#include "hscpp/module/ITracker.h"
+#include "hscpp/module/IAllocator.h"
+#include "hscpp/module/Constructors.h"
+#include "hscpp/module/ModuleInterface.h"
 
 namespace hscpp
 {
@@ -14,24 +15,11 @@ namespace hscpp
     class ModuleManager
     {
     public:
+
         ModuleManager();
 
         void SetAllocator(IAllocator* pAllocator);
-        IAllocator* GetAllocator();
-
         void SetGlobalUserData(void* pGlobalUserData);
-
-        // Temporary hack! Put in header to allow MemoryManager example to work.
-        AllocationInfo Allocate(const std::string& key)
-        {
-            auto constructorIt = m_ConstructorsByKey.find(key);
-            if (constructorIt != m_ConstructorsByKey.end())
-            {
-                return constructorIt->second->Allocate();
-            }
-
-            return AllocationInfo();
-        }
 
         bool PerformRuntimeSwap(const std::filesystem::path& moduleFilepath);
 

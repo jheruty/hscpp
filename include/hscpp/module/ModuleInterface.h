@@ -4,9 +4,9 @@
 #include <vector>
 #include <assert.h>
 
-#include "hscpp/ModuleSharedState.h"
-#include "hscpp/Constructors.h"
-#include "hscpp/ITracker.h"
+#include "hscpp/module/ModuleSharedState.h"
+#include "hscpp/module/Constructors.h"
+#include "hscpp/module/ITracker.h"
 
 #define HSCPP_API __declspec(dllexport)
 
@@ -24,6 +24,11 @@ namespace hscpp
             ModuleSharedState::s_pTrackersByKey = pTrackersByKey;
         }
 
+        virtual void SetConstructorsByKey(std::unordered_map<std::string, IConstructor*>* pConstructorsByKey)
+        {
+            ModuleSharedState::s_pConstructorsByKey = pConstructorsByKey;
+        }
+
         virtual void SetAllocator(IAllocator* pAllocator)
         {
             ModuleSharedState::s_pAllocator = pAllocator;
@@ -34,7 +39,7 @@ namespace hscpp
             ModuleSharedState::s_pGlobalUserData = pGlobalUserData;
         }
 
-        virtual std::unordered_map<std::string, IConstructor*> GetConstructorsByKey()
+        virtual std::unordered_map<std::string, IConstructor*> GetModuleConstructorsByKey()
         {
             std::unordered_map<std::string, IConstructor*> constructorsByKey;
 
@@ -54,10 +59,13 @@ namespace hscpp
             size_t nConstructorKeys = Constructors::GetNumberOfKeys();
             for (size_t iKey = 0; iKey < nConstructorKeys; ++iKey)
             {
-                // Find tracked objects corresponding to this constructor. If not found, this must
-                // be a new class, so no instances have been created yet.
                 std::string key = Constructors::GetKey(iKey);
 
+                // Patch our global constructors to include the new constructors from this module.
+                (*ModuleSharedState::s_pConstructorsByKey)[key] = Constructors::GetConstructor(key);
+
+                // Find tracked objects corresponding to this constructor. If not found, this must
+                // be a new class, so no instances have been created yet.
                 auto trackedObjectsPair = ModuleSharedState::s_pTrackersByKey->find(key);
                 if (trackedObjectsPair != ModuleSharedState::s_pTrackersByKey->end())
                 {

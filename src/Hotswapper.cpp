@@ -5,7 +5,6 @@
 #include "hscpp/Hotswapper.h"
 #include "hscpp/Log.h"
 #include "hscpp/StringUtil.h"
-#include "hscpp/ModuleInterface.h"
 
 namespace hscpp
 {

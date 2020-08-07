@@ -7,9 +7,8 @@
 
 #include "hscpp/FileWatcher.h"
 #include "hscpp/Compiler.h"
-#include "hscpp/Tracker.h"
-#include "hscpp/AllocationResolver.h"
 #include "hscpp/ModuleManager.h"
+#include "hscpp/module/AllocationResolver.h"
 
 namespace hscpp
 {
@@ -84,7 +83,7 @@ namespace hscpp
         Compiler m_Compiler;
         ModuleManager m_ModuleManager;
 
-        AllocationResolver m_AllocationResolver = AllocationResolver(&m_ModuleManager);
+        AllocationResolver m_AllocationResolver;
 
         std::filesystem::path GetHscppIncludePath();
 
@@ -152,8 +151,7 @@ namespace hscpp
     }
 
     template <typename T>
-    std::vector<T>
-        Hotswapper::AsVector(std::unordered_map<int, T>& map)
+    std::vector<T> Hotswapper::AsVector(std::unordered_map<int, T>& map)
     {
         std::vector<T> vec;
         for (const auto& it : map)

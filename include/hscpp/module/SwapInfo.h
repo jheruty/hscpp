@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 
-#include "hscpp/Serializer.h"
+#include "hscpp/module/Serializer.h"
 
 namespace hscpp
 {
