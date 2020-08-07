@@ -23,6 +23,7 @@ namespace hscpp
         "/Z7", // Add full debugging information.
         "/FC", // Print full filepath in diagnostic messages.
         "/MP", // Build with multiple processes.
+        "/EHsc", // Full support for standard C++ exception handling.
 #ifdef _DEBUG
         // Debug flags.
         "/MDd", // Use multithreaded debug DLL version of run-time library.
