@@ -65,6 +65,11 @@ namespace hscpp
         }
     }
 
+    hscpp::AllocationResolver* Hotswapper::GetAllocationResolver()
+    {
+        return &m_AllocationResolver;
+    }
+
     void Hotswapper::SetAllocator(IAllocator* pAllocator)
     {
         m_ModuleManager.SetAllocator(pAllocator);

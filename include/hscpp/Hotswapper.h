@@ -17,13 +17,12 @@ namespace hscpp
     public:
         Hotswapper(bool bUseDefaults = true);
 
+        AllocationResolver* GetAllocationResolver();
+
         void SetAllocator(IAllocator* pAllocator);
         void SetGlobalUserData(void* pGlobalUserData);
 
         void Update();
-
-        template <typename T>
-        AllocationInfo Allocate();
 
         //============================================================================
         // Add & Remove Functions
@@ -104,12 +103,6 @@ namespace hscpp
         template <typename T>
         std::vector<T> AsVector(std::unordered_map<int, T>& map);
     };
-
-    template <typename T>
-    AllocationInfo hscpp::Hotswapper::Allocate()
-    {
-        return m_AllocationResolver.Allocate<T>();
-    }
 
     // Inline this function, so that __FILE__ is within the include directory.
     inline std::filesystem::path Hotswapper::GetHscppIncludePath()

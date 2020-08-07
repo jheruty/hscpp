@@ -87,9 +87,6 @@ namespace hscpp
             
             return info;
         }
-
-    private:
-        ModuleManager* m_pModuleManager = nullptr;
     };
 
 }
