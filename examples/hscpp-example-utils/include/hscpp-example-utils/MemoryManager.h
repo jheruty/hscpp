@@ -25,11 +25,11 @@ private:
     };
 
 public:
-    void SetHotswapper(hscpp::Hotswapper* pSwapper);
-
-    static Ref<MemoryManager> CreateMemoryManager()
+    static Ref<MemoryManager> Create(hscpp::Hotswapper* pSwapper)
     {
         MemoryManager* pMemoryManager = new MemoryManager();
+
+        pMemoryManager->m_pSwapper = pSwapper;
 
         Ref<MemoryManager> ref;
         ref.id = MEMORY_MANAGER_ID;

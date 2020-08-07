@@ -1,5 +1,6 @@
 #include "Widget.h"
 #include "imgui.h"
+#include "Globals.h"
 
 Widget::Widget()
 {
@@ -7,16 +8,14 @@ Widget::Widget()
         switch (info.Phase())
         {
         case hscpp::SwapPhase::BeforeSwap:
-            info.Serialize("Context", m_Context);
-            info.Serialize("MemoryManager", m_MemoryManager);
             info.Serialize("Widgets", m_Widgets);
             info.Serialize("Title", m_Title);
+            info.Serialize("InputBuffer", m_InputBuffer);
             break;
         case hscpp::SwapPhase::AfterSwap:
-            info.Unserialize("Context", m_Context);
-            info.Unserialize("MemoryManager", m_MemoryManager);
             info.Unserialize("Widgets", m_Widgets);
             info.Unserialize("Title", m_Title);
+            info.Unserialize("InputBuffer", m_InputBuffer);
             break;
         }
     };
@@ -24,16 +23,14 @@ Widget::Widget()
     HSCPP_SET_SWAP_HANDLER(cb);
 }
 
-void Widget::Init(const std::string& title, Ref<ImGuiContext> context, Ref<MemoryManager> memoryManager)
+void Widget::Init(const std::string& title)
 {
     m_Title = title;
-    m_Context = context;
-    m_MemoryManager = memoryManager;
 }
 
 void Widget::Update()
 {
-    ImGui::SetCurrentContext(*m_Context);
+    ImGui::SetCurrentContext(&Globals::ImGuiContext());
 
     if (m_Title.empty())
     {
@@ -46,8 +43,8 @@ void Widget::Update()
 
     if (ImGui::Button("Create new widget"))
     {
-        Ref<Widget> widget = m_MemoryManager->Allocate<Widget>();
-        widget->Init(m_InputBuffer.data(), m_Context, m_MemoryManager);
+        Ref<Widget> widget = Globals::MemoryManager()->Allocate<Widget>();
+        widget->Init(m_InputBuffer.data());
         m_Widgets.push_back(widget);
     }
 

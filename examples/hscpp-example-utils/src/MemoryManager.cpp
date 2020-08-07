@@ -17,11 +17,6 @@ uint8_t* MemoryManager::GetMemory(size_t id)
     return nullptr;
 }
 
-void MemoryManager::SetHotswapper(hscpp::Hotswapper* pSwapper)
-{
-    m_pSwapper = pSwapper;
-}
-
 hscpp::AllocationInfo MemoryManager::Hscpp_Allocate(uint64_t size)
 {
     size_t iBlock = TakeFirstFreeBlock(size);
