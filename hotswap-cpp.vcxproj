@@ -99,6 +99,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="include\hscpp\module\AllocationResolver.h" />
+    <ClInclude Include="include\hscpp\module\GlobalUserData.h" />
     <ClInclude Include="include\hscpp\module\IAllocator.h" />
     <ClInclude Include="include\hscpp\CmdShell.h" />
     <ClInclude Include="include\hscpp\Compiler.h" />

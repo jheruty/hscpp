@@ -6,7 +6,7 @@ Widget::Widget()
 {
     auto cb = [this](hscpp::SwapInfo& info) {
         // As an alternative to switching on info.Phase(), then Serializing and Unserializing, you
-        // can use the "Save" function.
+        // can use the "Save" function, which does the same thing internally.
         info.Save("Widgets", m_Widgets);
         info.Save("Title", m_Title);
         info.Save("InputBuffer", m_InputBuffer);
@@ -17,26 +17,24 @@ Widget::Widget()
 
 Widget::~Widget()
 {
-    // Don't do this! hscpp will call the Widget's destructor on swap. Freeing an object using
-    // HSCPP_TRACK here will result in a double-free.
-    //for (auto& ref : m_Widgets)
-    //{
-    //    Globals::MemoryManager()->Free(ref);
-    //}
+    // When swapping, hscpp will call the Widget's destructor. However, we wish to persist the
+    // Refs in m_Widgets. To avoid a double free, we can return if the object is currently
+    // being swapped.
+    if (HSCPP_IS_SWAPPING())
+    {
+        return;
+    }
+
+    for (auto& ref : m_Widgets)
+    {
+        Globals::MemoryManager()->Free(ref);
+    }
 }
 
 void Widget::Init(const std::string& parent, const std::string& title)
 {
     m_Parent = parent;
     m_Title = title;
-}
-
-void Widget::Free()
-{
-    for (auto& ref : m_Widgets)
-    {
-        Globals::MemoryManager()->Free(ref);
-    }
 }
 
 void Widget::Update()

@@ -18,7 +18,6 @@ public:
     ~Widget();
 
     hscpp_virtual void Init(const std::string& parent, const std::string& title);
-    hscpp_virtual void Free();
     hscpp_virtual void Update();
 
 private:

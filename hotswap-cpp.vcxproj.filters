@@ -20,6 +20,7 @@
     <ClInclude Include="include\hscpp\module\Tracker.h" />
     <ClInclude Include="include\hscpp\ModuleManager.h" />
     <ClInclude Include="include\hscpp\StringUtil.h" />
+    <ClInclude Include="include\hscpp\module\GlobalUserData.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Hotswapper.cpp" />

@@ -159,7 +159,7 @@ int main(int, char**)
     glfwDestroyWindow(pWindow);
     glfwTerminate();
 
-    widget->Free();
+    memoryManager->Free(widget);
 
     return 0;
 }

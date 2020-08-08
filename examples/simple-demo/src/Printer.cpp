@@ -22,8 +22,8 @@ Printer::Printer()
             info.Unserialize("Index", m_Index);
 
             // This new object is in a new module, but it still has access to global data
-            // in ModuleSharedState.
-            SimpleDemoData* pDemoData = static_cast<SimpleDemoData*>(hscpp::ModuleSharedState::s_pGlobalUserData);
+            // in GlobalUserData.
+            SimpleDemoData* pDemoData = hscpp::GlobalUserData::GetAs<SimpleDemoData>();
 
             // The instances currently in this array have been deleted. Replace the instance
             // with the newly constructed object, so that the Update loop in main keeps working.
