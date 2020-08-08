@@ -1,6 +1,7 @@
 #pragma once
 
 #include <stdint.h>
+#include <assert.h>
 
 #include "hscpp/module/Serializer.h"
 
@@ -23,6 +24,23 @@ namespace hscpp
         uint64_t Id() const
         {
             return m_Id;
+        }
+
+        template <typename T>
+        void Save(const std::string& name, T& val)
+        {
+            switch (m_Phase)
+            {
+            case SwapPhase::BeforeSwap:
+                Serialize(name, val);
+                break;
+            case SwapPhase::AfterSwap:
+                Unserialize(name, val);
+                break;
+            default:
+                assert(false);
+                break;
+            }
         }
 
         template <typename T>

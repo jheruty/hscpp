@@ -5,19 +5,11 @@
 Widget::Widget()
 {
     auto cb = [this](hscpp::SwapInfo& info) {
-        switch (info.Phase())
-        {
-        case hscpp::SwapPhase::BeforeSwap:
-            info.Serialize("Widgets", m_Widgets);
-            info.Serialize("Title", m_Title);
-            info.Serialize("InputBuffer", m_InputBuffer);
-            break;
-        case hscpp::SwapPhase::AfterSwap:
-            info.Unserialize("Widgets", m_Widgets);
-            info.Unserialize("Title", m_Title);
-            info.Unserialize("InputBuffer", m_InputBuffer);
-            break;
-        }
+        // As an alternative to switching on info.Phase(), then Serializing and Unserializing, you
+        // can use the "Save" function.
+        info.Save("Widgets", m_Widgets);
+        info.Save("Title", m_Title);
+        info.Save("InputBuffer", m_InputBuffer);
     };
 
     HSCPP_SET_SWAP_HANDLER(cb);
