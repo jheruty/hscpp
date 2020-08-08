@@ -16,6 +16,7 @@
     <ProjectGuid>{73269582-d927-4cb8-9fca-0f09430c4798}</ProjectGuid>
     <RootNamespace>memoryallocation</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+    <ProjectName>memory-allocation-demo</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">

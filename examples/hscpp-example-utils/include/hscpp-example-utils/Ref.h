@@ -32,6 +32,7 @@ struct Ref
     {
         Ref<U> base;
         base.id = id;
+        base.pMemoryManager = pMemoryManager;
 
         return base;
     }
