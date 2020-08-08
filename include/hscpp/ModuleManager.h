@@ -24,6 +24,7 @@ namespace hscpp
         bool PerformRuntimeSwap(const std::filesystem::path& moduleFilepath);
 
     private:
+        bool m_bSwapping = false;
         std::unordered_map<std::string, std::vector<ITracker*>> m_TrackersByKey;
         
         // The library user owns this memory.

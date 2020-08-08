@@ -7,6 +7,7 @@
 
 hscpp::ModuleManager::ModuleManager()
 {
+    Hscpp_GetModuleInterface()->SetIsSwapping(&m_bSwapping);
     Hscpp_GetModuleInterface()->SetTrackersByKey(&m_TrackersByKey);
     Hscpp_GetModuleInterface()->SetConstructorsByKey(&m_ConstructorsByKey);
 
@@ -53,6 +54,7 @@ bool hscpp::ModuleManager::PerformRuntimeSwap(const std::filesystem::path& modul
         return false;
     }
 
+    pModuleInterface->SetIsSwapping(&m_bSwapping);
     pModuleInterface->SetTrackersByKey(&m_TrackersByKey);
     pModuleInterface->SetConstructorsByKey(&m_ConstructorsByKey);
     pModuleInterface->SetAllocator(m_pAllocator);

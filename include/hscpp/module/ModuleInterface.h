@@ -18,6 +18,11 @@ namespace hscpp
     class ModuleInterface
     {
     public:
+        virtual void SetIsSwapping(bool* pbSwapping)
+        {
+            ModuleSharedState::s_pbSwapping = pbSwapping;
+        }
+
         virtual void SetTrackersByKey(
             std::unordered_map<std::string, std::vector<ITracker*>>* pTrackersByKey)
         {
@@ -55,6 +60,8 @@ namespace hscpp
 
         virtual void PerformRuntimeSwap()
         {
+            *ModuleSharedState::s_pbSwapping = true;
+
             // Get constructors registered within this module.
             size_t nConstructorKeys = Constructors::GetNumberOfKeys();
             for (size_t iKey = 0; iKey < nConstructorKeys; ++iKey)
@@ -111,6 +118,8 @@ namespace hscpp
                     }
                 }
             }
+
+            *ModuleSharedState::s_pbSwapping = false;
         }
     };
 }
