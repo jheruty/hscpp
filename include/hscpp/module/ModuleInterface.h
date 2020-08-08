@@ -5,6 +5,7 @@
 #include <assert.h>
 
 #include "hscpp/module/ModuleSharedState.h"
+#include "hscpp/module/GlobalUserData.h"
 #include "hscpp/module/Constructors.h"
 #include "hscpp/module/ITracker.h"
 
@@ -41,7 +42,7 @@ namespace hscpp
 
         virtual void SetGlobalUserData(void* pGlobalUserData)
         {
-            ModuleSharedState::s_pGlobalUserData = pGlobalUserData;
+            GlobalUserData::s_pData = pGlobalUserData;
         }
 
         virtual std::unordered_map<std::string, IConstructor*> GetModuleConstructorsByKey()
