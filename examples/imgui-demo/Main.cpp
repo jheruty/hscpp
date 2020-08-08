@@ -49,11 +49,11 @@ static bool SetupGl3w()
     return true;
 }
 
-static bool SetupImGui(GLFWwindow* pWindow, ImGuiContext*& pContext)
+static bool SetupImGui(GLFWwindow* pWindow, ImGuiContext*& pImGuiContext)
 {
     IMGUI_CHECKVERSION();
 
-    pContext = ImGui::CreateContext();
+    pImGuiContext = ImGui::CreateContext();
 
     ImGui::StyleColorsDark();
 
@@ -72,7 +72,6 @@ static bool SetupImGui(GLFWwindow* pWindow, ImGuiContext*& pContext)
 
 int main(int, char**)
 {
-    // Initialize Hotswapper.
     hscpp::Hotswapper swapper;
 
     swapper.AddIncludeDirectory(std::filesystem::current_path());
@@ -86,10 +85,11 @@ int main(int, char**)
     std::string configuration = "Release";
 #endif
 
-    swapper.AddLibrary(std::filesystem::current_path().parent_path() / "x64" / configuration / "imgui.lib");
-    swapper.AddLibrary(std::filesystem::current_path().parent_path() / "x64" / configuration / "hscpp-example-utils.lib");
+    // We can link additional libraries. TODO: Implement / Explain hscpp_pragma.
+    std::filesystem::path libraryPath = std::filesystem::current_path().parent_path() / "x64" / configuration;
+    swapper.AddLibrary(libraryPath / "imgui.lib");
+    swapper.AddLibrary(libraryPath / "hscpp-example-utils.lib");
 
-    // Initialize ImGui.
     GLFWwindow* pWindow = nullptr;
     if (!SetupGlfw(pWindow))
     {
@@ -103,8 +103,8 @@ int main(int, char**)
         return -1;
     }
 
-    ImGuiContext* pContext = nullptr;
-    if (!SetupImGui(pWindow, pContext))
+    ImGuiContext* pImGuiContext = nullptr;
+    if (!SetupImGui(pWindow, pImGuiContext))
     {
         std::cout << "Failed to setup ImGui." << std::endl;
         return -1;
@@ -115,13 +115,19 @@ int main(int, char**)
 
     swapper.SetAllocator(&memoryManager);
 
-    Ref<ImGuiContext> imguiContext = memoryManager->Place(pContext);
+    // Refs can only refer to memory within our memory allocator. The "Place" function allows the
+    // MemoryManager to keep track of memory without owning it.
+    Ref<ImGuiContext> imguiContext = memoryManager->Place(pImGuiContext);
 
+    // Statics and globals are per-module, hence we must make use of ModuleSharedState. To avoid
+    // making the whole codebase dependent on hscpp, we can wrap our globals into a Globals class.
     Globals::Init(memoryManager, imguiContext);
+
+    // Globals is now shared as s_pGlobalUserData in ModuleSharedState.
     swapper.SetGlobalUserData(&Globals::Instance());
 
     Ref<Widget> widget = memoryManager->Allocate<Widget>();
-    widget->Init("Widget");
+    widget->Init("<root>", "Widget");
 
     while (!glfwWindowShouldClose(pWindow))
     {
@@ -152,6 +158,8 @@ int main(int, char**)
 
     glfwDestroyWindow(pWindow);
     glfwTerminate();
+
+    widget->Free();
 
     return 0;
 }

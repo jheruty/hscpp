@@ -15,11 +15,14 @@ class Widget
 
 public:
     Widget();
+    ~Widget();
 
-    hscpp_virtual void Init(const std::string& title);
+    hscpp_virtual void Init(const std::string& parent, const std::string& title);
+    hscpp_virtual void Free();
     hscpp_virtual void Update();
 
 private:
+    std::string m_Parent;
     std::string m_Title;
 
     std::array<char, 128> m_InputBuffer = {};

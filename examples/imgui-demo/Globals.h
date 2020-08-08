@@ -44,10 +44,12 @@ private:
     {
         if (hscpp::ModuleSharedState::s_pGlobalUserData == nullptr)
         {
+            // Hscpp is not in use (or no global user data was set).
             return &Globals::Instance();
         }
         else
         {
+            // Recall that this is shared across ALL modules.
             return static_cast<Globals*>(hscpp::ModuleSharedState::s_pGlobalUserData);
         }
     }
