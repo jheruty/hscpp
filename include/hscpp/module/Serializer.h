@@ -15,7 +15,7 @@ namespace hscpp
     template <typename T>
     struct SerializedProperty : public ISerializedProperty
     {
-        T value;
+        T value = T();
     };
 
     class Serializer

@@ -98,6 +98,8 @@
     <None Include=".gitignore" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\hscpp\Feature.h" />
+    <ClInclude Include="include\hscpp\FileParser.h" />
     <ClInclude Include="include\hscpp\module\AllocationResolver.h" />
     <ClInclude Include="include\hscpp\module\GlobalUserData.h" />
     <ClInclude Include="include\hscpp\module\IAllocator.h" />
@@ -114,9 +116,11 @@
     <ClInclude Include="include\hscpp\module\Serializer.h" />
     <ClInclude Include="include\hscpp\module\SwapInfo.h" />
     <ClInclude Include="include\hscpp\module\Tracker.h" />
+    <ClInclude Include="include\hscpp\RuntimeDependency.h" />
     <ClInclude Include="include\hscpp\StringUtil.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\FileParser.cpp" />
     <ClCompile Include="src\ModuleManager.cpp" />
     <ClCompile Include="src\CmdShell.cpp" />
     <ClCompile Include="src\Compiler.cpp" />

@@ -21,6 +21,9 @@
     <ClInclude Include="include\hscpp\ModuleManager.h" />
     <ClInclude Include="include\hscpp\StringUtil.h" />
     <ClInclude Include="include\hscpp\module\GlobalUserData.h" />
+    <ClInclude Include="include\hscpp\FileParser.h" />
+    <ClInclude Include="include\hscpp\Feature.h" />
+    <ClInclude Include="include\hscpp\RuntimeDependency.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Hotswapper.cpp" />
@@ -30,5 +33,7 @@
     <ClCompile Include="src\Compiler.cpp" />
     <ClCompile Include="src\CmdShell.cpp" />
     <ClCompile Include="src\ModuleManager.cpp" />
+    <ClCompile Include="src\FileParser.cpp" />
+    <ClCompile Include="src\FileParser.cpp" />
   </ItemGroup>
 </Project>
