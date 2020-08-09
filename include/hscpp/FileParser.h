@@ -11,13 +11,7 @@ namespace hscpp
     class FileParser
     {
     public:
-        struct ParseInfo
-        {
-            std::vector<RuntimeDependency> dependencies;
-            std::vector<std::filesystem::path> includes;
-        };
-
-        bool ParseFile(const std::filesystem::path& path, ParseInfo& info);
+        bool ParseDependencies(const std::filesystem::path& path, std::vector<RuntimeDependency>& dependencies);
 
     private:
         std::filesystem::path m_Filepath;
@@ -25,9 +19,8 @@ namespace hscpp
         size_t m_iChar = 0;
         std::string m_Content;
 
-        void Parse(ParseInfo& info);
-        bool ParseRuntimeRequirement(RuntimeDependency& dependency);
-        bool ParseInclude(std::filesystem::path& include);
+        void ParseDependencies(std::vector<RuntimeDependency>& info);
+        bool ParseDependency(RuntimeDependency& dependency);
 
         bool ParseString(std::string& strContent);
 

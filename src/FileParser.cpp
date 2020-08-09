@@ -7,7 +7,7 @@
 namespace hscpp
 {
 
-    bool FileParser::ParseFile(const std::filesystem::path& path, ParseInfo& info)
+    bool FileParser::ParseDependencies(const std::filesystem::path& path, std::vector<RuntimeDependency>& dependencies)
     {
         std::ifstream file(path.native().c_str());
         if (!file.is_open())
@@ -23,15 +23,14 @@ namespace hscpp
         m_iChar = 0;
         m_Content = buf.str();
 
-        Parse(info);
+        ParseDependencies(dependencies);
         return true;
     }
 
-    void FileParser::Parse(ParseInfo& info)
+    void FileParser::ParseDependencies(std::vector<RuntimeDependency>& dependencies)
     {
-        // Barebones lexer/parser. There are very few things we need to match, and if
-        // hscpp::Feature::DependentCompilation is enabled, all files in the project will need to be
-        // parsed on startup. Prefer speed over elegance.
+        // Barebones lexer/parser. There are very few things we need to match, so a complex parser
+        // is not needed.
         while (!IsAtEnd())
         {
             size_t iStartChar = m_iChar;
@@ -77,23 +76,10 @@ namespace hscpp
                         RuntimeDependency dependency;
                         dependency.type = dependencyType;
 
-                        if (ParseRuntimeRequirement(dependency))
+                        if (ParseDependency(dependency))
                         {
-                            info.dependencies.push_back(dependency);
+                            dependencies.push_back(dependency);
                         }
-                    }
-                }
-
-                break;
-            }
-            case '#':
-            {
-                if (Match("#include"))
-                {
-                    std::filesystem::path include;
-                    if (ParseInclude(include))
-                    {
-                        info.includes.push_back(include);
                     }
                 }
 
@@ -108,7 +94,7 @@ namespace hscpp
         }
     }
 
-    bool FileParser::ParseRuntimeRequirement(RuntimeDependency& dependency)
+    bool FileParser::ParseDependency(RuntimeDependency& dependency)
     {
         SkipWhitespace();      
 
@@ -142,25 +128,6 @@ namespace hscpp
         }
 
         Advance();
-        return true;
-    }
-
-    bool FileParser::ParseInclude(std::filesystem::path& include)
-    {
-        if (!std::isspace(Peek()))
-        {
-            // Not treated as a true error, though in practice #include should never have a suffix.
-            return false;
-        }
-        SkipWhitespace();
-
-        std::string includeStr;
-        if (!ParseString(includeStr))
-        {
-            return false;
-        }
-
-        include = includeStr;
         return true;
     }
 

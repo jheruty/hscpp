@@ -394,10 +394,10 @@ namespace hscpp
 
         for (const auto& file : info.files)
         {
-            FileParser::ParseInfo parseInfo;
-            if (m_FileParser.ParseFile(file, parseInfo))
+            std::vector<RuntimeDependency> dependencies;
+            if (m_FileParser.ParseDependencies(file, dependencies))
             {
-                for (const auto& dependency : parseInfo.dependencies)
+                for (const auto& dependency : dependencies)
                 {
                     for (const auto& path : dependency.paths)
                     {
