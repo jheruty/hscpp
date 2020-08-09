@@ -34,10 +34,13 @@ namespace hscpp
         bool Match(const std::string& str);
         bool Expect(char c, const std::string& error);
         void SkipWhitespace();
+        void SkipComment();
+        void SkipString();
 
         bool IsAtEnd();
         char Peek();
-        void Advance();
+        char PeekNext();
+        char Advance();
 
         void LogParseError(const std::string& error);
     };

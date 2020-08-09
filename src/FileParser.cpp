@@ -34,6 +34,8 @@ namespace hscpp
         // parsed on startup. Prefer speed over elegance.
         while (!IsAtEnd())
         {
+            size_t iStartChar = m_iChar;
+
             // We only care to find:
             //    hscpp_require_source
             //    hscpp_require_include
@@ -41,6 +43,12 @@ namespace hscpp
             //    #include
             switch (Peek())
             {
+            case '/':
+                SkipComment();
+                break;
+            case '"':
+                SkipString();
+                break;
             case 'h':
             {
                 bool bDependency = false;
@@ -91,11 +99,12 @@ namespace hscpp
 
                 break;
             }
-            default:
-                break;
             }
 
-            Advance();
+            if (iStartChar == m_iChar)
+            {
+                Advance();
+            }
         }
     }
 
@@ -164,22 +173,19 @@ namespace hscpp
         }
         Advance();
 
-        bool bEscaped = false;
-        while (!IsAtEnd())
+        while (!IsAtEnd() && Peek() != '"')
         {
-            if (!bEscaped && Peek() == '"')
+            if (Peek() == '\\' && PeekNext() == '"')
             {
-                break;
+                // Escaped quote.
+                Advance();
+                Advance();
+                strContent += '"';
             }
-
-            bEscaped = false;
-            if (Peek() == '\\')
+            else
             {
-                bEscaped = true;
+                strContent += Advance();
             }
-
-            strContent += Peek();
-            Advance();
         }
 
         if (Peek() != '"')
@@ -205,6 +211,7 @@ namespace hscpp
             }
             
             ++iChar;
+            ++iOffset;
         }
 
         if (iOffset != str.size())
@@ -231,10 +238,62 @@ namespace hscpp
 
     void FileParser::SkipWhitespace()
     {
-        while (std::isspace(Peek()))
+        while (!IsAtEnd() && std::isspace(Peek()))
         {
             Advance();
         }
+    }
+
+    void FileParser::SkipComment()
+    {
+        if (Peek() == '/')
+        {
+            if (PeekNext() == '/')
+            {
+                Advance(); // /
+                Advance(); // /
+                while (!IsAtEnd() && Peek() != '\n')
+                {
+                    Advance();
+                }
+                Advance(); // \n
+            }
+            else if (PeekNext() == '*')
+            {
+                Advance(); // /
+                Advance(); // *
+                while (!IsAtEnd() && Peek() != '*' && PeekNext() != '/')
+                {
+                    Advance();
+                }
+                Advance(); // *
+                Advance(); // /
+            }
+        }
+    }
+
+    void FileParser::SkipString()
+    {
+        if (Peek() == '"')
+        {
+            Advance();
+        }
+
+        while (!IsAtEnd() && Peek() != '"')
+        {
+            if (Peek() == '\\' && PeekNext() == '"')
+            {
+                // Escaped quote.
+                Advance();
+                Advance();
+            }
+            else
+            {
+                Advance();
+            }
+        }
+
+        Advance();
     }
 
     bool FileParser::IsAtEnd()
@@ -252,9 +311,20 @@ namespace hscpp
         return m_Content.at(m_iChar);
     }
 
-    void FileParser::Advance()
+    char FileParser::PeekNext()
+    {
+        if (m_iChar + 1 >= m_Content.size())
+        {
+            return 0;
+        }
+
+        return m_Content.at(m_iChar + 1);
+    }
+
+    char FileParser::Advance()
     {
         m_iChar++;
+        return m_Content.at(m_iChar - 1);
     }
 
     void FileParser::LogParseError(const std::string& error)

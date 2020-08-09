@@ -3,6 +3,7 @@
 #include <chrono>
 
 #include "hscpp/Hotswapper.h"
+#include "hscpp-example-utils/MemoryManager.h"
 #include "Printer.h"
 
 int main()
@@ -11,6 +12,9 @@ int main()
 
     swapper.AddIncludeDirectory(std::filesystem::current_path());
     swapper.AddSourceDirectory(std::filesystem::current_path(), true);
+
+    auto memoryManager = MemoryManager::Create(swapper.GetAllocationResolver());
+    swapper.SetAllocator(&memoryManager);
 
     // Although we also depend on hscpp-example-utils, these are not added to the hscpp::Hotswapper,
     // to demonstrate the use of hscpp_require macros. See Printer.cpp for details.
@@ -26,11 +30,13 @@ int main()
     swapper.SetHscppRequireVariable("PROJECT_CONFIGURATION", "Release");
 #endif
 
-    new Printer();
+    Ref<Printer> printer = memoryManager->Allocate<Printer>();
 
     while (true)
     {
         swapper.Update();
+        printer->Update();
+
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 }

@@ -11,6 +11,7 @@
 #include "hscpp/ModuleManager.h"
 #include "hscpp/module/AllocationResolver.h"
 #include "hscpp/Feature.h"
+#include "hscpp/FileParser.h"
 
 namespace hscpp
 {
@@ -25,6 +26,8 @@ namespace hscpp
         void SetGlobalUserData(void* pGlobalUserData);
 
         void EnableFeature(Feature feature);
+        void DisableFeature(Feature feature);
+        bool IsFeatureEnabled(Feature feature);
 
         void Update();
 
@@ -89,6 +92,7 @@ namespace hscpp
         std::vector<FileWatcher::Event> m_FileEvents;
 
         Compiler m_Compiler;
+        FileParser m_FileParser;
         ModuleManager m_ModuleManager;
 
         AllocationResolver m_AllocationResolver;
@@ -99,6 +103,7 @@ namespace hscpp
         bool CreateBuildDirectory();
 
         std::vector<std::filesystem::path> GetChangedFiles();
+        void ParseHscppRequire(Compiler::CompileInfo& info);
 
         template <typename T>
         int Add(const T& value, int& handle, std::unordered_map<int, T>& map);

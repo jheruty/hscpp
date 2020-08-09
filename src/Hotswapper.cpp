@@ -85,6 +85,21 @@ namespace hscpp
         m_Features.insert(feature);
     }
 
+    void Hotswapper::DisableFeature(Feature feature)
+    {
+        auto it = m_Features.find(feature);
+        if (it != m_Features.end())
+        {
+            m_Features.erase(it);
+        }
+    }
+
+    bool Hotswapper::IsFeatureEnabled(Feature feature)
+    {
+        auto it = m_Features.find(feature);
+        return it != m_Features.end();
+    }
+
     void Hotswapper::Update()
     {
         m_FileWatcher.PollChanges(m_FileEvents);
@@ -99,6 +114,11 @@ namespace hscpp
                 info.libraries = AsVector(m_LibrariesByHandle);
                 info.compileOptions = AsVector(m_CompileOptionsByHandle);
                 info.linkOptions = AsVector(m_LinkOptionsByHandle);
+
+                if (IsFeatureEnabled(Feature::HscppRequire))
+                {
+                    ParseHscppRequire(info);
+                }
 
                 if (!info.files.empty())
                 {
@@ -364,6 +384,66 @@ namespace hscpp
         }
 
         return std::vector<std::filesystem::path>(files.begin(), files.end());
+    }
+
+    void Hotswapper::ParseHscppRequire(Compiler::CompileInfo& info)
+    {
+        std::vector<std::filesystem::path> additionalFiles;
+        std::vector<std::filesystem::path> additionalIncludes;
+        std::vector<std::filesystem::path> additionalLibraries;
+
+        for (const auto& file : info.files)
+        {
+            FileParser::ParseInfo parseInfo;
+            if (m_FileParser.ParseFile(file, parseInfo))
+            {
+                for (const auto& dependency : parseInfo.dependencies)
+                {
+                    for (const auto& path : dependency.paths)
+                    {
+                        std::filesystem::path fullpath = path;
+                        if (path.is_relative())
+                        {
+                            fullpath = file.parent_path() / path;
+                        }
+
+                        std::string replace = fullpath.u8string();
+                        for (const auto& var : m_HscppRequireVariables)
+                        {
+                            std::string search = "%" + var.first + "%";
+                            size_t i = replace.find(search);
+                            if (i != std::string::npos)
+                            {
+                                replace.replace(i, search.size(), var.second);
+                            }
+                        }
+
+                        fullpath = std::filesystem::u8path(replace);
+                        fullpath = std::filesystem::canonical(fullpath);
+
+                        switch (dependency.type)
+                        {
+                        case RuntimeDependency::Type::Source:
+                            additionalFiles.push_back(fullpath);
+                            break;
+                        case RuntimeDependency::Type::Include:
+                            additionalIncludes.push_back(fullpath);
+                            break;
+                        case RuntimeDependency::Type::Library:
+                            additionalLibraries.push_back(fullpath);
+                            break;
+                        default:
+                            assert(false);
+                            break;
+                        }
+                    }
+                }              
+            }
+        }
+
+        info.files.insert(info.files.end(), additionalFiles.begin(), additionalFiles.end());
+        info.includeDirectories.insert(info.includeDirectories.end(), additionalIncludes.begin(), additionalIncludes.end());
+        info.libraries.insert(info.libraries.begin(), additionalLibraries.begin(), additionalLibraries.end());
     }
 
 }
