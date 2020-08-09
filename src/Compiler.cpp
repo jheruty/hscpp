@@ -119,10 +119,12 @@ namespace hscpp
             commandFile << option << std::endl;
         }
 
+        // Output dll name.
         m_CompilingModule = info.buildDirectory / MODULE_FILENAME;
         commandFile << "/Fe" << "\"" << m_CompilingModule.u8string() << "\"" << std::endl;
 
-        commandFile << "/Fo" << "\"" << info.buildDirectory.u8string() << "\"" << std::endl;
+        // Object file output directory. Trailing slash is required.
+        commandFile << "/Fo" << "\"" << info.buildDirectory.u8string() << "\"\\" << std::endl;
 
         for (const auto& includeDirectory : info.includeDirectories)
         {
