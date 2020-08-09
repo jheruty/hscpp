@@ -3,12 +3,14 @@
 #include <string>
 #include <vector>
 #include <filesystem>
+#include <set>
 #include <unordered_map>
 
 #include "hscpp/FileWatcher.h"
 #include "hscpp/Compiler.h"
 #include "hscpp/ModuleManager.h"
 #include "hscpp/module/AllocationResolver.h"
+#include "hscpp/Feature.h"
 
 namespace hscpp
 {
@@ -21,6 +23,8 @@ namespace hscpp
 
         void SetAllocator(IAllocator* pAllocator);
         void SetGlobalUserData(void* pGlobalUserData);
+
+        void EnableFeature(Feature feature);
 
         void Update();
 
@@ -58,7 +62,10 @@ namespace hscpp
         void EnumerateFileExtensions(const std::function<void( int handle, const std::string& option)>& cb);
         void ClearFileExtensions();
 
+        void SetHscppRequireVariable(const std::string& name, const std::string& val);
+
     private:
+        std::set<Feature> m_Features;
         std::filesystem::path m_HscppTempDirectory;
 
         int m_NextIncludeDirectoryHandle = 0;
@@ -75,6 +82,8 @@ namespace hscpp
         std::unordered_map<int, std::string> m_CompileOptionsByHandle;
         std::unordered_map<int, std::string> m_LinkOptionsByHandle;
         std::unordered_map<int, std::string> m_FileExtensionsByHandle;
+
+        std::unordered_map<std::string, std::string> m_HscppRequireVariables;
 
         FileWatcher m_FileWatcher;
         std::vector<FileWatcher::Event> m_FileEvents;

@@ -80,6 +80,11 @@ namespace hscpp
         m_ModuleManager.SetGlobalUserData(pGlobalUserData);
     }
 
+    void Hotswapper::EnableFeature(Feature feature)
+    {
+        m_Features.insert(feature);
+    }
+
     void Hotswapper::Update()
     {
         m_FileWatcher.PollChanges(m_FileEvents);
@@ -245,6 +250,11 @@ namespace hscpp
     void Hotswapper::ClearFileExtensions()
     {
         m_FileExtensionsByHandle.clear();
+    }
+
+    void Hotswapper::SetHscppRequireVariable(const std::string& name, const std::string& val)
+    {
+        m_HscppRequireVariables[name] = val;
     }
 
     //============================================================================

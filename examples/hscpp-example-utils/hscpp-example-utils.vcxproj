@@ -87,9 +87,11 @@
     <ClInclude Include="include\hscpp-example-utils\IMemoryManager.h" />
     <ClInclude Include="include\hscpp-example-utils\MemoryManager.h" />
     <ClInclude Include="include\hscpp-example-utils\Ref.h" />
+    <ClInclude Include="include\hscpp-example-utils\Variant.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\MemoryManager.cpp" />
+    <ClCompile Include="src\Variant.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
