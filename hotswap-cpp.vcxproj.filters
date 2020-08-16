@@ -23,7 +23,6 @@
     <ClInclude Include="include\hscpp\module\GlobalUserData.h" />
     <ClInclude Include="include\hscpp\FileParser.h" />
     <ClInclude Include="include\hscpp\Feature.h" />
-    <ClInclude Include="include\hscpp\RuntimeDependency.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Hotswapper.cpp" />

@@ -103,7 +103,8 @@ namespace hscpp
         bool CreateBuildDirectory();
 
         std::vector<std::filesystem::path> GetChangedFiles();
-        void ParseHscppRequire(Compiler::CompileInfo& info);
+        void ParseHscppRequires(Compiler::CompileInfo& compileInfo);
+        void InterpolateRequireVariables(std::filesystem::path& path);
 
         template <typename T>
         int Add(const T& value, int& handle, std::unordered_map<int, T>& map);

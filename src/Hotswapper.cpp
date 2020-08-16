@@ -117,7 +117,7 @@ namespace hscpp
 
                 if (IsFeatureEnabled(Feature::HscppRequire))
                 {
-                    ParseHscppRequire(info);
+                    ParseHscppRequires(info);
                 }
 
                 if (!info.files.empty())
@@ -354,7 +354,7 @@ namespace hscpp
             else if (error.value() != ERROR_SUCCESS)
             {
                 Log::Write(LogLevel::Error, "%s: Failed to get canonical path of '%s'. [%s]\n",
-                    __func__, event.filepath.string().c_str(), GetLastErrorString().c_str());
+                    __func__, event.filepath.string().c_str(), GetErrorString(error.value()).c_str());
                 continue;
             }
 
@@ -386,64 +386,83 @@ namespace hscpp
         return std::vector<std::filesystem::path>(files.begin(), files.end());
     }
 
-    void Hotswapper::ParseHscppRequire(Compiler::CompileInfo& info)
+    void Hotswapper::ParseHscppRequires(Compiler::CompileInfo& compileInfo)
     {
-        std::vector<std::filesystem::path> additionalFiles;
-        std::vector<std::filesystem::path> additionalIncludes;
-        std::vector<std::filesystem::path> additionalLibraries;
+        // Several files compiled at once may have the same dependencies, so store paths in a set
+        // such that common requires are deduplicated.
+        std::unordered_set<std::wstring> additionalFiles;
+        std::unordered_set<std::wstring> additionalIncludes;
+        std::unordered_set<std::wstring> additionalLibraries;
 
-        for (const auto& file : info.files)
+        for (const auto& file : compileInfo.files)
         {
-            std::vector<RuntimeDependency> dependencies;
-            if (m_FileParser.ParseDependencies(file, dependencies))
+            FileParser::ParseInfo parseInfo = m_FileParser.Parse(file);
+
+            for (const auto& require : parseInfo.requires)
             {
-                for (const auto& dependency : dependencies)
+                for (const auto& path : require.paths)
                 {
-                    for (const auto& path : dependency.paths)
+                    // Paths can be either relative or absolute.
+                    std::filesystem::path fullpath = path;
+                    if (path.is_relative())
                     {
-                        std::filesystem::path fullpath = path;
-                        if (path.is_relative())
-                        {
-                            fullpath = file.parent_path() / path;
-                        }
+                        fullpath = file.parent_path() / path;
+                    }
 
-                        std::string replace = fullpath.u8string();
-                        for (const auto& var : m_HscppRequireVariables)
-                        {
-                            std::string search = "%" + var.first + "%";
-                            size_t i = replace.find(search);
-                            if (i != std::string::npos)
-                            {
-                                replace.replace(i, search.size(), var.second);
-                            }
-                        }
+                    InterpolateRequireVariables(fullpath);
 
-                        fullpath = std::filesystem::u8path(replace);
-                        fullpath = std::filesystem::canonical(fullpath);
+                    std::error_code error;
+                    fullpath = std::filesystem::canonical(fullpath, error);
 
-                        switch (dependency.type)
+                    if (error.value() == ERROR_SUCCESS)
+                    {
+                        switch (require.type)
                         {
-                        case RuntimeDependency::Type::Source:
-                            additionalFiles.push_back(fullpath);
+                        case FileParser::Require::Type::Source:
+                            additionalFiles.insert(fullpath.wstring());
                             break;
-                        case RuntimeDependency::Type::Include:
-                            additionalIncludes.push_back(fullpath);
+                        case FileParser::Require::Type::Include:
+                            additionalIncludes.insert(fullpath.wstring());
                             break;
-                        case RuntimeDependency::Type::Library:
-                            additionalLibraries.push_back(fullpath);
+                        case FileParser::Require::Type::Library:
+                            additionalLibraries.insert(fullpath.wstring());
                             break;
                         default:
                             assert(false);
                             break;
                         }
                     }
-                }              
+                    else
+                    {
+                        Log::Write(LogLevel::Error, "%s: Failed to get canonical path of %s. [%s]",
+                            __func__, fullpath.string().c_str(), GetErrorString(error.value()).c_str());
+                    }
+                }
             }
         }
 
-        info.files.insert(info.files.end(), additionalFiles.begin(), additionalFiles.end());
-        info.includeDirectories.insert(info.includeDirectories.end(), additionalIncludes.begin(), additionalIncludes.end());
-        info.libraries.insert(info.libraries.begin(), additionalLibraries.begin(), additionalLibraries.end());
+        compileInfo.files.insert(compileInfo.files.end(),
+            additionalFiles.begin(), additionalFiles.end());
+        compileInfo.includeDirectories.insert(compileInfo.includeDirectories.end(),
+            additionalIncludes.begin(), additionalIncludes.end());
+        compileInfo.libraries.insert(compileInfo.libraries.begin(),
+            additionalLibraries.begin(), additionalLibraries.end());
+    }
+
+    void Hotswapper::InterpolateRequireVariables(std::filesystem::path& path)
+    {
+        std::string replace = path.u8string();
+        for (const auto& var : m_HscppRequireVariables)
+        {
+            std::string search = "%" + var.first + "%";
+            size_t iFound = replace.find(search);
+            if (iFound != std::string::npos)
+            {
+                replace.replace(iFound, search.size(), var.second);
+            }
+        }
+
+        path = std::filesystem::u8path(replace);
     }
 
 }

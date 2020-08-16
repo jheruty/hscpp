@@ -3,15 +3,31 @@
 #include <filesystem>
 #include <vector>
 
-#include "hscpp/RuntimeDependency.h"
-
 namespace hscpp
 {
 
     class FileParser
     {
     public:
-        bool ParseDependencies(const std::filesystem::path& path, std::vector<RuntimeDependency>& dependencies);
+        struct Require
+        {
+            enum class Type
+            {
+                Source,
+                Include,
+                Library,
+            };
+
+            Type type = {};
+            std::vector<std::filesystem::path> paths;
+        };
+
+        struct ParseInfo
+        {
+            std::vector<Require> requires;
+        };
+
+        ParseInfo Parse(const std::filesystem::path& path);
 
     private:
         std::filesystem::path m_Filepath;
@@ -19,8 +35,8 @@ namespace hscpp
         size_t m_iChar = 0;
         std::string m_Content;
 
-        void ParseDependencies(std::vector<RuntimeDependency>& info);
-        bool ParseDependency(RuntimeDependency& dependency);
+        void Parse(std::vector<Require>& requires);
+        bool ParseRequire(Require& require);
 
         bool ParseString(std::string& strContent);
 

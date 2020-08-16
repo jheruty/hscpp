@@ -7,13 +7,15 @@
 namespace hscpp
 {
 
-    bool FileParser::ParseDependencies(const std::filesystem::path& path, std::vector<RuntimeDependency>& dependencies)
+    FileParser::ParseInfo FileParser::Parse(const std::filesystem::path& path)
     {
+        ParseInfo info;
+
         std::ifstream file(path.native().c_str());
         if (!file.is_open())
         {
             Log::Write(LogLevel::Error, "%s: Failed to open file %s.\n", __func__, path.u8string().c_str());
-            return false;
+            return info;
         }
 
         std::stringstream buf;
@@ -23,11 +25,12 @@ namespace hscpp
         m_iChar = 0;
         m_Content = buf.str();
 
-        ParseDependencies(dependencies);
-        return true;
+        Parse(info.requires);
+
+        return info;
     }
 
-    void FileParser::ParseDependencies(std::vector<RuntimeDependency>& dependencies)
+    void FileParser::Parse(std::vector<Require>& requires)
     {
         // Barebones lexer/parser. There are very few things we need to match, so a complex parser
         // is not needed.
@@ -50,35 +53,32 @@ namespace hscpp
                 break;
             case 'h':
             {
-                bool bDependency = false;
-                RuntimeDependency::Type dependencyType = RuntimeDependency::Type::Source;
+                bool bRequire = false;
+                Require require;
 
                 if (Match("hscpp_require_"))
                 {
                     if (Match("source"))
                     {
-                        bDependency = true;
-                        dependencyType = RuntimeDependency::Type::Source;
+                        bRequire = true;
+                        require.type = Require::Type::Source;
                     }
                     else if (Match("include"))
                     {
-                        bDependency = true;
-                        dependencyType = RuntimeDependency::Type::Include;
+                        bRequire = true;
+                        require.type = Require::Type::Include;
                     }
                     else if (Match("lib"))
                     {
-                        bDependency = true;
-                        dependencyType = RuntimeDependency::Type::Library;
+                        bRequire = true;
+                        require.type = Require::Type::Library;
                     }
 
-                    if (bDependency)
+                    if (bRequire)
                     {
-                        RuntimeDependency dependency;
-                        dependency.type = dependencyType;
-
-                        if (ParseDependency(dependency))
+                        if (ParseRequire(require))
                         {
-                            dependencies.push_back(dependency);
+                            requires.push_back(require);
                         }
                     }
                 }
@@ -94,7 +94,7 @@ namespace hscpp
         }
     }
 
-    bool FileParser::ParseDependency(RuntimeDependency& dependency)
+    bool FileParser::ParseRequire(Require& require)
     {
         SkipWhitespace();      
 
@@ -116,7 +116,7 @@ namespace hscpp
                 return false;
             }
 
-            dependency.paths.push_back(path);
+            require.paths.push_back(path);
 
             SkipWhitespace();
         } while (Peek() == ',');
