@@ -30,6 +30,8 @@ int main()
     swapper.SetHscppRequireVariable("PROJECT_CONFIGURATION", "Release");
 #endif
 
+    swapper.AddPreprocessorDefinition("PREPROCESSOR_DEMO");
+
     Ref<Printer> printer = memoryManager->Allocate<Printer>();
 
     while (true)

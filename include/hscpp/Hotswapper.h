@@ -50,6 +50,11 @@ namespace hscpp
         void EnumerateLibraries(const std::function<void(int handle, const std::filesystem::path& libraryPath)>& cb);
         void ClearLibraries();
 
+        int AddPreprocessorDefinition(const std::string& definition);
+        bool RemovePreprocessorDefinition(int handle);
+        void EnumeratePreprocessorDefinitions(const std::function<void(int handle, const std::string& definition)>& cb);
+        void ClearPreprocessorDefinitions();
+
         int AddCompileOption(const std::string& option);
         bool RemoveCompileOption(int handle);
         void EnumerateCompileOptions(const std::function<void(int handle, const std::string& option)>& cb);
@@ -74,6 +79,7 @@ namespace hscpp
         int m_NextIncludeDirectoryHandle = 0;
         int m_NextSourceDirectoryHandle = 0;
         int m_NextLibraryHandle = 0;
+        int m_NextPreprocessorDefinitionHandle = 0;
         int m_NextCompileOptionHandle = 0;
         int m_NextLinkOptionHandle = 0;
         int m_NextFileExtensionHandle = 0;
@@ -82,6 +88,7 @@ namespace hscpp
         std::unordered_map<int, std::filesystem::path> m_IncludeDirectoriesByHandle;
         std::unordered_map<int, std::filesystem::path> m_SourceDirectoriesByHandle;
         std::unordered_map<int, std::filesystem::path> m_LibrariesByHandle;
+        std::unordered_map<int, std::string> m_PreprocessorDefinitionsByHandle;
         std::unordered_map<int, std::string> m_CompileOptionsByHandle;
         std::unordered_map<int, std::string> m_LinkOptionsByHandle;
         std::unordered_map<int, std::string> m_FileExtensionsByHandle;

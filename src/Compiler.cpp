@@ -141,6 +141,11 @@ namespace hscpp
             commandFile << "\"" << library.u8string() << "\"" << std::endl;
         }
 
+        for (const auto& preprocessorDefinition : info.preprocessorDefinitions)
+        {
+            commandFile << "/D" << "\"" << preprocessorDefinition << "\"" << std::endl;
+        }
+
         if (!info.linkOptions.empty())
         {
             commandFile << "/link " << std::endl;

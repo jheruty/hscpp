@@ -35,6 +35,12 @@ namespace hscpp
 #endif
     };
 
+    const static std::vector<std::string> DEFAULT_PREPROCESSOR_DEFINITIONS = {
+#ifdef _DEBUG
+        "_DEBUG",
+#endif
+    };
+    
     const static std::vector<std::string> DEFAULT_FILE_EXTENSIONS = {
         ".h",
         ".hh",
@@ -52,6 +58,11 @@ namespace hscpp
             for (const auto& option : DEFAULT_COMPILE_OPTIONS)
             {
                 Add(option, m_NextCompileOptionHandle, m_CompileOptionsByHandle);
+            }
+
+            for (const auto& definition : DEFAULT_PREPROCESSOR_DEFINITIONS)
+            {
+                Add(definition, m_NextPreprocessorDefinitionHandle, m_PreprocessorDefinitionsByHandle);
             }
 
             for (const auto& extension : DEFAULT_FILE_EXTENSIONS)
@@ -112,6 +123,7 @@ namespace hscpp
                 info.files = GetChangedFiles();
                 info.includeDirectories = AsVector(m_IncludeDirectoriesByHandle);
                 info.libraries = AsVector(m_LibrariesByHandle);
+                info.preprocessorDefinitions = AsVector(m_PreprocessorDefinitionsByHandle);
                 info.compileOptions = AsVector(m_CompileOptionsByHandle);
                 info.linkOptions = AsVector(m_LinkOptionsByHandle);
 
@@ -210,6 +222,26 @@ namespace hscpp
     void Hotswapper::ClearLibraries()
     {
         m_LibrariesByHandle.clear();
+    }
+
+    int Hotswapper::AddPreprocessorDefinition(const std::string& definition)
+    {
+        return Add(definition, m_NextPreprocessorDefinitionHandle, m_PreprocessorDefinitionsByHandle);
+    }
+
+    bool Hotswapper::RemovePreprocessorDefinition(int handle)
+    {
+        return Remove(handle, m_PreprocessorDefinitionsByHandle);
+    }
+
+    void Hotswapper::EnumeratePreprocessorDefinitions(const std::function<void(int handle, const std::string& definition)>& cb)
+    {
+        Enumerate(cb, m_PreprocessorDefinitionsByHandle);
+    }
+
+    void Hotswapper::ClearPreprocessorDefinitions()
+    {
+        m_PreprocessorDefinitionsByHandle.clear();
     }
 
     int Hotswapper::AddCompileOption(const std::string& option)
@@ -394,6 +426,8 @@ namespace hscpp
         std::unordered_set<std::wstring> additionalIncludes;
         std::unordered_set<std::wstring> additionalLibraries;
 
+        std::unordered_set<std::string> additionalPreprocessorDefinitions;
+
         for (const auto& file : compileInfo.files)
         {
             FileParser::ParseInfo parseInfo = m_FileParser.Parse(file);
@@ -439,6 +473,11 @@ namespace hscpp
                     }
                 }
             }
+
+            for (const auto& definition : parseInfo.preprocessorDefinitions)
+            {
+                additionalPreprocessorDefinitions.insert(definition);
+            }
         }
 
         compileInfo.files.insert(compileInfo.files.end(),
@@ -447,6 +486,9 @@ namespace hscpp
             additionalIncludes.begin(), additionalIncludes.end());
         compileInfo.libraries.insert(compileInfo.libraries.begin(),
             additionalLibraries.begin(), additionalLibraries.end());
+
+        compileInfo.preprocessorDefinitions.insert(compileInfo.preprocessorDefinitions.end(),
+            additionalPreprocessorDefinitions.begin(), additionalPreprocessorDefinitions.end());
     }
 
     void Hotswapper::InterpolateRequireVariables(std::filesystem::path& path)

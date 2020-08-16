@@ -29,6 +29,9 @@ hscpp_require_source("./PrintVariant.cpp", "./PrintHello.cpp")
 // or Release, using hscpp::Hotswappers "AddHscppRequireVariable" function.
 hscpp_require_lib("../x64/%PROJECT_CONFIGURATION%/hscpp-example-utils.lib")
 
+// Add preprocessor definitions when this file is compiled. Definitions can be strings or identifiers.
+hscpp_preprocessor_definitions("PREPROCESSOR_PRINTER_DEMO1", PREPROCESSOR_PRINTER_DEMO2);
+
 // hscpp_require in comments and strings is ignored.
 // hscpp_require_include("dummy")
 /* hscpp_require_include("dummy") */
@@ -55,11 +58,27 @@ Printer::Printer()
 
 void Printer::Update()
 {
-    // Remove "./PrinteHello.cpp" from hscpp_require_source to see how compilation will fail.
+    // Remove "./PrintHello.cpp" from hscpp_require_source to see how compilation will fail.
     PrintHello();
 
     // Enumerate from base class.
     Enumerate([](Variant& v) {
         Print(v);
         });
+
+#ifdef PREPROCESSOR_DEMO
+    // This is defined in Main.cpp, with the AddPreprocessorDefinition function. This macro is
+    // also defined in the project settings, so this will always print.
+    std::cout << "PREPROCESSOR_DEMO is defined." << std::endl;
+#endif
+
+#ifdef PREPROCESSOR_PRINTER_DEMO1
+    // This is defined using an hscpp_preprocessor_definition macro above. It will only be active
+    // after this file has been recompiled, causing the macro to be parsed.
+    std::cout << "PREPROCESSOR_PRINTER_DEMO1 is defined." << std::endl;
+#endif
+
+#ifdef PREPROCESSOR_PRINTER_DEMO2
+    std::cout << "PREPROCESSOR_PRINTER_DEMO2 is defined." << std::endl;
+#endif
 }

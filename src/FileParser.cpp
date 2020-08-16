@@ -25,12 +25,11 @@ namespace hscpp
         m_iChar = 0;
         m_Content = buf.str();
 
-        Parse(info.requires);
-
+        Parse(info);
         return info;
     }
 
-    void FileParser::Parse(std::vector<Require>& requires)
+    void FileParser::Parse(ParseInfo& info)
     {
         // Barebones lexer/parser. There are very few things we need to match, so a complex parser
         // is not needed.
@@ -78,8 +77,17 @@ namespace hscpp
                     {
                         if (ParseRequire(require))
                         {
-                            requires.push_back(require);
+                            info.requires.push_back(require);
                         }
+                    }
+                }
+                else if (Match("hscpp_preprocessor_definitions"))
+                {
+                    std::vector<std::string> definitions;
+                    if (ParsePreprocessorDefinitions(definitions))
+                    {
+                        info.preprocessorDefinitions.insert(info.preprocessorDefinitions.end(),
+                            definitions.begin(), definitions.end());
                     }
                 }
 
@@ -123,7 +131,55 @@ namespace hscpp
 
         if (Peek() != ')')
         {
-            LogParseError("Runtime dependency missing closing ')'.");
+            LogParseError("hscpp_require missing closing ')'.");
+            return false;
+        }
+
+        Advance();
+        return true;
+    }
+
+    bool FileParser::ParsePreprocessorDefinitions(std::vector<std::string>& definitions)
+    {
+        SkipWhitespace();
+
+        if (Peek() != '(')
+        {
+            // Not a true error, in case user defined something like hscpp_preprocessor_definition_custom.
+            return false;
+        }
+
+        do 
+        {
+            // Parse argument list (ex. hscpp_preprocessor_definition(DEFINE1, "DEFINE2")
+            Advance();
+            SkipWhitespace();
+
+            // Preprocessor definitions are accepted as both strings and literal identifiers.
+            std::string definition;
+            if (Peek() == '"')
+            {
+                if (!ParseString(definition))
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                if (!ParseIdentifier(definition))
+                {
+                    return false;
+                }
+            }
+
+            definitions.push_back(definition);
+
+            SkipWhitespace();
+        } while (Peek() == ',');
+
+        if (Peek() != ')')
+        {
+            LogParseError("hscpp_preprocessor_definitions missing closing ')'.");
             return false;
         }
 
@@ -164,6 +220,24 @@ namespace hscpp
 
         Advance();
         return true;
+    }
+
+    bool FileParser::ParseIdentifier(std::string& identifier)
+    {
+        if (IsAlpha(Peek()) || Peek() == '_')
+        {
+            while (IsAlpha(Peek()) || IsDigit(Peek()) || Peek() == '_')
+            {
+                identifier += Peek();
+                Advance();
+            }
+
+            return true;
+        }
+        else
+        {
+            return false;
+        }
     }
 
     bool FileParser::Match(const std::string& str)
@@ -262,6 +336,16 @@ namespace hscpp
         }
 
         Advance();
+    }
+
+    bool FileParser::IsAlpha(char c)
+    {
+        return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z');
+    }
+
+    bool FileParser::IsDigit(char c)
+    {
+        return c >= '0' && c <= '9';
     }
 
     bool FileParser::IsAtEnd()

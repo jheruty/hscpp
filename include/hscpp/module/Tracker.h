@@ -127,3 +127,4 @@ hscpp_ClassTracker.SwapHandler = __VA_ARGS__;
 #define hscpp_require_source(...)
 #define hscpp_require_include(...)
 #define hscpp_require_lib(...)
+#define hscpp_preprocessor_definitions(...)
