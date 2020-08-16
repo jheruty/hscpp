@@ -1,4 +1,5 @@
 #pragma once
 
-void PrintHello();
+#include <iostream>
 
+void PrintHello();
