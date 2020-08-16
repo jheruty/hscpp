@@ -33,7 +33,7 @@ namespace hscpp
         bool IsAtEnd();
         char Peek();
         char PeekNext();
-        char Advance();
+        void Advance();
 
         void LogParseError(const std::string& error);
     };

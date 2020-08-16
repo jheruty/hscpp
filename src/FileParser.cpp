@@ -151,7 +151,8 @@ namespace hscpp
             }
             else
             {
-                strContent += Advance();
+                strContent += Peek();
+                Advance();
             }
         }
 
@@ -288,10 +289,12 @@ namespace hscpp
         return m_Content.at(m_iChar + 1);
     }
 
-    char FileParser::Advance()
+    void FileParser::Advance()
     {
-        m_iChar++;
-        return m_Content.at(m_iChar - 1);
+        if (!IsAtEnd())
+        {
+            ++m_iChar;
+        }
     }
 
     void FileParser::LogParseError(const std::string& error)
