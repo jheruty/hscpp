@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 #include <filesystem>
-#include <set>
+#include <unordered_set>
 #include <unordered_map>
 
 #include "hscpp/FileWatcher.h"
@@ -12,12 +12,21 @@
 #include "hscpp/module/AllocationResolver.h"
 #include "hscpp/Feature.h"
 #include "hscpp/FileParser.h"
+#include "hscpp/ProtectedFunction.h"
 
 namespace hscpp
 {
     class Hotswapper
     {
     public:
+        enum class UpdateResult
+        {
+            Nothing,
+            Compiling,
+            StartedCompiling,
+            PerformedSwap,
+        };
+
         Hotswapper(bool bUseDefaults = true);
 
         AllocationResolver* GetAllocationResolver();
@@ -29,7 +38,10 @@ namespace hscpp
         void DisableFeature(Feature feature);
         bool IsFeatureEnabled(Feature feature);
 
-        void Update();
+        UpdateResult Update();
+        bool IsCompiling();
+
+        void DoProtectedCall(const std::function<void()>& cb);
 
         //============================================================================
         // Add & Remove Functions
@@ -73,7 +85,7 @@ namespace hscpp
         void SetHscppRequireVariable(const std::string& name, const std::string& val);
 
     private:
-        std::set<Feature> m_Features;
+        std::unordered_set<Feature> m_Features;
         std::filesystem::path m_HscppTempDirectory;
 
         int m_NextIncludeDirectoryHandle = 0;

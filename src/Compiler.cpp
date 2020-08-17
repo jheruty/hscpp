@@ -76,6 +76,11 @@ namespace hscpp
         }
     }
 
+    bool Compiler::IsCompiling()
+    {
+        return !m_CompilingModule.empty();
+    }
+
     bool Compiler::HasCompiledModule()
     {
         return !m_CompiledModule.empty();

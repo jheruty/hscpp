@@ -1,5 +1,7 @@
 #include <unordered_set>
 #include <fstream>
+#include <thread>
+#include <chrono>
 #include <assert.h>
 
 #include "hscpp/Hotswapper.h"
@@ -111,8 +113,22 @@ namespace hscpp
         return it != m_Features.end();
     }
 
-    void Hotswapper::Update()
+    Hotswapper::UpdateResult Hotswapper::Update()
     {
+        m_Compiler.Update();
+        if (m_Compiler.IsCompiling())
+        {
+            // Currently compiling. Let file changes queue up, to be handled after the module
+            // has been swapped.
+            return UpdateResult::Compiling;
+        }
+
+        if (m_Compiler.HasCompiledModule())
+        {
+            m_ModuleManager.PerformRuntimeSwap(m_Compiler.PopModule());
+            return UpdateResult::PerformedSwap;
+        }
+
         m_FileWatcher.PollChanges(m_FileEvents);
         if (m_FileEvents.size() > 0)
         {
@@ -135,15 +151,42 @@ namespace hscpp
                 if (!info.files.empty())
                 {
                     m_Compiler.StartBuild(info);
+                    return UpdateResult::StartedCompiling;
                 }
             }
         }
 
-        m_Compiler.Update();
-        if (m_Compiler.HasCompiledModule())
+        return UpdateResult::Nothing;
+    }
+
+    bool Hotswapper::IsCompiling()
+    {
+        return m_Compiler.IsCompiling();
+    }
+
+    void Hotswapper::DoProtectedCall(const std::function<void()>& cb)
+    {
+#ifdef HSCPP_DISABLE
+        cb();
+#else
+        // Attempt to call 'Protected' function. On a structured exception, rather than terminating
+        // the program, let the user modify their code and attempt to fix the issue.
+        ProtectedFunction::Result result = ProtectedFunction::Call(cb);
+        
+        // Keep recompiling user's changes until protected call succeeds.
+        while (result != ProtectedFunction::Result::Success)
         {
-            m_ModuleManager.PerformRuntimeSwap(m_Compiler.PopModule());
+            Log::Write(LogLevel::Error, "%s: Failed protected call. Make code changes and save to reattempt.\n",
+                __func__);
+
+            while (Update() != UpdateResult::PerformedSwap)
+            {
+                std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            }
+
+            result = ProtectedFunction::Call(cb);
         }
+#endif
     }
 
     //============================================================================
@@ -468,7 +511,7 @@ namespace hscpp
                     }
                     else
                     {
-                        Log::Write(LogLevel::Error, "%s: Failed to get canonical path of %s. [%s]",
+                        Log::Write(LogLevel::Error, "%s: Failed to get canonical path of %s. [%s]\n",
                             __func__, fullpath.string().c_str(), GetErrorString(error.value()).c_str());
                     }
                 }

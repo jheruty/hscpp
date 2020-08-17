@@ -46,6 +46,8 @@ Printer::Printer()
         BaseState::HandleSwap(info);
         });
 
+    //int bla = *(int*)nullptr;
+
     if (HSCPP_IS_SWAPPING())
     {
         return;
@@ -81,4 +83,8 @@ void Printer::Update()
 #ifdef PREPROCESSOR_PRINTER_DEMO2
     std::cout << "PREPROCESSOR_PRINTER_DEMO2 is defined." << std::endl;
 #endif
+
+    // If this Update function is called from within the hscpp::Hotswapper's DoProtectedCall method,
+    // an exception will cause the Hotswapper to wait for changes, recompile, and then retry the call.
+    // throw std::runtime_error("Uncomment me to demo DoProtectedCall");
 }

@@ -37,7 +37,17 @@ int main()
     while (true)
     {
         swapper.Update();
-        printer->Update();
+
+        // You can skip updating while compiling, by checking the state of the hscpp::Hotswapper.
+        if (!swapper.IsCompiling())
+        {
+            // In a protected call, a thrown exception will cause the hscpp::Hotswapper to wait
+            // for code changes. Upon detecting code changes, the code will be recompiled and the
+            // protected call will be reattempted.
+            swapper.DoProtectedCall([&]() {
+                printer->Update();
+                });
+        }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }

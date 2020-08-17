@@ -28,6 +28,8 @@ namespace hscpp
         bool StartBuild(const CompileInfo& info);
         void Update();
 
+        bool IsCompiling();
+
         bool HasCompiledModule();
         std::filesystem::path PopModule();
 
