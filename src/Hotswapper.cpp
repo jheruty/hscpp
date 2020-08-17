@@ -143,9 +143,9 @@ namespace hscpp
                 info.compileOptions = AsVector(m_CompileOptionsByHandle);
                 info.linkOptions = AsVector(m_LinkOptionsByHandle);
 
-                if (IsFeatureEnabled(Feature::HscppRequire))
+                if (IsFeatureEnabled(Feature::HscppMacros))
                 {
-                    ParseHscppRequires(info);
+                    ParseHscppMacros(info);
                 }
 
                 if (!info.files.empty())
@@ -461,7 +461,7 @@ namespace hscpp
         return std::vector<std::filesystem::path>(files.begin(), files.end());
     }
 
-    void Hotswapper::ParseHscppRequires(Compiler::CompileInfo& compileInfo)
+    void Hotswapper::ParseHscppMacros(Compiler::CompileInfo& compileInfo)
     {
         // Several files compiled at once may have the same dependencies, so store paths in a set
         // such that common requires are deduplicated.

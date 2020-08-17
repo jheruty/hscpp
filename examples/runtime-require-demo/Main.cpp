@@ -20,7 +20,7 @@ int main()
     // to demonstrate the use of hscpp_require macros. See Printer.cpp for details.
 
     // The hscpp_require_ macros require enabling an optional feature.
-    swapper.EnableFeature(hscpp::Feature::HscppRequire);
+    swapper.EnableFeature(hscpp::Feature::HscppMacros);
 
     // We can set variables that will be interpolated with %VAR_NAME% in hscpp_require_ macros. Note
     // that these will take precedence over environment variables of the same name.

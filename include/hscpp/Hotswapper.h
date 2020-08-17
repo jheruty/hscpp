@@ -122,7 +122,7 @@ namespace hscpp
         bool CreateBuildDirectory();
 
         std::vector<std::filesystem::path> GetChangedFiles();
-        void ParseHscppRequires(Compiler::CompileInfo& compileInfo);
+        void ParseHscppMacros(Compiler::CompileInfo& compileInfo);
         void InterpolateRequireVariables(std::filesystem::path& path);
 
         template <typename T>
