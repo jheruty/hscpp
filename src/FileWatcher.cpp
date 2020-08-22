@@ -15,7 +15,7 @@ namespace hscpp
         ClearAllWatches();
     }
 
-    bool FileWatcher::AddWatch(const std::filesystem::path& directory)
+    bool FileWatcher::AddWatch(const fs::path& directory)
     {
         auto pWatch = std::make_unique<DirectoryWatch>();
 
@@ -55,7 +55,7 @@ namespace hscpp
         return true;
     }
 
-    bool FileWatcher::RemoveWatch(const std::filesystem::path& directory)
+    bool FileWatcher::RemoveWatch(const fs::path& directory)
     {
         auto watchIt = std::find_if(m_Watchers.begin(), m_Watchers.end(),
             [directory](const std::unique_ptr<DirectoryWatch>& pWatch) {
@@ -166,7 +166,7 @@ namespace hscpp
             // std::error_code to suppress exceptions. It is possible temporary files have been
             // deleted since the notification.
             std::error_code stdError;
-            if (std::filesystem::is_regular_file(event.filepath, stdError))
+            if (fs::is_regular_file(event.filepath, stdError))
             {
                 switch (pNotify->Action)
                 {

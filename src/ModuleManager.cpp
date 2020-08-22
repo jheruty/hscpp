@@ -26,7 +26,7 @@ void hscpp::ModuleManager::SetGlobalUserData(void* pGlobalUserData)
     Hscpp_GetModuleInterface()->SetGlobalUserData(m_pGlobalUserData);
 }
 
-bool hscpp::ModuleManager::PerformRuntimeSwap(const std::filesystem::path& moduleFilepath)
+bool hscpp::ModuleManager::PerformRuntimeSwap(const fs::path& moduleFilepath)
 {
     HMODULE hModule = LoadLibrary(moduleFilepath.native().c_str());
     if (hModule == nullptr)

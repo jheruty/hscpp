@@ -33,7 +33,7 @@ namespace hscpp
                 for (const auto& path : require.paths)
                 {
                     // Paths can be either relative or absolute.
-                    std::filesystem::path fullpath = path;
+                    fs::path fullpath = path;
                     if (path.is_relative())
                     {
                         fullpath = file.parent_path() / path;
@@ -42,7 +42,7 @@ namespace hscpp
                     InterpolateRequireVariables(input, fullpath);
 
                     std::error_code error;
-                    fullpath = std::filesystem::canonical(fullpath, error);
+                    fullpath = fs::canonical(fullpath, error);
 
                     if (error.value() == ERROR_SUCCESS)
                     {
@@ -89,7 +89,7 @@ namespace hscpp
         return output;
     }
 
-    void Preprocessor::InterpolateRequireVariables(const Input& input, std::filesystem::path& path)
+    void Preprocessor::InterpolateRequireVariables(const Input& input, fs::path& path)
     {
         std::string replace = path.u8string();
         for (const auto& var : input.hscppRequireVariables)
@@ -102,7 +102,7 @@ namespace hscpp
             }
         }
 
-        path = std::filesystem::u8path(replace);
+        path = fs::u8path(replace);
     }
 
 }

@@ -9,6 +9,8 @@
 
 namespace hscpp
 {
+    namespace fs = std::filesystem;
+
     class FileWatcher
     {
     public:
@@ -23,13 +25,13 @@ namespace hscpp
         struct Event
         {
             EventType type = EventType::None;
-            std::filesystem::path filepath;
+            fs::path filepath;
         };
 
         ~FileWatcher();
 
-        bool AddWatch(const std::filesystem::path& directory);
-        bool RemoveWatch(const std::filesystem::path& directory);
+        bool AddWatch(const fs::path& directory);
+        bool RemoveWatch(const fs::path& directory);
         void ClearAllWatches();
 
         void SetPollFrequencyMs(int ms);
@@ -46,7 +48,7 @@ namespace hscpp
             // Buffer passed into ReadDirectoryChangesW must be aligned on DWORD boundary.
             alignas(sizeof(DWORD)) uint8_t buffer[32 * 1024];
 
-            std::filesystem::path directory;
+            fs::path directory;
             HANDLE hDirectory = INVALID_HANDLE_VALUE;
 
             FileWatcher* pFileWatcher = nullptr;

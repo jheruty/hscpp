@@ -7,7 +7,7 @@
 namespace hscpp
 {
 
-    FileParser::ParseInfo FileParser::Parse(const std::filesystem::path& path)
+    FileParser::ParseInfo FileParser::Parse(const fs::path& path)
     {
         ParseInfo info;
 

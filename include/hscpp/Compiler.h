@@ -9,15 +9,17 @@
 namespace hscpp
 {
 
+    namespace fs = std::filesystem;
+
     class Compiler
     {
     public:
         struct CompileInfo
         {
-            std::filesystem::path buildDirectory;
-            std::vector<std::filesystem::path> files;
-            std::vector<std::filesystem::path> includeDirectories;
-            std::vector<std::filesystem::path> libraries;
+            fs::path buildDirectory;
+            std::vector<fs::path> files;
+            std::vector<fs::path> includeDirectories;
+            std::vector<fs::path> libraries;
             std::vector<std::string> preprocessorDefinitions;
             std::vector<std::string> compileOptions;
             std::vector<std::string> linkOptions;
@@ -31,7 +33,7 @@ namespace hscpp
         bool IsCompiling();
 
         bool HasCompiledModule();
-        std::filesystem::path PopModule();
+        fs::path PopModule();
 
     private:
         enum class CompilerTask
@@ -45,8 +47,8 @@ namespace hscpp
         CmdShell m_CmdShell;
 
         size_t m_iCompileOutput = 0;
-        std::filesystem::path m_CompilingModule;
-        std::filesystem::path m_CompiledModule;
+        fs::path m_CompilingModule;
+        fs::path m_CompiledModule;
 
         bool CreateClCommandFile(const CompileInfo& info);
 

@@ -86,9 +86,9 @@ namespace hscpp
         return !m_CompiledModule.empty();
     }
 
-    std::filesystem::path Compiler::PopModule()
+    fs::path Compiler::PopModule()
     {
-        std::filesystem::path module = m_CompiledModule;
+        fs::path module = m_CompiledModule;
         m_CompiledModule.clear();
 
         return module;
@@ -96,7 +96,7 @@ namespace hscpp
 
     bool Compiler::CreateClCommandFile(const CompileInfo& info)
     {
-        std::filesystem::path commandFilepath = info.buildDirectory / COMMAND_FILENAME;
+        fs::path commandFilepath = info.buildDirectory / COMMAND_FILENAME;
         std::ofstream commandFile(commandFilepath.native().c_str(), std::ios_base::binary);
 
         if (!commandFile.is_open())
@@ -229,7 +229,7 @@ namespace hscpp
         }
 
         // Find first non-empty line. Results should be sorted by newest VS version first.
-        std::filesystem::path bestVsPath;
+        fs::path bestVsPath;
         for (const auto& line : output)
         {
             if (!IsWhitespace(line))
@@ -245,8 +245,8 @@ namespace hscpp
             return false;
         }
 
-        std::filesystem::path vcVarsAllPath = bestVsPath / "VC\\Auxiliary\\Build\\vcvarsall.bat";
-        if (!std::filesystem::exists(vcVarsAllPath))
+        fs::path vcVarsAllPath = bestVsPath / "VC\\Auxiliary\\Build\\vcvarsall.bat";
+        if (!fs::exists(vcVarsAllPath))
         {
             Log::Write(LogLevel::Error, "%s: Could not find vcvarsall.bat in path %s.\n",
                 __func__, vcVarsAllPath.string().c_str());

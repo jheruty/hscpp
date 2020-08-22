@@ -210,7 +210,7 @@ namespace hscpp
     // Add & Remove Functions
     //============================================================================
 
-    int Hotswapper::AddIncludeDirectory(const std::filesystem::path& directory)
+    int Hotswapper::AddIncludeDirectory(const fs::path& directory)
     {
         m_FileWatcher.AddWatch(directory);
         return Add(directory, m_NextIncludeDirectoryHandle, m_IncludeDirectoriesByHandle);
@@ -227,7 +227,7 @@ namespace hscpp
         return Remove(handle, m_IncludeDirectoriesByHandle);
     }
 
-    void Hotswapper::EnumerateIncludeDirectories(const std::function<void(int handle, const std::filesystem::path& directory)>& cb)
+    void Hotswapper::EnumerateIncludeDirectories(const std::function<void(int handle, const fs::path& directory)>& cb)
     {
         Enumerate(cb, m_IncludeDirectoriesByHandle);
     }
@@ -237,7 +237,7 @@ namespace hscpp
         m_IncludeDirectoriesByHandle.clear();
     }
 
-    int Hotswapper::AddSourceDirectory(const std::filesystem::path& directory)
+    int Hotswapper::AddSourceDirectory(const fs::path& directory)
     {
         m_FileWatcher.AddWatch(directory);
         return Add(directory, m_NextSourceDirectoryHandle, m_SourceDirectoriesByHandle);
@@ -254,7 +254,7 @@ namespace hscpp
         return Remove(handle, m_SourceDirectoriesByHandle);
     }
 
-    void Hotswapper::EnumerateSourceDirectories(const std::function<void(int handle, const std::filesystem::path& directory)>& cb)
+    void Hotswapper::EnumerateSourceDirectories(const std::function<void(int handle, const fs::path& directory)>& cb)
     {
         Enumerate(cb, m_SourceDirectoriesByHandle);
     }
@@ -264,7 +264,7 @@ namespace hscpp
         m_SourceDirectoriesByHandle.clear();
     }
 
-    int Hotswapper::AddLibrary(const std::filesystem::path& libraryPath)
+    int Hotswapper::AddLibrary(const fs::path& libraryPath)
     {
         return Add(libraryPath, m_NextLibraryHandle, m_LibrariesByHandle);
     }
@@ -274,7 +274,7 @@ namespace hscpp
         return Remove(handle, m_LibrariesByHandle);
     }
 
-    void Hotswapper::EnumerateLibraries(const std::function<void(int handle, const std::filesystem::path& libraryPath)>& cb)
+    void Hotswapper::EnumerateLibraries(const std::function<void(int handle, const fs::path& libraryPath)>& cb)
     {
         Enumerate(cb, m_LibrariesByHandle);
     }
@@ -394,7 +394,7 @@ namespace hscpp
     bool Hotswapper::CreateHscppTempDirectory()
     {
         std::error_code error;
-        std::filesystem::path temp = std::filesystem::temp_directory_path(error);
+        fs::path temp = fs::temp_directory_path(error);
 
         if (error.value() != ERROR_SUCCESS)
         {
@@ -403,10 +403,10 @@ namespace hscpp
             return false;
         }
 
-        std::filesystem::path hscppTemp = temp / HSCPP_TEMP_DIRECTORY_NAME;
+        fs::path hscppTemp = temp / HSCPP_TEMP_DIRECTORY_NAME;
 
-        std::filesystem::remove_all(hscppTemp, error);
-        if (!std::filesystem::create_directory(hscppTemp, error))
+        fs::remove_all(hscppTemp, error);
+        if (!fs::create_directory(hscppTemp, error))
         {
             Log::Write(LogLevel::Error, "%s: Failed to create directory '%s'. [%s]\n",
                 __func__, hscppTemp.string().c_str(), GetErrorString(error.value()).c_str());
@@ -432,7 +432,7 @@ namespace hscpp
         m_BuildDirectory = m_HscppTempDirectory / guid;
 
         std::error_code error;
-        if (!std::filesystem::create_directory(m_BuildDirectory, error))
+        if (!fs::create_directory(m_BuildDirectory, error))
         {
             Log::Write(LogLevel::Error, "%s: Failed to create directory '%s'. [%s]\n",
                 __func__, m_BuildDirectory.string().c_str(), GetErrorString(error.value()).c_str());
@@ -442,7 +442,7 @@ namespace hscpp
         return true;
     }
 
-    std::vector<std::filesystem::path> Hotswapper::GetChangedFiles()
+    std::vector<fs::path> Hotswapper::GetChangedFiles()
     {
         // When Visual Studio saves, it can create several events for a single file, so use a
         // set to remove these duplicates.
@@ -456,7 +456,7 @@ namespace hscpp
             }
 
             std::error_code error;
-            std::filesystem::path canonicalPath = std::filesystem::canonical(event.filepath, error);
+            fs::path canonicalPath = fs::canonical(event.filepath, error);
 
             if (error.value() == ERROR_FILE_NOT_FOUND)
             {
@@ -470,7 +470,7 @@ namespace hscpp
                 continue;
             }
 
-            std::filesystem::path extension = canonicalPath.extension();
+            fs::path extension = canonicalPath.extension();
             auto headerExtensionIt = std::find_if(m_HeaderExtensionsByHandle.begin(), m_HeaderExtensionsByHandle.end(),
                 [extension](auto pair) {
                     return extension == pair.second;
@@ -500,7 +500,7 @@ namespace hscpp
             }
         }
 
-        return std::vector<std::filesystem::path>(files.begin(), files.end());
+        return std::vector<fs::path>(files.begin(), files.end());
     }
 
 }

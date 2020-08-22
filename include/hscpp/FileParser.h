@@ -6,6 +6,8 @@
 namespace hscpp
 {
 
+    namespace fs = std::filesystem;
+
     class FileParser
     {
     public:
@@ -19,7 +21,7 @@ namespace hscpp
             };
 
             Type type = {};
-            std::vector<std::filesystem::path> paths;
+            std::vector<fs::path> paths;
         };
 
         struct ParseInfo
@@ -28,10 +30,10 @@ namespace hscpp
             std::vector<std::string> preprocessorDefinitions;
         };
 
-        ParseInfo Parse(const std::filesystem::path& path);
+        ParseInfo Parse(const fs::path& path);
 
     private:
-        std::filesystem::path m_Filepath;
+        fs::path m_Filepath;
 
         size_t m_iChar = 0;
         std::string m_Content;

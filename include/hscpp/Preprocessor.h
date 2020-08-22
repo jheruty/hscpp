@@ -8,11 +8,11 @@
 #include "hscpp/DependencyGraph.h"
 #include "hscpp/FileParser.h"
 
-namespace fs = std::filesystem;
-
 namespace hscpp
 {
     
+    namespace fs = std::filesystem;
+
     class Preprocessor
     {
     public:
@@ -43,7 +43,7 @@ namespace hscpp
         FileParser m_FileParser;
         DependencyGraph m_DependencyGraph;
 
-        void InterpolateRequireVariables(const Input& input, std::filesystem::path& path);
+        void InterpolateRequireVariables(const Input& input, fs::path& path);
     };
 
 }

@@ -12,6 +12,8 @@
 namespace hscpp
 {
 
+    namespace fs = std::filesystem;
+
     class ModuleManager
     {
     public:
@@ -21,7 +23,7 @@ namespace hscpp
         void SetAllocator(IAllocator* pAllocator);
         void SetGlobalUserData(void* pGlobalUserData);
 
-        bool PerformRuntimeSwap(const std::filesystem::path& moduleFilepath);
+        bool PerformRuntimeSwap(const fs::path& moduleFilepath);
 
     private:
         bool m_bSwapping = false;

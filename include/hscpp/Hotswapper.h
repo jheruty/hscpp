@@ -17,6 +17,9 @@
 
 namespace hscpp
 {
+
+    namespace fs = std::filesystem;
+
     class Hotswapper
     {
     public:
@@ -48,19 +51,19 @@ namespace hscpp
         // Add & Remove Functions
         //============================================================================
         
-        int AddIncludeDirectory(const std::filesystem::path& directory);
+        int AddIncludeDirectory(const fs::path& directory);
         bool RemoveIncludeDirectory(int handle);
-        void EnumerateIncludeDirectories(const std::function<void(int handle, const std::filesystem::path& directory)>& cb);
+        void EnumerateIncludeDirectories(const std::function<void(int handle, const fs::path& directory)>& cb);
         void ClearIncludeDirectories();
 
-        int AddSourceDirectory(const std::filesystem::path& directory);
+        int AddSourceDirectory(const fs::path& directory);
         bool RemoveSourceDirectory(int handle);
-        void EnumerateSourceDirectories(const std::function<void(int handle,  const std::filesystem::path& directory)>& cb);
+        void EnumerateSourceDirectories(const std::function<void(int handle,  const fs::path& directory)>& cb);
         void ClearSourceDirectories();
 
-        int AddLibrary(const std::filesystem::path& libraryPath);
+        int AddLibrary(const fs::path& libraryPath);
         bool RemoveLibrary(int handle);
-        void EnumerateLibraries(const std::function<void(int handle, const std::filesystem::path& libraryPath)>& cb);
+        void EnumerateLibraries(const std::function<void(int handle, const fs::path& libraryPath)>& cb);
         void ClearLibraries();
 
         int AddPreprocessorDefinition(const std::string& definition);
@@ -92,7 +95,7 @@ namespace hscpp
 
     private:
         std::unordered_set<Feature> m_Features;
-        std::filesystem::path m_HscppTempDirectory;
+        fs::path m_HscppTempDirectory;
 
         int m_NextIncludeDirectoryHandle = 0;
         int m_NextSourceDirectoryHandle = 0;
@@ -103,10 +106,10 @@ namespace hscpp
         int m_NextHeaderExtensionHandle = 0;
         int m_NextSourceExtensionHandle = 0;
 
-        std::filesystem::path m_BuildDirectory;
-        std::unordered_map<int, std::filesystem::path> m_IncludeDirectoriesByHandle;
-        std::unordered_map<int, std::filesystem::path> m_SourceDirectoriesByHandle;
-        std::unordered_map<int, std::filesystem::path> m_LibrariesByHandle;
+        fs::path m_BuildDirectory;
+        std::unordered_map<int, fs::path> m_IncludeDirectoriesByHandle;
+        std::unordered_map<int, fs::path> m_SourceDirectoriesByHandle;
+        std::unordered_map<int, fs::path> m_LibrariesByHandle;
         std::unordered_map<int, std::string> m_PreprocessorDefinitionsByHandle;
         std::unordered_map<int, std::string> m_CompileOptionsByHandle;
         std::unordered_map<int, std::string> m_LinkOptionsByHandle;
@@ -124,12 +127,12 @@ namespace hscpp
 
         AllocationResolver m_AllocationResolver;
 
-        std::filesystem::path GetHscppIncludePath();
+        fs::path GetHscppIncludePath();
 
         bool CreateHscppTempDirectory();
         bool CreateBuildDirectory();
 
-        std::vector<std::filesystem::path> GetChangedFiles();
+        std::vector<fs::path> GetChangedFiles();
 
         template <typename T>
         int Add(const T& value, int& handle, std::unordered_map<int, T>& map);
@@ -145,10 +148,10 @@ namespace hscpp
     };
 
     // Inline this function, so that __FILE__ is within the include directory.
-    inline std::filesystem::path Hotswapper::GetHscppIncludePath()
+    inline fs::path Hotswapper::GetHscppIncludePath()
     {
         // __FILE__ returns "<path>/include/hscpp/Hotswapper.h". We want "<path>/include".
-        std::filesystem::path currentPath = __FILE__;
+        fs::path currentPath = __FILE__;
         return currentPath.parent_path().parent_path();
     }
 
