@@ -15,7 +15,7 @@ int main()
     hscpp::Hotswapper swapper;
 
     swapper.AddIncludeDirectory(std::filesystem::current_path());
-    swapper.AddSourceDirectory(std::filesystem::current_path(), true);
+    swapper.AddSourceDirectory(std::filesystem::current_path());
 
     // After recompiling, the newly compiled module is capable of constructing new versions of of an
     // object. However, only hscpp knows about this new constructor. The MemoryManager is given a

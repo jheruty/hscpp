@@ -52,7 +52,7 @@ namespace hscpp
         void EnumerateIncludeDirectories(const std::function<void(int handle, const std::filesystem::path& directory)>& cb);
         void ClearIncludeDirectories();
 
-        int AddSourceDirectory(const std::filesystem::path& directory, bool bRecursive);
+        int AddSourceDirectory(const std::filesystem::path& directory);
         bool RemoveSourceDirectory(int handle);
         void EnumerateSourceDirectories(const std::function<void(int handle,  const std::filesystem::path& directory)>& cb);
         void ClearSourceDirectories();

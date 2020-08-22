@@ -11,7 +11,7 @@ int main()
     hscpp::Hotswapper swapper;
 
     swapper.AddIncludeDirectory(std::filesystem::current_path());
-    swapper.AddSourceDirectory(std::filesystem::current_path(), true);
+    swapper.AddSourceDirectory(std::filesystem::current_path());
 
     auto memoryManager = MemoryManager::Create(swapper.GetAllocationResolver());
     swapper.SetAllocator(&memoryManager);

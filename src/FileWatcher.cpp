@@ -15,7 +15,7 @@ namespace hscpp
         ClearAllWatches();
     }
 
-    bool FileWatcher::AddWatch(const std::filesystem::path& directory, bool bRecursive)
+    bool FileWatcher::AddWatch(const std::filesystem::path& directory)
     {
         auto pWatch = std::make_unique<DirectoryWatch>();
 
@@ -38,7 +38,6 @@ namespace hscpp
 
         pWatch->directory = directory;
         pWatch->hDirectory = hDirectory;
-        pWatch->bRecursive = bRecursive;
         pWatch->pFileWatcher = this;
 
         if (!ReadDirectoryChangesAsync(pWatch.get()))
@@ -209,7 +208,7 @@ namespace hscpp
             pWatch->hDirectory,
             pWatch->buffer,
             sizeof(pWatch->buffer),
-            pWatch->bRecursive,
+            false,
             FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_CREATION | FILE_NOTIFY_CHANGE_SIZE,
             NULL,
             &pWatch->overlapped,

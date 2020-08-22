@@ -12,7 +12,7 @@ int main()
 
     // Watch the current directory for changes.
     hotswapper.AddIncludeDirectory(std::filesystem::current_path());
-    hotswapper.AddSourceDirectory(std::filesystem::current_path(), true);
+    hotswapper.AddSourceDirectory(std::filesystem::current_path());
 
     // When an object is recompiled, a new DLL is linked into the running program with its own
     // statics and globals. You can give a pointer to user-defined data which will be shared

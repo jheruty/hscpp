@@ -77,7 +77,7 @@ int main(int, char**)
     swapper.AddIncludeDirectory(std::filesystem::current_path());
     swapper.AddIncludeDirectory(std::filesystem::current_path().parent_path() / "hscpp-example-utils" / "include");
     swapper.AddIncludeDirectory(std::filesystem::current_path().parent_path() / "lib" / "imgui");
-    swapper.AddSourceDirectory(std::filesystem::current_path(), true);
+    swapper.AddSourceDirectory(std::filesystem::current_path());
 
 #ifdef _DEBUG
     std::string configuration = "Debug";

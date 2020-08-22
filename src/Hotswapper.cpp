@@ -195,7 +195,7 @@ namespace hscpp
 
     int Hotswapper::AddIncludeDirectory(const std::filesystem::path& directory)
     {
-        m_FileWatcher.AddWatch(directory, false);
+        m_FileWatcher.AddWatch(directory);
         return Add(directory, m_NextIncludeDirectoryHandle, m_IncludeDirectoriesByHandle);
     }
 
@@ -220,9 +220,9 @@ namespace hscpp
         m_IncludeDirectoriesByHandle.clear();
     }
 
-    int Hotswapper::AddSourceDirectory(const std::filesystem::path& directory, bool bRecursive)
+    int Hotswapper::AddSourceDirectory(const std::filesystem::path& directory)
     {
-        m_FileWatcher.AddWatch(directory, bRecursive);
+        m_FileWatcher.AddWatch(directory);
         return Add(directory, m_NextSourceDirectoryHandle, m_SourceDirectoriesByHandle);
     }
 

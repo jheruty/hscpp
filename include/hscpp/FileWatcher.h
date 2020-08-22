@@ -28,7 +28,7 @@ namespace hscpp
 
         ~FileWatcher();
 
-        bool AddWatch(const std::filesystem::path& directory, bool bRecursive);
+        bool AddWatch(const std::filesystem::path& directory);
         bool RemoveWatch(const std::filesystem::path& directory);
         void ClearAllWatches();
 
@@ -48,7 +48,6 @@ namespace hscpp
 
             std::filesystem::path directory;
             HANDLE hDirectory = INVALID_HANDLE_VALUE;
-            bool bRecursive = false;
 
             FileWatcher* pFileWatcher = nullptr;
         };
