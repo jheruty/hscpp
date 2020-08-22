@@ -6,7 +6,7 @@
 
 #include "hscpp/Hotswapper.h"
 #include "hscpp/Log.h"
-#include "hscpp/StringUtil.h"
+#include "hscpp/Util.h"
 
 namespace hscpp
 {
@@ -43,10 +43,13 @@ namespace hscpp
 #endif
     };
     
-    const static std::vector<std::string> DEFAULT_FILE_EXTENSIONS = {
+    const static std::vector<std::string> DEFAULT_HEADER_EXTENSIONS = {
         ".h",
         ".hh",
         ".hpp",
+    };
+
+    const static std::vector<std::string> DEFAULT_SOURCE_EXTENSIONS = {
         ".cpp",
         ".c",
         ".cc",
@@ -67,9 +70,14 @@ namespace hscpp
                 Add(definition, m_NextPreprocessorDefinitionHandle, m_PreprocessorDefinitionsByHandle);
             }
 
-            for (const auto& extension : DEFAULT_FILE_EXTENSIONS)
+            for (const auto& extension : DEFAULT_HEADER_EXTENSIONS)
             {
-                Add(extension, m_NextFileExtensionHandle, m_FileExtensionsByHandle);
+                Add(extension, m_NextHeaderExtensionHandle, m_HeaderExtensionsByHandle);
+            }
+
+            for (const auto& extension : DEFAULT_SOURCE_EXTENSIONS)
+            {
+                Add(extension, m_NextSourceExtensionHandle, m_SourceExtensionsByHandle);
             }
 
             // Add hotswap-cpp include directory as a default include directory, since parts of the
@@ -134,23 +142,32 @@ namespace hscpp
         {
             if (CreateBuildDirectory())
             {
-                Compiler::CompileInfo info;
-                info.buildDirectory = m_BuildDirectory;
-                info.files = GetChangedFiles();
-                info.includeDirectories = AsVector(m_IncludeDirectoriesByHandle);
-                info.libraries = AsVector(m_LibrariesByHandle);
-                info.preprocessorDefinitions = AsVector(m_PreprocessorDefinitionsByHandle);
-                info.compileOptions = AsVector(m_CompileOptionsByHandle);
-                info.linkOptions = AsVector(m_LinkOptionsByHandle);
+                Preprocessor::Input preprocessorInput;
+                preprocessorInput.files = GetChangedFiles();
+                preprocessorInput.includeDirectories = AsVector(m_IncludeDirectoriesByHandle);
+                preprocessorInput.sourceDirectories = AsVector(m_SourceDirectoriesByHandle);
+                preprocessorInput.libraries = AsVector(m_LibrariesByHandle);
+                preprocessorInput.preprocessorDefinitions = AsVector(m_PreprocessorDefinitionsByHandle);
+                preprocessorInput.cppHeaderExtensions = AsVector(m_HeaderExtensionsByHandle);
+                preprocessorInput.cppSourceExtensions = AsVector(m_SourceExtensionsByHandle);
+                preprocessorInput.hscppRequireVariables = m_HscppRequireVariables;
 
-                if (IsFeatureEnabled(Feature::HscppMacros))
-                {
-                    ParseHscppMacros(info);
-                }
+                Preprocessor::Output preprocessorOutput = m_Preprocessor.Preprocess(preprocessorInput);
 
-                if (!info.files.empty())
+                Compiler::CompileInfo compileInfo;
+                compileInfo.buildDirectory = m_BuildDirectory;
+                compileInfo.files = preprocessorOutput.files;
+                compileInfo.includeDirectories = preprocessorOutput.includeDirectories;
+                compileInfo.libraries = preprocessorOutput.libraries;
+                compileInfo.preprocessorDefinitions = preprocessorOutput.preprocessorDefinitions;
+
+                // TODO: add these hscpp macros.
+                compileInfo.compileOptions = AsVector(m_CompileOptionsByHandle);
+                compileInfo.linkOptions = AsVector(m_LinkOptionsByHandle);
+
+                if (!compileInfo.files.empty())
                 {
-                    m_Compiler.StartBuild(info);
+                    m_Compiler.StartBuild(compileInfo);
                     return UpdateResult::StartedCompiling;
                 }
             }
@@ -327,24 +344,44 @@ namespace hscpp
         m_LinkOptionsByHandle.clear();
     }
 
-    int Hotswapper::AddFileExtension(const std::string& extension)
+    int Hotswapper::AddHeaderExtension(const std::string& extension)
     {
-        return Add(extension, m_NextFileExtensionHandle, m_FileExtensionsByHandle);
+        return Add(extension, m_NextHeaderExtensionHandle, m_HeaderExtensionsByHandle);
     }
 
-    bool Hotswapper::RemoveFileExtension(int handle)
+    bool Hotswapper::RemoveHeaderExtension(int handle)
     {
-        return Remove(handle, m_FileExtensionsByHandle);
+        return Remove(handle, m_HeaderExtensionsByHandle);
     }
 
-    void Hotswapper::EnumerateFileExtensions(const std::function<void(int handle, const std::string& option)>& cb)
+    void Hotswapper::EnumerateHeaderExtensions(const std::function<void(int handle, const std::string& option)>& cb)
     {
-        Enumerate(cb, m_FileExtensionsByHandle);
+        Enumerate(cb, m_HeaderExtensionsByHandle);
     }
 
-    void Hotswapper::ClearFileExtensions()
+    void Hotswapper::ClearHeaderExtensions()
     {
-        m_FileExtensionsByHandle.clear();
+        m_HeaderExtensionsByHandle.clear();
+    }
+
+    int Hotswapper::AddSourceExtension(const std::string& extension)
+    {
+        return Add(extension, m_NextSourceExtensionHandle, m_SourceExtensionsByHandle);
+    }
+
+    bool Hotswapper::RemoveSourceExtension(int handle)
+    {
+        return Remove(handle, m_SourceExtensionsByHandle);
+    }
+
+    void Hotswapper::EnumerateSourceExtensions(const std::function<void(int handle, const std::string& option)>& cb)
+    {
+        Enumerate(cb, m_SourceExtensionsByHandle);
+    }
+
+    void Hotswapper::ClearSourceExtensions()
+    {
+        m_SourceExtensionsByHandle.clear();
     }
 
     void Hotswapper::SetHscppRequireVariable(const std::string& name, const std::string& val)
@@ -434,12 +471,17 @@ namespace hscpp
             }
 
             std::filesystem::path extension = canonicalPath.extension();
-            auto extensionIt = std::find_if(m_FileExtensionsByHandle.begin(), m_FileExtensionsByHandle.end(),
+            auto headerExtensionIt = std::find_if(m_HeaderExtensionsByHandle.begin(), m_HeaderExtensionsByHandle.end(),
                 [extension](auto pair) {
                     return extension == pair.second;
                 });
 
-            if (extensionIt == m_FileExtensionsByHandle.end())
+            auto sourceExtensionIt = std::find_if(m_SourceExtensionsByHandle.begin(), m_SourceExtensionsByHandle.end(),
+                [extension](auto pair) {
+                    return extension == pair.second;
+                });
+
+            if (headerExtensionIt == m_HeaderExtensionsByHandle.end() && sourceExtensionIt == m_SourceExtensionsByHandle.end())
             {
                 Log::Write(LogLevel::Trace, "%s: File '%s' will be skipped; its extension is not being watched.\n",
                     __func__, canonicalPath.string().c_str());
@@ -459,95 +501,6 @@ namespace hscpp
         }
 
         return std::vector<std::filesystem::path>(files.begin(), files.end());
-    }
-
-    void Hotswapper::ParseHscppMacros(Compiler::CompileInfo& compileInfo)
-    {
-        // Several files compiled at once may have the same dependencies, so store paths in a set
-        // such that common requires are deduplicated.
-        std::unordered_set<std::wstring> additionalFiles;
-        std::unordered_set<std::wstring> additionalIncludes;
-        std::unordered_set<std::wstring> additionalLibraries;
-
-        std::unordered_set<std::string> additionalPreprocessorDefinitions;
-
-        for (const auto& file : compileInfo.files)
-        {
-            FileParser::ParseInfo parseInfo = m_FileParser.Parse(file);
-
-            for (const auto& require : parseInfo.requires)
-            {
-                for (const auto& path : require.paths)
-                {
-                    // Paths can be either relative or absolute.
-                    std::filesystem::path fullpath = path;
-                    if (path.is_relative())
-                    {
-                        fullpath = file.parent_path() / path;
-                    }
-
-                    InterpolateRequireVariables(fullpath);
-
-                    std::error_code error;
-                    fullpath = std::filesystem::canonical(fullpath, error);
-
-                    if (error.value() == ERROR_SUCCESS)
-                    {
-                        switch (require.type)
-                        {
-                        case FileParser::Require::Type::Source:
-                            additionalFiles.insert(fullpath.wstring());
-                            break;
-                        case FileParser::Require::Type::Include:
-                            additionalIncludes.insert(fullpath.wstring());
-                            break;
-                        case FileParser::Require::Type::Library:
-                            additionalLibraries.insert(fullpath.wstring());
-                            break;
-                        default:
-                            assert(false);
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        Log::Write(LogLevel::Error, "%s: Failed to get canonical path of %s. [%s]\n",
-                            __func__, fullpath.string().c_str(), GetErrorString(error.value()).c_str());
-                    }
-                }
-            }
-
-            for (const auto& definition : parseInfo.preprocessorDefinitions)
-            {
-                additionalPreprocessorDefinitions.insert(definition);
-            }
-        }
-
-        compileInfo.files.insert(compileInfo.files.end(),
-            additionalFiles.begin(), additionalFiles.end());
-        compileInfo.includeDirectories.insert(compileInfo.includeDirectories.end(),
-            additionalIncludes.begin(), additionalIncludes.end());
-        compileInfo.libraries.insert(compileInfo.libraries.begin(),
-            additionalLibraries.begin(), additionalLibraries.end());
-
-        compileInfo.preprocessorDefinitions.insert(compileInfo.preprocessorDefinitions.end(),
-            additionalPreprocessorDefinitions.begin(), additionalPreprocessorDefinitions.end());
-    }
-
-    void Hotswapper::InterpolateRequireVariables(std::filesystem::path& path)
-    {
-        std::string replace = path.u8string();
-        for (const auto& var : m_HscppRequireVariables)
-        {
-            std::string search = "%" + var.first + "%";
-            size_t iFound = replace.find(search);
-            if (iFound != std::string::npos)
-            {
-                replace.replace(iFound, search.size(), var.second);
-            }
-        }
-
-        path = std::filesystem::u8path(replace);
     }
 
 }

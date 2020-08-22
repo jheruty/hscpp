@@ -2,7 +2,7 @@
 
 #include "hscpp/ModuleManager.h"
 #include "hscpp/Log.h"
-#include "hscpp/StringUtil.h"
+#include "hscpp/Util.h"
 #include "hscpp/module/ModuleInterface.h"
 
 hscpp::ModuleManager::ModuleManager()

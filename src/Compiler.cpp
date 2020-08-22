@@ -3,7 +3,7 @@
 
 #include "hscpp/Compiler.h"
 #include "hscpp/Log.h"
-#include "hscpp/StringUtil.h"
+#include "hscpp/Util.h"
 
 namespace hscpp
 {

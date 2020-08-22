@@ -19,22 +19,26 @@
     <ClInclude Include="include\hscpp\module\SwapInfo.h" />
     <ClInclude Include="include\hscpp\module\Tracker.h" />
     <ClInclude Include="include\hscpp\ModuleManager.h" />
-    <ClInclude Include="include\hscpp\StringUtil.h" />
     <ClInclude Include="include\hscpp\module\GlobalUserData.h" />
     <ClInclude Include="include\hscpp\FileParser.h" />
     <ClInclude Include="include\hscpp\Feature.h" />
     <ClInclude Include="include\hscpp\ProtectedFunction.h" />
+    <ClInclude Include="include\hscpp\Preprocessor.h" />
+    <ClInclude Include="include\hscpp\DependencyGraph.h" />
+    <ClInclude Include="include\hscpp\Util.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Hotswapper.cpp" />
     <ClCompile Include="src\FileWatcher.cpp" />
     <ClCompile Include="src\Log.cpp" />
-    <ClCompile Include="src\StringUtil.cpp" />
     <ClCompile Include="src\Compiler.cpp" />
     <ClCompile Include="src\CmdShell.cpp" />
     <ClCompile Include="src\ModuleManager.cpp" />
     <ClCompile Include="src\FileParser.cpp" />
     <ClCompile Include="src\FileParser.cpp" />
     <ClCompile Include="src\ProtectedFunction.cpp" />
+    <ClCompile Include="src\Preprocessor.cpp" />
+    <ClCompile Include="src\DependencyGraph.cpp" />
+    <ClCompile Include="src\Util.cpp" />
   </ItemGroup>
 </Project>

@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <array>
 
-#include "hscpp/StringUtil.h"
+#include "hscpp/Util.h"
 
 namespace hscpp
 {
