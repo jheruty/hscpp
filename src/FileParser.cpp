@@ -90,6 +90,30 @@ namespace hscpp
                             definitions.begin(), definitions.end());
                     }
                 }
+                else if (Match("hscpp_module"))
+                {
+                    std::vector<std::string> modules;
+                    if (ParseModules(modules))
+                    {
+                        info.modules.insert(info.modules.end(), modules.begin(), modules.end());
+                    }
+                }
+
+                break;
+            }
+            case '#':
+            {
+                Advance();
+                SkipWhitespace(); // # include is valid syntax.
+
+                if (Match("include"))
+                {
+                    std::filesystem::path include;
+                    if (ParseInclude(include))
+                    {
+                        info.includes.push_back(include);
+                    }
+                }
 
                 break;
             }
@@ -119,7 +143,7 @@ namespace hscpp
             SkipWhitespace();
 
             std::string path;
-            if (!ParseString(path))
+            if (!ParseString(path, '"', '"'))
             {
                 return false;
             }
@@ -159,7 +183,7 @@ namespace hscpp
             std::string definition;
             if (Peek() == '"')
             {
-                if (!ParseString(definition))
+                if (!ParseString(definition, '"', '"'))
                 {
                     return false;
                 }
@@ -187,16 +211,80 @@ namespace hscpp
         return true;
     }
 
-    bool FileParser::ParseString(std::string& strContent)
+    bool FileParser::ParseModules(std::vector<std::string>& modules)
     {
-        if (Peek() != '"')
+        SkipWhitespace();
+
+        if (Peek() != '(')
         {
-            LogParseError("Missing opening '\"'.");
+            // Not a true error, in case user defined something like hscpp_module_custom.
+            return false;
+        }
+
+        do
+        {
+            // Parse argument list (ex. "vector")
+            Advance();
+            SkipWhitespace();
+
+            std::string module;
+            if (!ParseString(module, '"', '"'))
+            {
+                return false;
+            }
+
+            modules.push_back(module);
+        } while (Peek() == ',');
+
+        if (Peek() != ')')
+        {
+            LogParseError("hscpp_module missing closing ')'.");
+            return false;
+        }
+
+        Advance();
+        return true;
+    }
+
+    bool FileParser::ParseInclude(fs::path& include)
+    {
+        SkipWhitespace();
+
+        std::string includeStr;
+        if (Peek() == '"')
+        {
+            if (!ParseString(includeStr, '"', '"'))
+            {
+                return false;
+            }
+        }
+        else if (Peek() == '<')
+        {
+            if (!ParseString(includeStr, '<', '>'))
+            {
+                return false;
+            }
+        }
+        else
+        {
+            return false;
+        }
+
+        include = includeStr;
+        return true;
+    }
+
+    bool FileParser::ParseString(std::string& strContent, char startChar, char endChar)
+    {
+        if (Peek() != startChar)
+        {
+            std::string error = std::string("Missing opening ") + startChar + ".";
+            LogParseError(error);
             return false;
         }
         Advance();
 
-        while (!IsAtEnd() && Peek() != '"')
+        while (!IsAtEnd() && Peek() != endChar)
         {
             if (Peek() == '\\' && PeekNext() == '"')
             {
@@ -212,9 +300,10 @@ namespace hscpp
             }
         }
 
-        if (Peek() != '"')
+        if (Peek() != endChar)
         {
-            LogParseError("Unterminated string, expected a '\"'.");
+            std::string error = std::string("Unterminated string, expected a ") + endChar + ".";
+            LogParseError(error);
             return false;
         }
 

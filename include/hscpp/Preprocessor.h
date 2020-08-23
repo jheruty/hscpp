@@ -18,6 +18,9 @@ namespace hscpp
     public:
         struct Input
         {
+            bool bHscppMacros = false;
+            bool bDependentCompilation = false;
+
             std::vector<fs::path> files;
             std::vector<fs::path> includeDirectories;
             std::vector<fs::path> sourceDirectories;
@@ -25,7 +28,6 @@ namespace hscpp
             std::vector<std::string> preprocessorDefinitions;
             std::vector<std::string> cppHeaderExtensions;
             std::vector<std::string> cppSourceExtensions;
-
             std::unordered_map<std::string, std::string> hscppRequireVariables;
         };
 

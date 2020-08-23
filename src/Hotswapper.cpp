@@ -143,6 +143,9 @@ namespace hscpp
             if (CreateBuildDirectory())
             {
                 Preprocessor::Input preprocessorInput;
+                preprocessorInput.bHscppMacros = IsFeatureEnabled(Feature::HscppMacros);
+                preprocessorInput.bDependentCompilation = IsFeatureEnabled(Feature::DependentCompilation);
+
                 preprocessorInput.files = GetChangedFiles();
                 preprocessorInput.includeDirectories = AsVector(m_IncludeDirectoriesByHandle);
                 preprocessorInput.sourceDirectories = AsVector(m_SourceDirectoriesByHandle);

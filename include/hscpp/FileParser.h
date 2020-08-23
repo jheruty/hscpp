@@ -28,6 +28,8 @@ namespace hscpp
         {
             std::vector<Require> requires;
             std::vector<std::string> preprocessorDefinitions;
+            std::vector<std::string> modules;
+            std::vector<fs::path> includes;
         };
 
         ParseInfo Parse(const fs::path& path);
@@ -41,8 +43,10 @@ namespace hscpp
         void Parse(ParseInfo& info);
         bool ParseRequire(Require& require);
         bool ParsePreprocessorDefinitions(std::vector<std::string>& definitions);
+        bool ParseModules(std::vector<std::string>& modules);
+        bool ParseInclude(fs::path& include);
 
-        bool ParseString(std::string& strContent);
+        bool ParseString(std::string& strContent, char startChar, char endChar);
         bool ParseIdentifier(std::string& identifier);
 
         bool Match(const std::string& str);
