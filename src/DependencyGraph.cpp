@@ -7,9 +7,9 @@
 namespace hscpp
 {
 
-    hscpp::DependencyGraph::QueryResult DependencyGraph::ResolveGraph(const fs::path& file)
+    std::vector<fs::path> DependencyGraph::ResolveGraph(const fs::path& file)
     {
-        QueryResult result;
+        std::vector<fs::path> files;
 
         std::unordered_set<std::wstring> filepaths;
         Collect(file, filepaths);
@@ -19,21 +19,13 @@ namespace hscpp
         {
             fs::path file = filepath;
 
-            if (util::IsHeaderFile(file))
+            if (util::IsSourceFile(file))
             {
-                if (visitedIncludeDirectories.find(file.parent_path()) == visitedIncludeDirectories.end())
-                {
-                    result.includeDirectories.push_back(file.parent_path());
-                    visitedIncludeDirectories.insert(file.parent_path());
-                }
-            }
-            else if (util::IsSourceFile(file))
-            {
-                result.sourceFiles.push_back(file);
+                files.push_back(file);
             }
         }
 
-        return result;
+        return files;
     }
 
     void DependencyGraph::LinkFileToModule(const fs::path& file, const std::string& module)
@@ -99,6 +91,11 @@ namespace hscpp
 
     void DependencyGraph::Collect(const fs::path& file, std::unordered_set<std::wstring>& filepaths)
     {
+        if (filepaths.find(file) != filepaths.end())
+        {
+            return;
+        }
+
         std::vector<fs::path> files = GetLinkedModuleFiles(file);
 
         bool bCollectDependents = true;

@@ -34,9 +34,8 @@ namespace hscpp
 
         for (const auto& file : input.files)
         {
-            DependencyGraph::QueryResult result = m_DependencyGraph.ResolveGraph(file);
-            m_IncludeDirectories.insert(result.includeDirectories.begin(), result.includeDirectories.end());
-            m_SourceFiles.insert(result.sourceFiles.begin(), result.sourceFiles.end());
+            std::vector<fs::path> additionalFiles = m_DependencyGraph.ResolveGraph(file);
+            m_SourceFiles.insert(additionalFiles.begin(), additionalFiles.end());
         }
 
         return CreateOutput();

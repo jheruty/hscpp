@@ -14,13 +14,7 @@ namespace hscpp
     class DependencyGraph
     {
     public:
-        struct QueryResult
-        {
-            std::vector<fs::path> includeDirectories;
-            std::vector<fs::path> sourceFiles;
-        };
-
-        QueryResult ResolveGraph(const fs::path& file);
+        std::vector<fs::path> ResolveGraph(const fs::path& file);
 
         void LinkFileToModule(const fs::path& file, const std::string& module);
         void SetFileDependencies(const fs::path& file, const std::vector<fs::path>& dependencies);
