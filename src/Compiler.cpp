@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <fstream>
+#include <sstream>
 
 #include "hscpp/Compiler.h"
 #include "hscpp/Log.h"
@@ -54,7 +55,7 @@ namespace hscpp
             const std::vector<std::string>& output = m_CmdShell.PeekTaskOutput();
             for (m_iCompileOutput; m_iCompileOutput < output.size(); ++m_iCompileOutput)
             {
-                Log::Write(LogLevel::Info, "%s", output.at(m_iCompileOutput).c_str());
+                Log::Write(LogLevel::Info, "%s\n", output.at(m_iCompileOutput).c_str());
             }
         }
 
@@ -98,6 +99,7 @@ namespace hscpp
     {
         fs::path commandFilepath = info.buildDirectory / COMMAND_FILENAME;
         std::ofstream commandFile(commandFilepath.native().c_str(), std::ios_base::binary);
+        std::stringstream command;
 
         if (!commandFile.is_open())
         {
@@ -121,45 +123,52 @@ namespace hscpp
 
         for (const auto& option : info.compileOptions)
         {
-            commandFile << option << std::endl;
+            command << option << std::endl;
         }
 
         // Output dll name.
         m_CompilingModule = info.buildDirectory / MODULE_FILENAME;
-        commandFile << "/Fe" << "\"" << m_CompilingModule.u8string() << "\"" << std::endl;
+        command << "/Fe" << "\"" << m_CompilingModule.u8string() << "\"" << std::endl;
 
         // Object file output directory. Trailing slash is required.
-        commandFile << "/Fo" << "\"" << info.buildDirectory.u8string() << "\"\\" << std::endl;
+        command << "/Fo" << "\"" << info.buildDirectory.u8string() << "\"\\" << std::endl;
 
         for (const auto& includeDirectory : info.includeDirectories)
         {
-            commandFile << "/I " << "\"" << includeDirectory.u8string() << "\"" << std::endl;
+            command << "/I " << "\"" << includeDirectory.u8string() << "\"" << std::endl;
         }
 
         for (const auto& file : info.files)
         {
-            commandFile << "\"" << file.u8string() << "\"" << std::endl;
+            command << "\"" << file.u8string() << "\"" << std::endl;
         }
 
         for (const auto& library : info.libraries)
         {
-            commandFile << "\"" << library.u8string() << "\"" << std::endl;
+            command << "\"" << library.u8string() << "\"" << std::endl;
         }
 
         for (const auto& preprocessorDefinition : info.preprocessorDefinitions)
         {
-            commandFile << "/D" << "\"" << preprocessorDefinition << "\"" << std::endl;
+            command << "/D" << "\"" << preprocessorDefinition << "\"" << std::endl;
         }
 
         if (!info.linkOptions.empty())
         {
-            commandFile << "/link " << std::endl;
+            command << "/link " << std::endl;
         }
 
         for (const auto& option : info.linkOptions)
         {
-            commandFile << option << std::endl;
+            command << option << std::endl;
         }
+
+        // Print effective command line. The /MP flag causes the VS logo to print multiple times,
+        // so the default compile options use /nologo to suppress it.
+        Log::Write(LogLevel::Info, "cl %s\n", command.str().c_str());
+
+        // Write command file.
+        commandFile << command.str();
 
         return true;
     }

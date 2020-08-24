@@ -20,6 +20,7 @@ namespace hscpp
     };
     
     const static std::vector<std::string> DEFAULT_COMPILE_OPTIONS = {
+        "/nologo", // Suppress cl startup banner.
         "/std:c++17", // Use C++17 standard.
         "/Z7", // Add full debugging information.
         "/FC", // Print full filepath in diagnostic messages.

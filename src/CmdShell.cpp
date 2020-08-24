@@ -143,6 +143,15 @@ namespace hscpp
             }
             else
             {
+                // Remove trailing /r/n.
+                if (line.size() >= 2 
+                    && line.at(line.size() - 2) == '\r' 
+                    && line.at(line.size() - 1) == '\n')
+                {
+                    line.pop_back();
+                    line.pop_back();
+                }
+
                 m_TaskOutput.push_back(line);
             }
         } while (!bDoneReading);
