@@ -135,7 +135,7 @@ namespace hscpp
 
         if (m_Compiler.HasCompiledModule())
         {
-            m_ModuleManager.PerformRuntimeSwap(m_Compiler.PopModule());
+            PerformRuntimeSwap();
             return UpdateResult::PerformedSwap;
         }
 
@@ -182,6 +182,16 @@ namespace hscpp
     bool Hotswapper::IsCompiling()
     {
         return m_Compiler.IsCompiling();
+    }
+
+    void Hotswapper::SetBeforeSwapCallback(const std::function<void()>& cb)
+    {
+        m_BeforeSwapCb = cb;
+    }
+
+    void Hotswapper::SetAfterSwapCallback(const std::function<void()>& cb)
+    {
+        m_AfterSwapCb = cb;
     }
 
     void Hotswapper::DoProtectedCall(const std::function<void()>& cb)
@@ -350,6 +360,21 @@ namespace hscpp
     void Hotswapper::SetHscppRequireVariable(const std::string& name, const std::string& val)
     {
         m_HscppRequireVariables[name] = val;
+    }
+
+    void Hotswapper::PerformRuntimeSwap()
+    {
+        if (m_BeforeSwapCb != nullptr)
+        {
+            m_BeforeSwapCb();
+        }
+
+        m_ModuleManager.PerformRuntimeSwap(m_Compiler.PopModule());
+
+        if (m_AfterSwapCb != nullptr)
+        {
+            m_AfterSwapCb();
+        }
     }
 
     //============================================================================

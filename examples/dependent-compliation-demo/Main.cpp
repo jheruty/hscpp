@@ -19,6 +19,9 @@ int main()
     swapper.GetAllocationResolver()->Allocate<Printer1>();
     swapper.GetAllocationResolver()->Allocate<Printer2>();
 
+    swapper.SetBeforeSwapCallback([]() {std::cout << "Before swap callback." << std::endl; });
+    swapper.SetAfterSwapCallback([]() {std::cout << "After swap callback." << std::endl; });
+
     while (true)
     {
         swapper.Update();

@@ -47,6 +47,8 @@ namespace hscpp
         UpdateResult Update();
         bool IsCompiling();
 
+        void SetBeforeSwapCallback(const std::function<void()>& cb);
+        void SetAfterSwapCallback(const std::function<void()>& cb);
         void DoProtectedCall(const std::function<void()>& cb);
 
         //============================================================================
@@ -114,6 +116,11 @@ namespace hscpp
         ModuleManager m_ModuleManager;
 
         AllocationResolver m_AllocationResolver;
+
+        std::function<void()> m_BeforeSwapCb;
+        std::function<void()> m_AfterSwapCb;
+
+        void PerformRuntimeSwap();
 
         fs::path GetHscppIncludePath();
 
