@@ -109,18 +109,18 @@ friend class hscpp::AllocationResolver; \
 inline static const char hscpp_ClassKey[] = key;\
 hscpp::Tracker<type, hscpp_ClassKey> hscpp_ClassTracker = hscpp::Tracker<type, hscpp_ClassKey>(this);
 
-#define HSCPP_SET_SWAP_HANDLER(...) \
+#define HscppSetSwapHandler(...) \
 hscpp_ClassTracker.SwapHandler = __VA_ARGS__;
 
-#define HSCPP_IS_SWAPPING() (*hscpp::ModuleSharedState::s_pbSwapping)
+#define HscppIsSwapping() (*hscpp::ModuleSharedState::s_pbSwapping)
 
 #define hscpp_virtual virtual
 
 #else
 
 #define HSCPP_TRACK(type, key)
-#define HSCPP_SET_SWAP_HANDLER(...)
-#define HSCPP_IS_SWAPPING() false
+#define HscppSetSwapHandler(...)
+#define HscppIsSwapping() false
 #define hscpp_virtual
 
 #endif

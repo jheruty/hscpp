@@ -17,7 +17,7 @@ TrackedPrinter::TrackedPrinter()
     };
 
     std::cout << "Constructing TrackedPrinter" << std::endl;
-    HSCPP_SET_SWAP_HANDLER(cb);
+    HscppSetSwapHandler(cb);
 }
 
 TrackedPrinter::~TrackedPrinter()

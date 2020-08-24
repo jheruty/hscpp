@@ -12,7 +12,7 @@ Widget::Widget()
         info.Save("InputBuffer", m_InputBuffer);
     };
 
-    HSCPP_SET_SWAP_HANDLER(cb);
+    HscppSetSwapHandler(cb);
 }
 
 Widget::~Widget()
@@ -20,7 +20,7 @@ Widget::~Widget()
     // When swapping, hscpp will call the Widget's destructor. However, we wish to persist the
     // Refs in m_Widgets. To avoid a double free, we can return if the object is currently
     // being swapped.
-    if (HSCPP_IS_SWAPPING())
+    if (HscppIsSwapping())
     {
         return;
     }
