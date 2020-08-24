@@ -32,6 +32,8 @@ int main()
 
     swapper.AddPreprocessorDefinition("PREPROCESSOR_DEMO");
 
+    swapper.CreateDependencyGraph();
+
     Ref<Printer> printer = memoryManager->Allocate<Printer>();
 
     while (true)

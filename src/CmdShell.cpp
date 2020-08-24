@@ -15,7 +15,7 @@ namespace hscpp
             if (!TerminateProcess(m_hProcess, EXIT_SUCCESS))
             {
                 Log::Write(LogLevel::Error, "%s: Failed to terminate cmd process. [%s]\n",
-                    __func__, GetLastErrorString().c_str());
+                    __func__, util::GetLastErrorString().c_str());
             }
         }
     }
@@ -31,7 +31,7 @@ namespace hscpp
         if (!CreatePipe(&m_hStdoutRead, &hStdoutWrite, &securityAttrs, 0))
         {
             Log::Write(LogLevel::Error, "%s: Failed to create stdout pipe. [%s]\n",
-                __func__, GetLastErrorString().c_str());
+                __func__, util::GetLastErrorString().c_str());
             return false;
         }
 
@@ -39,7 +39,7 @@ namespace hscpp
         if (!CreatePipe(&hStdinRead, &m_hStdinWrite, &securityAttrs, 0))
         {
             Log::Write(LogLevel::Error, "%s: Failed to create stdin pipe. [%s]\n",
-                __func__, GetLastErrorString().c_str());
+                __func__, util::GetLastErrorString().c_str());
             return false;
         }
 
@@ -78,7 +78,7 @@ namespace hscpp
         if (!bSuccess)
         {
             Log::Write(LogLevel::Error, "%s: Failed to create cmd process. [%s]\n",
-                __func__, GetLastErrorString().c_str());
+                __func__, util::GetLastErrorString().c_str());
             return false;
         }
 
@@ -197,7 +197,7 @@ namespace hscpp
             if (!WriteFile(m_hStdinWrite, pStr + offset, nBytesToWrite, &nBytesWritten, NULL))
             {
                 Log::Write(LogLevel::Error, "%s: Failed to write to cmd process. [%s]\n",
-                    __func__, GetLastErrorString().c_str());
+                    __func__, util::GetLastErrorString().c_str());
                 return false;
             }
 
@@ -227,7 +227,7 @@ namespace hscpp
             if (!PeekNamedPipe(m_hStdoutRead, NULL, 0, NULL, &nBytesAvailable, NULL))
             {
                 Log::Write(LogLevel::Error, "%s: Failed to peek cmd pipe. [%s]\n",
-                    __func__, GetLastErrorString().c_str());
+                    __func__, util::GetLastErrorString().c_str());
                 return false;
             }
 
@@ -238,7 +238,7 @@ namespace hscpp
                     static_cast<DWORD>(m_ReadBuffer.size()), &nBytesRead, NULL))
                 {
                     Log::Write(LogLevel::Error, "%s: Failed to read from cmd process. [%s]\n",
-                        __func__, GetLastErrorString().c_str());
+                        __func__, util::GetLastErrorString().c_str());
                     return false;
                 }
 

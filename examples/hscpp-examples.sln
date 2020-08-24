@@ -21,6 +21,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "memory-allocation-demo", "m
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "runtime-require-demo", "runtime-require-demo\runtime-require-demo.vcxproj", "{62A8AFF8-3364-46C3-8143-C6882912E0E3}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dependent-compliation-demo", "dependent-compliation-demo\dependent-compliation-demo.vcxproj", "{01766E0E-749A-44CA-A842-4FDAF39C29E6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -159,6 +161,22 @@ Global
 		{62A8AFF8-3364-46C3-8143-C6882912E0E3}.RelWithDebInfo|x64.Build.0 = Release|x64
 		{62A8AFF8-3364-46C3-8143-C6882912E0E3}.RelWithDebInfo|x86.ActiveCfg = Release|Win32
 		{62A8AFF8-3364-46C3-8143-C6882912E0E3}.RelWithDebInfo|x86.Build.0 = Release|Win32
+		{01766E0E-749A-44CA-A842-4FDAF39C29E6}.Debug|x64.ActiveCfg = Debug|x64
+		{01766E0E-749A-44CA-A842-4FDAF39C29E6}.Debug|x64.Build.0 = Debug|x64
+		{01766E0E-749A-44CA-A842-4FDAF39C29E6}.Debug|x86.ActiveCfg = Debug|Win32
+		{01766E0E-749A-44CA-A842-4FDAF39C29E6}.Debug|x86.Build.0 = Debug|Win32
+		{01766E0E-749A-44CA-A842-4FDAF39C29E6}.MinSizeRel|x64.ActiveCfg = Release|x64
+		{01766E0E-749A-44CA-A842-4FDAF39C29E6}.MinSizeRel|x64.Build.0 = Release|x64
+		{01766E0E-749A-44CA-A842-4FDAF39C29E6}.MinSizeRel|x86.ActiveCfg = Release|Win32
+		{01766E0E-749A-44CA-A842-4FDAF39C29E6}.MinSizeRel|x86.Build.0 = Release|Win32
+		{01766E0E-749A-44CA-A842-4FDAF39C29E6}.Release|x64.ActiveCfg = Release|x64
+		{01766E0E-749A-44CA-A842-4FDAF39C29E6}.Release|x64.Build.0 = Release|x64
+		{01766E0E-749A-44CA-A842-4FDAF39C29E6}.Release|x86.ActiveCfg = Release|Win32
+		{01766E0E-749A-44CA-A842-4FDAF39C29E6}.Release|x86.Build.0 = Release|Win32
+		{01766E0E-749A-44CA-A842-4FDAF39C29E6}.RelWithDebInfo|x64.ActiveCfg = Release|x64
+		{01766E0E-749A-44CA-A842-4FDAF39C29E6}.RelWithDebInfo|x64.Build.0 = Release|x64
+		{01766E0E-749A-44CA-A842-4FDAF39C29E6}.RelWithDebInfo|x86.ActiveCfg = Release|Win32
+		{01766E0E-749A-44CA-A842-4FDAF39C29E6}.RelWithDebInfo|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

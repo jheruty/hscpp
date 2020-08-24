@@ -26,13 +26,14 @@ namespace hscpp
 
         struct ParseInfo
         {
+            fs::path file;
             std::vector<Require> requires;
             std::vector<std::string> preprocessorDefinitions;
             std::vector<std::string> modules;
             std::vector<fs::path> includes;
         };
 
-        ParseInfo Parse(const fs::path& path);
+        ParseInfo Parse(const fs::path& file);
 
     private:
         fs::path m_Filepath;

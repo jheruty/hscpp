@@ -14,43 +14,55 @@ namespace hscpp
     class DependencyGraph
     {
     public:
-        struct Query
-        {
-            fs::path file;
-            std::vector<std::string> cppHeaderExtensions;
-            std::vector<std::string> cppSourceExtensions;
-        };
-
         struct QueryResult
         {
             std::vector<fs::path> includeDirectories;
             std::vector<fs::path> sourceFiles;
         };
 
-        QueryResult ResolveGraph(const Query& query);
+        QueryResult ResolveGraph(const fs::path& file);
 
         void LinkFileToModule(const fs::path& file, const std::string& module);
         void SetFileDependencies(const fs::path& file, const std::vector<fs::path>& dependencies);
 
-    private:
-        enum class FileType
-        {
-            Header,
-            Source,
-        };
+        void Clear();
 
+    private:
         struct Node 
         {
-            fs::path file;
-            FileType type = {};
-
-            std::unordered_set<Node*> dependencies;
-            std::unordered_set<Node*> dependents;
+            std::unordered_set<int> dependencies;
+            std::unordered_set<int> dependents;
         };
 
         std::unordered_map<std::string, std::unordered_set<std::wstring>> m_FilepathsByModule;
         std::unordered_map<std::wstring, std::unordered_set<std::string>> m_ModulesByFilepath;
-        std::unordered_map<std::wstring, std::unique_ptr<Node>> m_NodeByFilepath;
+
+        std::unordered_map<std::wstring, int> m_HandleByFilepath;
+        std::unordered_map<int, std::wstring> m_FilepathByHandle;
+
+        std::unordered_map<int, std::unique_ptr<Node>> m_NodeByHandle;
+
+        int m_NextHandle = 0;
+
+        void Collect(const fs::path& file, std::unordered_set<std::wstring>& filepaths);
+
+        bool FilePassesFilter(const fs::path& file);
+        std::vector<fs::path> FilterFiles(const std::vector<fs::path>& files);
+
+        int CreateHandle(const fs::path& path);
+
+        int GetHandle(const fs::path& path);
+        fs::path GetFilepath(int handle);
+
+        Node* CreateNode(const fs::path& file);
+        Node* CreateNode(int handle);
+
+        Node* GetNode(const fs::path& file);
+        Node* GetNode(int handle);
+
+        std::vector<fs::path> GetLinkedModuleFiles(const fs::path& file);
+
+        std::unordered_set<int> AsHandleSet(const std::vector<fs::path>& paths);
     };
 
 }

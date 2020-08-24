@@ -232,9 +232,9 @@ namespace hscpp
         fs::path bestVsPath;
         for (const auto& line : output)
         {
-            if (!IsWhitespace(line))
+            if (!util::IsWhitespace(line))
             {
-                bestVsPath = Trim(line);
+                bestVsPath = util::Trim(line);
                 break;
             }
         }

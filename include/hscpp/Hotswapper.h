@@ -42,6 +42,8 @@ namespace hscpp
         void DisableFeature(Feature feature);
         bool IsFeatureEnabled(Feature feature);
 
+        void CreateDependencyGraph();
+
         UpdateResult Update();
         bool IsCompiling();
 
@@ -81,16 +83,6 @@ namespace hscpp
         void EnumerateLinkOptions(const std::function<void(int handle, const std::string& option)>& cb);
         void ClearLinkOptions();
 
-        int AddHeaderExtension(const std::string& extension);
-        bool RemoveHeaderExtension(int handle);
-        void EnumerateHeaderExtensions(const std::function<void( int handle, const std::string& option)>& cb);
-        void ClearHeaderExtensions();
-
-        int AddSourceExtension(const std::string& extension);
-        bool RemoveSourceExtension(int handle);
-        void EnumerateSourceExtensions(const std::function<void(int handle, const std::string& option)>& cb);
-        void ClearSourceExtensions();
-
         void SetHscppRequireVariable(const std::string& name, const std::string& val);
 
     private:
@@ -103,8 +95,6 @@ namespace hscpp
         int m_NextPreprocessorDefinitionHandle = 0;
         int m_NextCompileOptionHandle = 0;
         int m_NextLinkOptionHandle = 0;
-        int m_NextHeaderExtensionHandle = 0;
-        int m_NextSourceExtensionHandle = 0;
 
         fs::path m_BuildDirectory;
         std::unordered_map<int, fs::path> m_IncludeDirectoriesByHandle;
@@ -113,8 +103,6 @@ namespace hscpp
         std::unordered_map<int, std::string> m_PreprocessorDefinitionsByHandle;
         std::unordered_map<int, std::string> m_CompileOptionsByHandle;
         std::unordered_map<int, std::string> m_LinkOptionsByHandle;
-        std::unordered_map<int, std::string> m_HeaderExtensionsByHandle;
-        std::unordered_map<int, std::string> m_SourceExtensionsByHandle;
 
         std::unordered_map<std::string, std::string> m_HscppRequireVariables;
 

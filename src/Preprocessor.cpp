@@ -8,85 +8,157 @@
 namespace hscpp
 {
 
+    void Preprocessor::CreateDependencyGraph(const Input& input)
+    {
+        m_DependencyGraph.Clear();
+
+        for (const auto& file : input.files)
+        {
+            FileParser::ParseInfo parseInfo = m_FileParser.Parse(file);
+            UpdateDependencyGraph(input, parseInfo);
+        }
+    }
+
     Preprocessor::Output Preprocessor::Preprocess(const Input& input)
     {
-        Output output;
-        output.files = input.files;
-        output.includeDirectories = input.includeDirectories;
-        output.libraries = input.libraries;
-        output.preprocessorDefinitions = input.preprocessorDefinitions;
-
-        // Several files compiled at once may have the same dependencies, so store paths in a set
-        // such that common requires are deduplicated.
-        std::unordered_set<std::wstring> additionalFiles;
-        std::unordered_set<std::wstring> additionalIncludes;
-        std::unordered_set<std::wstring> additionalLibraries;
-
-        std::unordered_set<std::string> additionalPreprocessorDefinitions;
+        Reset(input);
 
         for (const auto& file : input.files)
         {
             FileParser::ParseInfo parseInfo = m_FileParser.Parse(file);
 
-            for (const auto& require : parseInfo.requires)
+            AddRequires(input, parseInfo);
+            AddPreprocessorDefinitions(parseInfo);
+            UpdateDependencyGraph(input, parseInfo);
+        }
+
+        for (const auto& file : input.files)
+        {
+            DependencyGraph::QueryResult result = m_DependencyGraph.ResolveGraph(file);
+            m_IncludeDirectories.insert(result.includeDirectories.begin(), result.includeDirectories.end());
+            m_SourceFiles.insert(result.sourceFiles.begin(), result.sourceFiles.end());
+        }
+
+        return CreateOutput();
+    }
+
+    void Preprocessor::Reset(const Input& input)
+    {
+        m_SourceFiles.clear();
+        m_IncludeDirectories.clear();
+        m_Libraries.clear();
+        m_PreprocessorDefinitions.clear();
+
+        m_SourceFiles.insert(input.files.begin(), input.files.end());
+        m_IncludeDirectories.insert(input.includeDirectories.begin(), input.includeDirectories.end());
+        m_Libraries.insert(input.libraries.begin(), input.libraries.end());
+        m_PreprocessorDefinitions.insert(input.preprocessorDefinitions.begin(), input.preprocessorDefinitions.end());
+    }
+
+    hscpp::Preprocessor::Output Preprocessor::CreateOutput()
+    {
+        Output output;
+
+        output.files = std::vector<fs::path>(
+            m_SourceFiles.begin(), m_SourceFiles.end());
+        output.includeDirectories = std::vector<fs::path>(
+            m_IncludeDirectories.begin(), m_IncludeDirectories.end());
+        output.libraries = std::vector<fs::path>(
+            m_Libraries.begin(), m_Libraries.end());
+        output.preprocessorDefinitions = std::vector<std::string>(
+            m_PreprocessorDefinitions.begin(), m_PreprocessorDefinitions.end());
+
+        return output;
+    }
+
+    void Preprocessor::AddRequires(const Input& input, const FileParser::ParseInfo& parseInfo)
+    {
+        for (const auto& require : parseInfo.requires)
+        {
+            for (const auto& path : require.paths)
             {
-                for (const auto& path : require.paths)
+                // Paths can be either relative or absolute.
+                fs::path fullpath = path;
+                if (path.is_relative())
                 {
-                    // Paths can be either relative or absolute.
-                    fs::path fullpath = path;
-                    if (path.is_relative())
+                    fullpath = parseInfo.file.parent_path() / path;
+                }
+
+                InterpolateRequireVariables(input, fullpath);
+
+                std::error_code error;
+                fullpath = fs::canonical(fullpath, error);
+
+                if (error.value() == ERROR_SUCCESS)
+                {
+                    switch (require.type)
                     {
-                        fullpath = file.parent_path() / path;
+                    case FileParser::Require::Type::Source:
+                        m_SourceFiles.insert(fullpath.wstring());
+                        break;
+                    case FileParser::Require::Type::Include:
+                        m_IncludeDirectories.insert(fullpath.wstring());
+                        break;
+                    case FileParser::Require::Type::Library:
+                        m_Libraries.insert(fullpath.wstring());
+                        break;
+                    default:
+                        assert(false);
+                        break;
                     }
+                }
+                else
+                {
+                    Log::Write(LogLevel::Error, "%s: Failed to get canonical path of %s. [%s]\n",
+                        __func__, fullpath.string().c_str(), util::GetErrorString(error.value()).c_str());
+                }
+            }
+        }
+    }
 
-                    InterpolateRequireVariables(input, fullpath);
+    void Preprocessor::AddPreprocessorDefinitions(const FileParser::ParseInfo& parseInfo)
+    {
+        for (const auto& definition : parseInfo.preprocessorDefinitions)
+        {
+            m_PreprocessorDefinitions.insert(definition);
+        }
+    }
 
-                    std::error_code error;
-                    fullpath = fs::canonical(fullpath, error);
+    void Preprocessor::UpdateDependencyGraph(const Input& input, const FileParser::ParseInfo& parseInfo)
+    {
+        std::error_code error;
+        fs::path canoncialFile = fs::canonical(parseInfo.file, error);
+        
+        if (error.value() != ERROR_SUCCESS)
+        {
+            Log::Write(LogLevel::Error, "%s: Failed to get canonical path of %s. [%s]\n",
+                __func__, canoncialFile.string().c_str(), util::GetErrorString(error.value()).c_str());
+            return;
+        }
 
+        for (const auto& module : parseInfo.modules)
+        {
+            m_DependencyGraph.LinkFileToModule(canoncialFile, module);
+        }
+
+        std::vector<fs::path> canonicalIncludes;
+        for (const auto& include : parseInfo.includes)
+        {
+            for (const auto& directory : input.includeDirectories)
+            {
+                fs::path fullIncludePath = directory / include;
+                if (fs::exists(fullIncludePath))
+                {
+                    fullIncludePath = fs::canonical(fullIncludePath, error);
                     if (error.value() == ERROR_SUCCESS)
                     {
-                        switch (require.type)
-                        {
-                        case FileParser::Require::Type::Source:
-                            additionalFiles.insert(fullpath.wstring());
-                            break;
-                        case FileParser::Require::Type::Include:
-                            additionalIncludes.insert(fullpath.wstring());
-                            break;
-                        case FileParser::Require::Type::Library:
-                            additionalLibraries.insert(fullpath.wstring());
-                            break;
-                        default:
-                            assert(false);
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        Log::Write(LogLevel::Error, "%s: Failed to get canonical path of %s. [%s]\n",
-                            __func__, fullpath.string().c_str(), GetErrorString(error.value()).c_str());
+                        canonicalIncludes.push_back(fullIncludePath);
                     }
                 }
             }
 
-            for (const auto& definition : parseInfo.preprocessorDefinitions)
-            {
-                additionalPreprocessorDefinitions.insert(definition);
-            }
+            m_DependencyGraph.SetFileDependencies(canoncialFile, canonicalIncludes);
         }
-
-        output.files.insert(output.files.end(),
-            additionalFiles.begin(), additionalFiles.end());
-        output.includeDirectories.insert(output.includeDirectories.end(),
-            additionalIncludes.begin(), additionalIncludes.end());
-        output.libraries.insert(output.libraries.begin(),
-            additionalLibraries.begin(), additionalLibraries.end());
-
-        output.preprocessorDefinitions.insert(output.preprocessorDefinitions.end(),
-            additionalPreprocessorDefinitions.begin(), additionalPreprocessorDefinitions.end());
-
-        return output;
     }
 
     void Preprocessor::InterpolateRequireVariables(const Input& input, fs::path& path)

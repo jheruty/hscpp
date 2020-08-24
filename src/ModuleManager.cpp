@@ -32,7 +32,7 @@ bool hscpp::ModuleManager::PerformRuntimeSwap(const fs::path& moduleFilepath)
     if (hModule == nullptr)
     {
         Log::Write(LogLevel::Error, "%s: Failed to load module %s. [%s]\n",
-            __func__, moduleFilepath.string().c_str(), GetLastErrorString().c_str());
+            __func__, moduleFilepath.string().c_str(), util::GetLastErrorString().c_str());
         return false;
     }
 
@@ -43,7 +43,7 @@ bool hscpp::ModuleManager::PerformRuntimeSwap(const fs::path& moduleFilepath)
     if (getModuleInterfaceProc == nullptr)
     {
         Log::Write(LogLevel::Error, "%s: Failed to load Hscpp_GetModuleInterface procedure. [%s]\n",
-            __func__, GetLastErrorString().c_str());
+            __func__, util::GetLastErrorString().c_str());
         return false;
     }
 

@@ -7,21 +7,22 @@
 namespace hscpp
 {
 
-    FileParser::ParseInfo FileParser::Parse(const fs::path& path)
+    FileParser::ParseInfo FileParser::Parse(const fs::path& filepath)
     {
         ParseInfo info;
+        info.file = filepath;
 
-        std::ifstream file(path.native().c_str());
+        std::ifstream file(filepath.native().c_str());
         if (!file.is_open())
         {
-            Log::Write(LogLevel::Error, "%s: Failed to open file %s.\n", __func__, path.u8string().c_str());
+            Log::Write(LogLevel::Error, "%s: Failed to open file %s.\n", __func__, filepath.u8string().c_str());
             return info;
         }
 
         std::stringstream buf;
         buf << file.rdbuf();
 
-        m_Filepath = path;
+        m_Filepath = filepath;
         m_iChar = 0;
         m_Content = buf.str();
 

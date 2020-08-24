@@ -32,7 +32,7 @@ namespace hscpp
         if (hDirectory == INVALID_HANDLE_VALUE)
         {
             Log::Write(LogLevel::Error, "%s: Failed to add directory '%s' to watch. [%s]\n",
-                __func__, directory.c_str(), GetLastErrorString().c_str());
+                __func__, directory.c_str(), util::GetLastErrorString().c_str());
             return false;
         }
 
@@ -43,7 +43,7 @@ namespace hscpp
         if (!ReadDirectoryChangesAsync(pWatch.get()))
         {
             Log::Write(LogLevel::Error, "%s: Failed initial call to ReadDirectoryChangesW. [%s]\n",
-                __func__, GetLastErrorString().c_str());
+                __func__, util::GetLastErrorString().c_str());
 
             CloseHandle(hDirectory);
             return false;
@@ -144,7 +144,7 @@ namespace hscpp
         if (error != ERROR_SUCCESS)
         {
             Log::Write(LogLevel::Error, "%s: ReadDirectoryChangesW failed. [%s]\n",
-                __func__, GetErrorString(error).c_str());
+                __func__, util::GetErrorString(error).c_str());
             return;
         }
 
@@ -194,7 +194,7 @@ namespace hscpp
         if (!ReadDirectoryChangesAsync(pWatch))
         {
             Log::Write(LogLevel::Error, "%s: Failed refresh call to ReadDirectoryChangesW. [%s]\n",
-                __func__, GetLastErrorString().c_str());
+                __func__, util::GetLastErrorString().c_str());
             return;
         }
     }
@@ -221,7 +221,7 @@ namespace hscpp
         if (!bResult)
         {
             Log::Write(LogLevel::Error, "%s: Failed to cancel IO. [%s]\n",
-                __func__, GetLastErrorString().c_str());
+                __func__, util::GetLastErrorString().c_str());
             return;
         }
 
@@ -234,7 +234,7 @@ namespace hscpp
         if (!bResult && GetLastError() != ERROR_OPERATION_ABORTED)
         {
             Log::Write(LogLevel::Error, "%s: Failed to wait on overlapped result. [%s]\n",
-                __func__, GetLastErrorString().c_str());
+                __func__, util::GetLastErrorString().c_str());
             return;
         }
 
