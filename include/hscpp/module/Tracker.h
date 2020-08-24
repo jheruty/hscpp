@@ -6,6 +6,7 @@
 #include "hscpp/module/ModuleSharedState.h"
 #include "hscpp/module/SwapInfo.h"
 #include "hscpp/module/ModuleInterface.h" // Added so it is included in module build.
+#include "hscpp/module/Macros.h" // Added so macros are available when using a tracked class.
 
 namespace hscpp
 {
@@ -123,9 +124,3 @@ hscpp_ClassTracker.SwapHandler = __VA_ARGS__;
 #define hscpp_virtual
 
 #endif
-
-#define hscpp_require_source(...)
-#define hscpp_require_include(...)
-#define hscpp_require_lib(...)
-#define hscpp_preprocessor_definitions(...)
-#define hscpp_module(...)

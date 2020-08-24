@@ -111,6 +111,7 @@
     <ClInclude Include="include\hscpp\Hotswapper.h" />
     <ClInclude Include="include\hscpp\module\ITracker.h" />
     <ClInclude Include="include\hscpp\Log.h" />
+    <ClInclude Include="include\hscpp\module\Macros.h" />
     <ClInclude Include="include\hscpp\module\ModuleInterface.h" />
     <ClInclude Include="include\hscpp\ModuleManager.h" />
     <ClInclude Include="include\hscpp\module\ModuleSharedState.h" />

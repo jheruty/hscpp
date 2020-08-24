@@ -1,6 +1,6 @@
 #pragma once
 
-#include "hscpp/module/Tracker.h"
+#include "hscpp/module/Macros.h"
 
 hscpp_module("math");
 
