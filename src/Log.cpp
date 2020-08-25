@@ -32,8 +32,9 @@ namespace hscpp
         return m_Value;
     }
 
-    LoggerStream::LoggerStream(bool bEnabled)
+    LoggerStream::LoggerStream(bool bEnabled, const std::function<void(const std::wstringstream&)>& endCb /* = nullptr */)
         : m_bEnabled(bEnabled)
+        , m_EndCb(endCb)
     {}
 
     LoggerStream& LoggerStream::operator<<(const std::string& str)
@@ -82,7 +83,14 @@ namespace hscpp
         }
 
         *this << endLog.Value();
-        std::wcout << m_Stream.str() << std::endl;
+        m_Stream << std::endl;
+
+        std::wcout << m_Stream.str();
+
+        if (m_EndCb != nullptr)
+        {
+            m_EndCb(m_Stream);
+        }
     }
 
     void Log::SetLogLevel(LogLevel level)
@@ -126,7 +134,9 @@ namespace hscpp
 
     LoggerStream Log::Build()
     {
-        return LoggerStream(s_bLogBuild);
+        return LoggerStream(s_bLogBuild, [](const std::wstringstream& stream) {
+            OutputDebugString(stream.str().c_str());
+            });
     }
 
     bool Log::IsLogLevelActive(LogLevel level)

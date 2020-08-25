@@ -4,6 +4,7 @@
 #include <string>
 #include <sstream>
 #include <filesystem>
+#include <functional>
 
 #define HSCPP_LOG_PREFIX __func__ << "[" << __LINE__ << "]: "
 
@@ -48,7 +49,7 @@ namespace hscpp
     class LoggerStream
     {
     public:
-        LoggerStream(bool bEnabled);
+        LoggerStream(bool bEnabled, const std::function<void(const std::wstringstream&)>& endCb = nullptr);
         LoggerStream& operator<<(const std::string& str);
 
         LoggerStream& operator<<(const LastErrorLog& lastErrorLog);
@@ -69,6 +70,8 @@ namespace hscpp
 
     private:
         bool m_bEnabled = true;
+        std::function<void(const std::wstringstream&)> m_EndCb;
+
         std::wstringstream m_Stream;
     };
 
