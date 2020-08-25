@@ -15,7 +15,7 @@ namespace hscpp
         std::ifstream file(filepath.native().c_str());
         if (!file.is_open())
         {
-            Log::Write(LogLevel::Error, "%s: Failed to open file %s.\n", __func__, filepath.u8string().c_str());
+            Log::Error() << HSCPP_LOG_PREFIX << "Failed to open file " << filepath << EndLog(".");
             return info;
         }
 
@@ -357,17 +357,6 @@ namespace hscpp
         return true;
     }
 
-    bool FileParser::Expect(char c, const std::string& error)
-    {
-        if (Peek() == c)
-        {
-            return true;
-        }
-
-        Log::Write(LogLevel::Error, "%s\n", error.c_str());
-        return false;
-    }
-
     void FileParser::SkipWhitespace()
     {
         while (!IsAtEnd() && std::isspace(Peek()))
@@ -473,8 +462,7 @@ namespace hscpp
 
     void FileParser::LogParseError(const std::string& error)
     {
-        Log::Write(LogLevel::Error, "%s: Failed to parse file %s: %s\n",
-            __func__, m_Filepath.u8string().c_str(), error.c_str());
+        Log::Error() << HSCPP_LOG_PREFIX << "Failed to parse file " << m_Filepath << ": " << error << EndLog();
     }
 
 }

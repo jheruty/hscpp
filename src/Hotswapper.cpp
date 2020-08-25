@@ -206,8 +206,8 @@ namespace hscpp
         // Keep recompiling user's changes until protected call succeeds.
         while (result != ProtectedFunction::Result::Success)
         {
-            Log::Write(LogLevel::Error, "%s: Failed protected call. Make code changes and save to reattempt.\n",
-                __func__);
+            Log::Error() << HSCPP_LOG_PREFIX << "Failed protected call. " 
+                << "Make code changes and save to reattempt." << EndLog();
 
             while (Update() != UpdateResult::PerformedSwap)
             {
@@ -386,8 +386,7 @@ namespace hscpp
 
         if (error.value() != ERROR_SUCCESS)
         {
-            Log::Write(LogLevel::Error, "%s: Failed to find temp directory path. [%s]\n",
-                __func__, util::GetErrorString(error.value()).c_str());
+            Log::Error() << HSCPP_LOG_PREFIX << "Failed to find temp directory path. " << ErrorLog(error) << EndLog();
             return false;
         }
 
@@ -396,8 +395,8 @@ namespace hscpp
         fs::remove_all(hscppTemp, error);
         if (!fs::create_directory(hscppTemp, error))
         {
-            Log::Write(LogLevel::Error, "%s: Failed to create directory '%s'. [%s]\n",
-                __func__, hscppTemp.string().c_str(), util::GetErrorString(error.value()).c_str());
+            Log::Error() << HSCPP_LOG_PREFIX << "Failed to create directory "
+                << hscppTemp << ". " << ErrorLog(error) << EndLog();
             return false;
         }
 
@@ -422,8 +421,8 @@ namespace hscpp
         std::error_code error;
         if (!fs::create_directory(m_BuildDirectory, error))
         {
-            Log::Write(LogLevel::Error, "%s: Failed to create directory '%s'. [%s]\n",
-                __func__, m_BuildDirectory.string().c_str(), util::GetErrorString(error.value()).c_str());
+            Log::Error() << HSCPP_LOG_PREFIX << "Failed to create directory "
+                << m_BuildDirectory << ErrorLog(error) << EndLog();
             return false;
         }
 
@@ -453,15 +452,15 @@ namespace hscpp
             }
             else if (error.value() != ERROR_SUCCESS)
             {
-                Log::Write(LogLevel::Error, "%s: Failed to get canonical path of '%s'. [%s]\n",
-                    __func__, event.filepath.string().c_str(), util::GetErrorString(error.value()).c_str());
+                Log::Error() << HSCPP_LOG_PREFIX << "Failed to get canonical path of "
+                    << event.filepath << ". " << ErrorLog(error) << EndLog();
                 continue;
             }
 
             if (!util::IsHeaderFile(canonicalPath) && !util::IsSourceFile(canonicalPath))
             {
-                Log::Write(LogLevel::Trace, "%s: File '%s' will be skipped; its extension is not being watched.\n",
-                    __func__, canonicalPath.string().c_str());
+                Log::Info() << HSCPP_LOG_PREFIX << "File " << canonicalPath
+                    << " will be skipped; its extension is not being watched." << EndLog();
                 continue;
             }
 

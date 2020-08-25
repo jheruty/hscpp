@@ -108,8 +108,8 @@ namespace hscpp
                 }
                 else
                 {
-                    Log::Write(LogLevel::Error, "%s: Failed to get canonical path of %s. [%s]\n",
-                        __func__, fullpath.string().c_str(), util::GetErrorString(error.value()).c_str());
+                    Log::Error() << HSCPP_LOG_PREFIX << "Failed to get canonical path of "
+                        << fullpath << ". " << ErrorLog(error) << EndLog();
                 }
             }
         }
@@ -130,8 +130,8 @@ namespace hscpp
         
         if (error.value() != ERROR_SUCCESS)
         {
-            Log::Write(LogLevel::Error, "%s: Failed to get canonical path of %s. [%s]\n",
-                __func__, canoncialFile.string().c_str(), util::GetErrorString(error.value()).c_str());
+            Log::Error() << HSCPP_LOG_PREFIX << "Failed to get canonical path of "
+                << canoncialFile << ". " << ErrorLog(error) << EndLog();
             return;
         }
 

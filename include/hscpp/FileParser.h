@@ -51,7 +51,6 @@ namespace hscpp
         bool ParseIdentifier(std::string& identifier);
 
         bool Match(const std::string& str);
-        bool Expect(char c, const std::string& error);
         void SkipWhitespace();
         void SkipComment();
         void SkipString();

@@ -21,7 +21,7 @@ namespace hscpp
     {
         if (!m_Initialized)
         {
-            Log::Write(LogLevel::Debug, "%s: Compiler is not initialized, skipping compilation.\n", __func__);
+            Log::Info() << HSCPP_LOG_PREFIX << "Compiler is not initialized, skipping compilation." << EndLog();
             return false;
         }
 
@@ -55,7 +55,7 @@ namespace hscpp
             const std::vector<std::string>& output = m_CmdShell.PeekTaskOutput();
             for (m_iCompileOutput; m_iCompileOutput < output.size(); ++m_iCompileOutput)
             {
-                Log::Write(LogLevel::Info, "%s\n", output.at(m_iCompileOutput).c_str());
+                Log::Build() << output.at(m_iCompileOutput) << EndLog();
             }
         }
 
@@ -103,7 +103,7 @@ namespace hscpp
 
         if (!commandFile.is_open())
         {
-            Log::Write(LogLevel::Error, "%s: Failed to create command file.\n", __func__);
+            Log::Error() << HSCPP_LOG_PREFIX << "Failed to create command file " << commandFilepath << EndLog(".");
             return false;
         }
 
@@ -117,7 +117,7 @@ namespace hscpp
         commandFile.open(commandFilepath.native().c_str(), std::ios::app);
         if (!commandFile.is_open())
         {
-            Log::Write(LogLevel::Error, "%s: Failed to open command file.\n", __func__);
+            Log::Error() << HSCPP_LOG_PREFIX << "Failed to open command file " << commandFilepath << EndLog(".");
             return false;
         }
 
@@ -165,7 +165,7 @@ namespace hscpp
 
         // Print effective command line. The /MP flag causes the VS logo to print multiple times,
         // so the default compile options use /nologo to suppress it.
-        Log::Write(LogLevel::Info, "cl %s\n", command.str().c_str());
+        Log::Build() << "cl " << command.str() << EndLog();
 
         // Write command file.
         commandFile << command.str();
@@ -196,8 +196,8 @@ namespace hscpp
             compilerVersion = "16.0";
             break;
         default:
-            Log::Write(LogLevel::Error, "%s: Unknown compiler version, using default version '%s'.\n",
-                __func__, compilerVersion.c_str());
+            Log::Warning() << HSCPP_LOG_PREFIX << "Unknown compiler version, using default version '"
+                << compilerVersion << EndLog("'.");
         }
 
         // VS2017 and up ships with vswhere.exe, which can be used to find the Visual Studio install path.
@@ -233,7 +233,7 @@ namespace hscpp
     {
         if (output.empty())
         {
-            Log::Write(LogLevel::Error, "%s: Failed to run vswhere.exe command.\n", __func__);
+            Log::Error() << HSCPP_LOG_PREFIX << "Failed to run vswhere.exe command." << EndLog();
             return false;
         }
 
@@ -250,15 +250,14 @@ namespace hscpp
 
         if (bestVsPath.empty())
         {
-            Log::Write(LogLevel::Error, "%s: vswhere.exe failed to find Visual Studio installation path.\n", __func__);
+            Log::Error() << HSCPP_LOG_PREFIX << "vswhere.exe failed to find Visual Studio installation path." << EndLog();
             return false;
         }
 
         fs::path vcVarsAllPath = bestVsPath / "VC\\Auxiliary\\Build\\vcvarsall.bat";
         if (!fs::exists(vcVarsAllPath))
         {
-            Log::Write(LogLevel::Error, "%s: Could not find vcvarsall.bat in path %s.\n",
-                __func__, vcVarsAllPath.string().c_str());
+            Log::Error() << HSCPP_LOG_PREFIX << "Could not find vcvarsall.bat in path " << vcVarsAllPath << EndLog(".");
             return false;
         }
 
@@ -286,7 +285,7 @@ namespace hscpp
     {
         if (output.empty())
         {
-            Log::Write(LogLevel::Error, "%s: Failed to run vcvarsall.bat command.\n", __func__);
+            Log::Error() << HSCPP_LOG_PREFIX << "Failed to run vcvarsall.bat command." << EndLog();
             return false;
         }
 
@@ -300,7 +299,7 @@ namespace hscpp
             }
         }
 
-        Log::Write(LogLevel::Error, "%s: Failed to initialize environment.\n", __func__);
+        Log::Error() << HSCPP_LOG_PREFIX << "Failed to initialize environment." << EndLog();
         return false;
     }
 

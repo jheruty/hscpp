@@ -31,8 +31,8 @@ bool hscpp::ModuleManager::PerformRuntimeSwap(const fs::path& moduleFilepath)
     HMODULE hModule = LoadLibrary(moduleFilepath.native().c_str());
     if (hModule == nullptr)
     {
-        Log::Write(LogLevel::Error, "%s: Failed to load module %s. [%s]\n",
-            __func__, moduleFilepath.string().c_str(), util::GetLastErrorString().c_str());
+        Log::Error() << HSCPP_LOG_PREFIX << "Failed to load module "
+            << moduleFilepath << ". " << LastErrorLog() << EndLog();
         return false;
     }
 
@@ -42,15 +42,15 @@ bool hscpp::ModuleManager::PerformRuntimeSwap(const fs::path& moduleFilepath)
 
     if (getModuleInterfaceProc == nullptr)
     {
-        Log::Write(LogLevel::Error, "%s: Failed to load Hscpp_GetModuleInterface procedure. [%s]\n",
-            __func__, util::GetLastErrorString().c_str());
+        Log::Error() << HSCPP_LOG_PREFIX << "Failed to load Hscpp_GetModuleInterface procedure. "
+            << LastErrorLog() << EndLog();
         return false;
     }
 
     ModuleInterface* pModuleInterface = getModuleInterfaceProc();
     if (pModuleInterface == nullptr)
     {
-        Log::Write(LogLevel::Error, "%s: Failed to get point to module interface.\n", __func__);
+        Log::Error() << HSCPP_LOG_PREFIX << "Failed to get pointer to module interface." << EndLog();
         return false;
     }
 

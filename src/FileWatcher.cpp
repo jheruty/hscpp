@@ -31,8 +31,8 @@ namespace hscpp
 
         if (hDirectory == INVALID_HANDLE_VALUE)
         {
-            Log::Write(LogLevel::Error, "%s: Failed to add directory '%s' to watch. [%s]\n",
-                __func__, directory.c_str(), util::GetLastErrorString().c_str());
+            Log::Error() << HSCPP_LOG_PREFIX << "Failed to add directory " 
+                << directory << " to watch. " << LastErrorLog() << EndLog();
             return false;
         }
 
@@ -42,8 +42,8 @@ namespace hscpp
 
         if (!ReadDirectoryChangesAsync(pWatch.get()))
         {
-            Log::Write(LogLevel::Error, "%s: Failed initial call to ReadDirectoryChangesW. [%s]\n",
-                __func__, util::GetLastErrorString().c_str());
+            Log::Error() << HSCPP_LOG_PREFIX << "Failed initial call to ReadDirectoryChangesW. "
+                << LastErrorLog() << EndLog();
 
             CloseHandle(hDirectory);
             return false;
@@ -64,8 +64,7 @@ namespace hscpp
 
         if (watchIt == m_Watchers.end())
         {
-            Log::Write(LogLevel::Error, "%s: Directory '%s' could not be found.\n",
-                __func__, directory.c_str());
+            Log::Error() << HSCPP_LOG_PREFIX << "Directory " << directory << "could not be found." << EndLog();
             return false;
         }
 
@@ -143,8 +142,7 @@ namespace hscpp
 
         if (error != ERROR_SUCCESS)
         {
-            Log::Write(LogLevel::Error, "%s: ReadDirectoryChangesW failed. [%s]\n",
-                __func__, util::GetErrorString(error).c_str());
+            Log::Error() << HSCPP_LOG_PREFIX << "ReadDirectoryChangesW failed. " << ErrorLog(error) << EndLog();
             return;
         }
 
@@ -193,8 +191,8 @@ namespace hscpp
 
         if (!ReadDirectoryChangesAsync(pWatch))
         {
-            Log::Write(LogLevel::Error, "%s: Failed refresh call to ReadDirectoryChangesW. [%s]\n",
-                __func__, util::GetLastErrorString().c_str());
+            Log::Error() << HSCPP_LOG_PREFIX << "Failed refresh call to ReadDirectoryChangesW. "
+                << LastErrorLog() << EndLog();
             return;
         }
     }
@@ -220,8 +218,7 @@ namespace hscpp
         bool bResult = CancelIoEx(pWatch->hDirectory, &pWatch->overlapped);
         if (!bResult)
         {
-            Log::Write(LogLevel::Error, "%s: Failed to cancel IO. [%s]\n",
-                __func__, util::GetLastErrorString().c_str());
+            Log::Error() << HSCPP_LOG_PREFIX << "Failed to cancel IO. " << LastErrorLog() << EndLog();
             return;
         }
 
@@ -233,8 +230,7 @@ namespace hscpp
         // GetOverlappedResult returns false, with ERROR_OPERATON_ABORTED.
         if (!bResult && GetLastError() != ERROR_OPERATION_ABORTED)
         {
-            Log::Write(LogLevel::Error, "%s: Failed to wait on overlapped result. [%s]\n",
-                __func__, util::GetLastErrorString().c_str());
+            Log::Error() << HSCPP_LOG_PREFIX << "Failed to wait on overlapped result. " << LastErrorLog() << EndLog();
             return;
         }
 
