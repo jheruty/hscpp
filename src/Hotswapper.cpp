@@ -109,7 +109,10 @@ namespace hscpp
         {
             for (const auto& file : std::filesystem::directory_iterator(pair.second))
             {
-                input.files.push_back(file);
+                if (util::IsSourceFile(file))
+                {
+                    input.files.push_back(file);
+                }
             }
         }
 
@@ -117,7 +120,10 @@ namespace hscpp
         {
             for (const auto& file : std::filesystem::directory_iterator(pair.second))
             {
-                input.files.push_back(file);
+                if (util::IsHeaderFile(file))
+                {
+                    input.files.push_back(file);
+                }
             }
         }
         m_Preprocessor.CreateDependencyGraph(input);
