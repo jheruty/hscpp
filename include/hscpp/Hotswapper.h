@@ -14,6 +14,7 @@
 #include "hscpp/Feature.h"
 #include "hscpp/FileParser.h"
 #include "hscpp/ProtectedFunction.h"
+#include "hscpp/Callbacks.h"
 
 namespace hscpp
 {
@@ -43,12 +44,12 @@ namespace hscpp
         bool IsFeatureEnabled(Feature feature);
 
         void CreateDependencyGraph();
+        void TriggerManualBuild();
 
         UpdateResult Update();
         bool IsCompiling();
 
-        void SetBeforeSwapCallback(const std::function<void()>& cb);
-        void SetAfterSwapCallback(const std::function<void()>& cb);
+        void SetCallbacks(const Callbacks& callbacks);
         void DoProtectedCall(const std::function<void()>& cb);
 
         //============================================================================
@@ -116,9 +117,7 @@ namespace hscpp
         ModuleManager m_ModuleManager;
 
         AllocationResolver m_AllocationResolver;
-
-        std::function<void()> m_BeforeSwapCb;
-        std::function<void()> m_AfterSwapCb;
+        Callbacks m_Callbacks;
 
         void PerformRuntimeSwap();
 

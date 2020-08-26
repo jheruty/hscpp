@@ -98,6 +98,7 @@
     <None Include=".gitignore" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="include\hscpp\Callbacks.h" />
     <ClInclude Include="include\hscpp\DependencyGraph.h" />
     <ClInclude Include="include\hscpp\Feature.h" />
     <ClInclude Include="include\hscpp\FileParser.h" />

@@ -11,6 +11,10 @@ namespace hscpp
 
         // TODO: implement
         DependentCompilation,
+
+        // Do not automatically trigger compilation on file changes. User must call the
+        // hscpp::Hotswapper's TriggerManualBuild method.
+        ManualCompilationOnly,
     };
 
 }

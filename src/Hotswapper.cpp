@@ -123,6 +123,67 @@ namespace hscpp
         m_Preprocessor.CreateDependencyGraph(input);
     }
 
+    void Hotswapper::TriggerManualBuild()
+    {
+        if (CreateBuildDirectory())
+        {
+            Preprocessor::Input preprocessorInput;
+            preprocessorInput.bHscppMacros = IsFeatureEnabled(Feature::HscppMacros);
+            preprocessorInput.bDependentCompilation = IsFeatureEnabled(Feature::DependentCompilation);
+
+            preprocessorInput.includeDirectories = AsVector(m_IncludeDirectoriesByHandle);
+            preprocessorInput.sourceDirectories = AsVector(m_SourceDirectoriesByHandle);
+            preprocessorInput.libraries = AsVector(m_LibrariesByHandle);
+            preprocessorInput.preprocessorDefinitions = AsVector(m_PreprocessorDefinitionsByHandle);
+            preprocessorInput.hscppRequireVariables = m_HscppRequireVariables;
+
+            if (m_Callbacks.BeforePreprocessor != nullptr)
+            {
+                m_Callbacks.BeforePreprocessor(preprocessorInput);
+            }
+
+            Preprocessor::Output preprocessorOutput = m_Preprocessor.Preprocess(preprocessorInput);
+
+            if (m_Callbacks.AfterPreprocessor != nullptr)
+            {
+                m_Callbacks.AfterPreprocessor(preprocessorOutput);
+            }
+
+            Compiler::CompileInfo compileInfo;
+            compileInfo.buildDirectory = m_BuildDirectory;
+            compileInfo.files = preprocessorOutput.files;
+            compileInfo.includeDirectories = preprocessorOutput.includeDirectories;
+            compileInfo.libraries = preprocessorOutput.libraries;
+            compileInfo.preprocessorDefinitions = preprocessorOutput.preprocessorDefinitions;
+            compileInfo.compileOptions = AsVector(m_CompileOptionsByHandle);
+            compileInfo.linkOptions = AsVector(m_LinkOptionsByHandle);
+
+            if (m_Callbacks.BeforeCompile != nullptr)
+            {
+                m_Callbacks.BeforeCompile(compileInfo);
+            }
+
+            if (!compileInfo.files.empty())
+            {
+                m_Compiler.StartBuild(compileInfo);
+                while (m_Compiler.IsCompiling())
+                {
+                    m_Compiler.Update();
+                }
+
+                if (m_Callbacks.AfterCompile != nullptr)
+                {
+                    m_Callbacks.AfterCompile();
+                }
+
+                if (m_Compiler.HasCompiledModule())
+                {
+                    PerformRuntimeSwap();
+                }
+            }
+        }
+    }
+
     Hotswapper::UpdateResult Hotswapper::Update()
     {
         m_Compiler.Update();
@@ -139,7 +200,11 @@ namespace hscpp
             return UpdateResult::PerformedSwap;
         }
 
-        m_FileWatcher.PollChanges(m_FileEvents);
+        if (!IsFeatureEnabled(Feature::ManualCompilationOnly))
+        {
+            m_FileWatcher.PollChanges(m_FileEvents);
+        }
+
         if (m_FileEvents.size() > 0)
         {
             if (CreateBuildDirectory())
@@ -155,7 +220,17 @@ namespace hscpp
                 preprocessorInput.preprocessorDefinitions = AsVector(m_PreprocessorDefinitionsByHandle);
                 preprocessorInput.hscppRequireVariables = m_HscppRequireVariables;
 
+                if (m_Callbacks.BeforePreprocessor != nullptr)
+                {
+                    m_Callbacks.BeforePreprocessor(preprocessorInput);
+                }
+
                 Preprocessor::Output preprocessorOutput = m_Preprocessor.Preprocess(preprocessorInput);
+
+                if (m_Callbacks.AfterPreprocessor != nullptr)
+                {
+                    m_Callbacks.AfterPreprocessor(preprocessorOutput);
+                }
 
                 Compiler::CompileInfo compileInfo;
                 compileInfo.buildDirectory = m_BuildDirectory;
@@ -163,14 +238,23 @@ namespace hscpp
                 compileInfo.includeDirectories = preprocessorOutput.includeDirectories;
                 compileInfo.libraries = preprocessorOutput.libraries;
                 compileInfo.preprocessorDefinitions = preprocessorOutput.preprocessorDefinitions;
-
-                // TODO: add these hscpp macros.
                 compileInfo.compileOptions = AsVector(m_CompileOptionsByHandle);
                 compileInfo.linkOptions = AsVector(m_LinkOptionsByHandle);
+
+                if (m_Callbacks.BeforeCompile != nullptr)
+                {
+                    m_Callbacks.BeforeCompile(compileInfo);
+                }
 
                 if (!compileInfo.files.empty())
                 {
                     m_Compiler.StartBuild(compileInfo);
+
+                    if (m_Callbacks.AfterCompile != nullptr)
+                    {
+                        m_Callbacks.AfterCompile();
+                    }
+
                     return UpdateResult::StartedCompiling;
                 }
             }
@@ -184,14 +268,9 @@ namespace hscpp
         return m_Compiler.IsCompiling();
     }
 
-    void Hotswapper::SetBeforeSwapCallback(const std::function<void()>& cb)
+    void Hotswapper::SetCallbacks(const Callbacks& callbacks)
     {
-        m_BeforeSwapCb = cb;
-    }
-
-    void Hotswapper::SetAfterSwapCallback(const std::function<void()>& cb)
-    {
-        m_AfterSwapCb = cb;
+        m_Callbacks = callbacks;
     }
 
     void Hotswapper::DoProtectedCall(const std::function<void()>& cb)
@@ -364,16 +443,16 @@ namespace hscpp
 
     void Hotswapper::PerformRuntimeSwap()
     {
-        if (m_BeforeSwapCb != nullptr)
+        if (m_Callbacks.BeforeSwap != nullptr)
         {
-            m_BeforeSwapCb();
+            m_Callbacks.BeforeSwap();
         }
 
         m_ModuleManager.PerformRuntimeSwap(m_Compiler.PopModule());
 
-        if (m_AfterSwapCb != nullptr)
+        if (m_Callbacks.AfterSwap != nullptr)
         {
-            m_AfterSwapCb();
+            m_Callbacks.AfterSwap();
         }
     }
 
