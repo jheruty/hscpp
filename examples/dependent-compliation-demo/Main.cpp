@@ -11,7 +11,7 @@ int main()
     swapper.AddIncludeDirectory(std::filesystem::current_path());
     swapper.AddSourceDirectory(std::filesystem::current_path());
 
-    swapper.EnableFeature(hscpp::Feature::HscppMacros);
+    swapper.EnableFeature(hscpp::Feature::Preprocessor);
     swapper.EnableFeature(hscpp::Feature::DependentCompilation);
 
     swapper.CreateDependencyGraph();

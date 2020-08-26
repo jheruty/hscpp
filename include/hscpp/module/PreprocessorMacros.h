@@ -1,6 +1,6 @@
 #pragma once
 
-// These macros are parsed by the FileParser, if the HscppMacros feature is enabled.
+// These macros are parsed by the FileParser, if the Preprocessor feature is enabled.
 #define hscpp_require_source(...)
 #define hscpp_require_include(...)
 #define hscpp_require_lib(...)

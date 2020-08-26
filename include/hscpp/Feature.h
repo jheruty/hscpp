@@ -7,7 +7,7 @@ namespace hscpp
     {
         // Enable parsing of hscpp_require_source, hscpp_require_include, hscpp_require_lib,
         // hscpp_preprocessor_definitions, and hscpp_module.
-        HscppMacros,
+        Preprocessor,
 
         // TODO: implement
         DependentCompilation,

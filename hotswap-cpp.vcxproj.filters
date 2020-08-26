@@ -26,8 +26,8 @@
     <ClInclude Include="include\hscpp\Preprocessor.h" />
     <ClInclude Include="include\hscpp\DependencyGraph.h" />
     <ClInclude Include="include\hscpp\Util.h" />
-    <ClInclude Include="include\hscpp\module\Macros.h" />
     <ClInclude Include="include\hscpp\Callbacks.h" />
+    <ClInclude Include="include\hscpp\module\PreprocessorMacros.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Hotswapper.cpp" />

@@ -128,7 +128,7 @@ namespace hscpp
         if (CreateBuildDirectory())
         {
             Preprocessor::Input preprocessorInput;
-            preprocessorInput.bHscppMacros = IsFeatureEnabled(Feature::HscppMacros);
+            preprocessorInput.bHscppMacros = IsFeatureEnabled(Feature::Preprocessor);
             preprocessorInput.bDependentCompilation = IsFeatureEnabled(Feature::DependentCompilation);
 
             preprocessorInput.includeDirectories = AsVector(m_IncludeDirectoriesByHandle);
@@ -210,7 +210,7 @@ namespace hscpp
             if (CreateBuildDirectory())
             {
                 Preprocessor::Input preprocessorInput;
-                preprocessorInput.bHscppMacros = IsFeatureEnabled(Feature::HscppMacros);
+                preprocessorInput.bHscppMacros = IsFeatureEnabled(Feature::Preprocessor);
                 preprocessorInput.bDependentCompilation = IsFeatureEnabled(Feature::DependentCompilation);
 
                 preprocessorInput.files = GetChangedFiles();

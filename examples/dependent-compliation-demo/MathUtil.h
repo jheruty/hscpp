@@ -1,6 +1,6 @@
 #pragma once
 
-#include "hscpp/module/Macros.h"
+#include "hscpp/module/PreprocessorMacros.h"
 
 hscpp_module("math");
 

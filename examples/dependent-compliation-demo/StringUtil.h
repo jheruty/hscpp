@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "hscpp/module/Macros.h"
+#include "hscpp/module/PreprocessorMacros.h"
 
 hscpp_module("string");
 

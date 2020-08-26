@@ -6,7 +6,7 @@
 #include "hscpp/module/ModuleSharedState.h"
 #include "hscpp/module/SwapInfo.h"
 #include "hscpp/module/ModuleInterface.h" // Added so it is included in module build.
-#include "hscpp/module/Macros.h" // Added so macros are available when using a tracked class.
+#include "hscpp/module/PreprocessorMacros.h" // Added so macros are available when using a tracked class.
 
 namespace hscpp
 {
