@@ -12,6 +12,7 @@ hscpp::ModuleManager::ModuleManager()
     Hscpp_GetModuleInterface()->SetConstructorsByKey(&m_ConstructorsByKey);
 
     m_ConstructorsByKey = Hscpp_GetModuleInterface()->GetModuleConstructorsByKey();
+    WarnDuplicateKeys(Hscpp_GetModuleInterface());
 }
 
 void hscpp::ModuleManager::SetAllocator(IAllocator* pAllocator)
@@ -61,5 +62,17 @@ bool hscpp::ModuleManager::PerformRuntimeSwap(const fs::path& moduleFilepath)
     pModuleInterface->SetGlobalUserData(m_pGlobalUserData);
     pModuleInterface->PerformRuntimeSwap();
 
+    WarnDuplicateKeys(pModuleInterface);
+
     return true;
+}
+
+void hscpp::ModuleManager::WarnDuplicateKeys(ModuleInterface* pModuleInterface)
+{
+    auto duplicateKeys = pModuleInterface->GetDuplicateKeys();
+    for (const auto& duplicate : duplicateKeys)
+    {
+        Log::Warning() << HSCPP_LOG_PREFIX << "Duplicate HSCPP_TRACK key detected (key="
+            << duplicate.key << ", type=" << duplicate.type << EndLog(").");
+    }
 }

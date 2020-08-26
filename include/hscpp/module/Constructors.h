@@ -5,6 +5,8 @@
 #include <memory>
 #include <typeindex>
 #include <functional>
+#include <unordered_set>
+#include <typeindex>
 
 #include "hscpp/module/IAllocator.h"
 #include "hscpp/module/ModuleSharedState.h"
@@ -74,9 +76,16 @@ namespace hscpp
     class Constructors
     {
     public:
+        struct DuplicateKey
+        {
+            std::string key;
+            std::string type;
+        };
+
         template <typename T>
         static void RegisterConstructor(const std::string& key)
         {
+            TypesByKey()[key].insert(std::type_index(typeid(T)));
             GetConstructorKeys().push_back(key);
 
             GetConstructors().push_back(std::make_unique<Constructor<T>>());
@@ -106,6 +115,28 @@ namespace hscpp
             return nullptr;
         }
 
+        static std::vector<DuplicateKey> GetDuplicateKeys()
+        {
+            std::vector<DuplicateKey> duplicates;
+
+            for (const auto& pair : TypesByKey())
+            {
+                if (pair.second.size() > 1)
+                {
+                    for (const auto& type : pair.second)
+                    {
+                        DuplicateKey duplicate;
+                        duplicate.key = pair.first;
+                        duplicate.type = type.name();
+
+                        duplicates.push_back(duplicate);
+                    }
+                }
+            }
+
+            return duplicates;
+        }
+
     private:
         // Avoid static initialization order issues by placing static variables within functions.
         static std::vector<std::string>& GetConstructorKeys()
@@ -124,6 +155,12 @@ namespace hscpp
         {
             static std::unordered_map<std::string, size_t> iConstructorByKey;
             return iConstructorByKey;
+        }
+
+        static std::unordered_map<std::string, std::unordered_set<std::type_index>>& TypesByKey()
+        {
+            static std::unordered_map<std::string, std::unordered_set<std::type_index>> typeByKey;
+            return typeByKey;
         }
     };
 

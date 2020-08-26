@@ -34,6 +34,8 @@ namespace hscpp
         void* m_pGlobalUserData = nullptr;
 
         std::unordered_map<std::string, IConstructor*> m_ConstructorsByKey;
+
+        void WarnDuplicateKeys(ModuleInterface* pModuleInterface);
     };
 
 }

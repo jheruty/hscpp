@@ -122,6 +122,11 @@ namespace hscpp
 
             *ModuleSharedState::s_pbSwapping = false;
         }
+
+        virtual std::vector<Constructors::DuplicateKey> GetDuplicateKeys()
+        {
+            return Constructors::GetDuplicateKeys();
+        }
     };
 }
 
