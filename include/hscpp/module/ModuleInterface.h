@@ -74,12 +74,12 @@ namespace hscpp
 
                 // Find tracked objects corresponding to this constructor. If not found, this must
                 // be a new class, so no instances have been created yet.
-                auto trackedObjectsPair = ModuleSharedState::s_pTrackersByKey->find(key);
-                if (trackedObjectsPair != ModuleSharedState::s_pTrackersByKey->end())
+                auto trackersIt = ModuleSharedState::s_pTrackersByKey->find(key);
+                if (trackersIt != ModuleSharedState::s_pTrackersByKey->end())
                 {
                     // Get tracked objects, and make a copy. As objects are freed, their tracker
                     // will be erased from the trackedObjects vector.
-                    std::vector<ITracker*>& trackedObjects = trackedObjectsPair->second;
+                    std::vector<ITracker*>& trackedObjects = trackersIt->second;
                     std::vector<ITracker*> oldTrackedObjects = trackedObjects;
 
                     size_t nInstances = trackedObjects.size();
@@ -103,8 +103,8 @@ namespace hscpp
                     // list should now be empty.
                     assert(trackedObjects.empty());
 
-                    // Create new instances from the new constructors. These will automatically
-                    // register themselves into the m_pTrackersByKey map.
+                    // Create new instances from the new constructors. These will have automatically
+                    // registered themselves into the m_pTrackersByKey map.
                     IConstructor* pConstructor = Constructors::GetConstructor(key);
 
                     for (size_t i = 0; i < nInstances; ++i)

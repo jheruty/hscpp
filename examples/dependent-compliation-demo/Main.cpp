@@ -23,7 +23,7 @@ int main()
     callbacks.BeforeSwap = []() {std::cout << "Before swap callback." << std::endl; };
     callbacks.AfterSwap = []() {std::cout << "After swap callback." << std::endl; };
     callbacks.BeforePreprocessor = [](hscpp::Preprocessor::Input& input) {
-        input.files.push_back(std::filesystem::current_path() / "Printer2.cpp");
+        input.sourceFiles.push_back(std::filesystem::current_path() / "Printer2.cpp");
     };
 
     swapper.SetCallbacks(callbacks);

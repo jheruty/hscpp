@@ -11,90 +11,100 @@
 namespace hscpp
 {
 
-    enum class LogLevel
+    namespace log
     {
-        Debug,
-        Info,
-        Warning,
-        Error,
-    };
-
-    class EndLog
-    {
-    public:
-        EndLog() {};
-        EndLog(const std::string& value);
-
-        std::string Value() const;
-
-    private:
-        std::string m_Value;
-    };
-
-    class LastErrorLog
-    {};
-
-    class ErrorLog
-    {
-    public:
-        ErrorLog(DWORD value);
-        ErrorLog(const std::error_code& value);
-
-        DWORD Value() const;
-
-    private:
-        DWORD m_Value;
-    };
-
-    class LoggerStream
-    {
-    public:
-        LoggerStream(bool bEnabled, const std::function<void(const std::wstringstream&)>& endCb = nullptr);
-        LoggerStream& operator<<(const std::string& str);
-
-        LoggerStream& operator<<(const LastErrorLog& lastErrorLog);
-        LoggerStream& operator<<(const ErrorLog& errorLog);
-        void operator<<(const EndLog& endLog);
-
-        template <typename T>
-        LoggerStream& operator<<(const T& val)
+        //============================================================================
+        // Level
+        //============================================================================
+        
+        enum class Level
         {
-            if (!m_bEnabled)
+            Debug,
+            Info,
+            Warning,
+            Error,
+        };
+
+        //============================================================================
+        // Shorthands
+        //============================================================================
+
+        // End the current log stream.
+        class End
+        {
+        public:
+            End() {};
+            End(const std::string& str);
+
+            std::string Str() const;
+
+        private:
+            std::string m_Str;
+        };
+
+        // Insert the last OS error.
+        class LastOsError
+        {};
+
+        // Insert the OS error, given the error code.
+        class OsError
+        {
+        public:
+            OsError(DWORD errorCode);
+            OsError(const std::error_code& errorCode);
+
+            DWORD ErrorCode() const;
+
+        private:
+            DWORD m_ErrorCode;
+        };
+        
+        //============================================================================
+        // Stream
+        //============================================================================
+        
+        class Stream
+        {
+        public:
+            Stream(bool bEnabled, const std::function<void(const std::wstringstream&)>& endCb = nullptr);
+            Stream& operator<<(const std::string& str);
+
+            Stream& operator<<(const LastOsError& lastError);
+            Stream& operator<<(const OsError& errorLog);
+            void operator<<(const End& endLog);
+
+            template <typename T>
+            Stream& operator<<(const T& val)
             {
+                if (!m_bEnabled)
+                {
+                    return *this;
+                }
+
+                m_Stream << val;
                 return *this;
             }
 
-            m_Stream << val;
-            return *this;
-        }
+        private:
+            bool m_bEnabled = true;
+            std::function<void(const std::wstringstream&)> m_EndCb;
 
-    private:
-        bool m_bEnabled = true;
-        std::function<void(const std::wstringstream&)> m_EndCb;
+            std::wstringstream m_Stream;
+        };
 
-        std::wstringstream m_Stream;
-    };
+        //============================================================================
+        // Logging Functions
+        //============================================================================
+        Stream Debug();
+        Stream Info();
+        Stream Warning();
+        Stream Error();
+        Stream Build();
 
-    class Log
-    {
-    public:
-        static void SetLogLevel(LogLevel level);
+        void SetLevel(Level level);
 
-        static void EnableBuildLogging();
-        static void DisableBuildLogging();
+        void EnableBuildLogging();
+        void DisableBuildLogging();
+    }
 
-        static LoggerStream Debug();
-        static LoggerStream Info();
-        static LoggerStream Warning();
-        static LoggerStream Error();
-
-        static LoggerStream Build();
-
-    private:
-        static bool s_bLogBuild;
-        static LogLevel s_LogLevel;
-
-        static bool IsLogLevelActive(LogLevel level);
-    };
 }
-

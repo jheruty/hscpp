@@ -13,12 +13,6 @@ namespace hscpp
 
     const static std::string HSCPP_TEMP_DIRECTORY_NAME = "HSCPP_7c9279ff-25af-488c-a634-b6aa68f47a65";
 
-    // Users may not override these file options.
-    const static std::unordered_set<std::string> FORBIDDEN_COMPILE_OPTIONS = {
-        "Fe", // Name of compiled module.
-        "Fo", // Name of directory to place all object files.
-    };
-    
     const static std::vector<std::string> DEFAULT_COMPILE_OPTIONS = {
         "/nologo", // Suppress cl startup banner.
         "/std:c++17", // Use C++17 standard.
@@ -41,6 +35,9 @@ namespace hscpp
     const static std::vector<std::string> DEFAULT_PREPROCESSOR_DEFINITIONS = {
 #ifdef _DEBUG
         "_DEBUG",
+#endif
+#ifdef _WIN32
+        "_WIN32",
 #endif
     };
 
@@ -111,7 +108,7 @@ namespace hscpp
             {
                 if (util::IsSourceFile(file))
                 {
-                    input.files.push_back(file);
+                    input.sourceFiles.push_back(file);
                 }
             }
         }
@@ -122,7 +119,7 @@ namespace hscpp
             {
                 if (util::IsHeaderFile(file))
                 {
-                    input.files.push_back(file);
+                    input.sourceFiles.push_back(file);
                 }
             }
         }
@@ -155,9 +152,9 @@ namespace hscpp
                 m_Callbacks.AfterPreprocessor(preprocessorOutput);
             }
 
-            Compiler::CompileInfo compileInfo;
+            Compiler::Input compileInfo;
             compileInfo.buildDirectory = m_BuildDirectory;
-            compileInfo.files = preprocessorOutput.files;
+            compileInfo.sourceFiles = preprocessorOutput.files;
             compileInfo.includeDirectories = preprocessorOutput.includeDirectories;
             compileInfo.libraries = preprocessorOutput.libraries;
             compileInfo.preprocessorDefinitions = preprocessorOutput.preprocessorDefinitions;
@@ -169,7 +166,7 @@ namespace hscpp
                 m_Callbacks.BeforeCompile(compileInfo);
             }
 
-            if (!compileInfo.files.empty())
+            if (!compileInfo.sourceFiles.empty())
             {
                 m_Compiler.StartBuild(compileInfo);
                 while (m_Compiler.IsCompiling())
@@ -219,7 +216,7 @@ namespace hscpp
                 preprocessorInput.bHscppMacros = IsFeatureEnabled(Feature::Preprocessor);
                 preprocessorInput.bDependentCompilation = IsFeatureEnabled(Feature::DependentCompilation);
 
-                preprocessorInput.files = GetChangedFiles();
+                preprocessorInput.sourceFiles = GetChangedFiles();
                 preprocessorInput.includeDirectories = AsVector(m_IncludeDirectoriesByHandle);
                 preprocessorInput.sourceDirectories = AsVector(m_SourceDirectoriesByHandle);
                 preprocessorInput.libraries = AsVector(m_LibrariesByHandle);
@@ -238,9 +235,9 @@ namespace hscpp
                     m_Callbacks.AfterPreprocessor(preprocessorOutput);
                 }
 
-                Compiler::CompileInfo compileInfo;
+                Compiler::Input compileInfo;
                 compileInfo.buildDirectory = m_BuildDirectory;
-                compileInfo.files = preprocessorOutput.files;
+                compileInfo.sourceFiles = preprocessorOutput.files;
                 compileInfo.includeDirectories = preprocessorOutput.includeDirectories;
                 compileInfo.libraries = preprocessorOutput.libraries;
                 compileInfo.preprocessorDefinitions = preprocessorOutput.preprocessorDefinitions;
@@ -252,7 +249,7 @@ namespace hscpp
                     m_Callbacks.BeforeCompile(compileInfo);
                 }
 
-                if (!compileInfo.files.empty())
+                if (!compileInfo.sourceFiles.empty())
                 {
                     m_Compiler.StartBuild(compileInfo);
 
@@ -291,8 +288,8 @@ namespace hscpp
         // Keep recompiling user's changes until protected call succeeds.
         while (result != ProtectedFunction::Result::Success)
         {
-            Log::Error() << HSCPP_LOG_PREFIX << "Failed protected call. " 
-                << "Make code changes and save to reattempt." << EndLog();
+            log::Error() << HSCPP_LOG_PREFIX << "Failed protected call. "
+                << "Make code changes and save to reattempt." << log::End();
 
             while (Update() != UpdateResult::PerformedSwap)
             {
@@ -471,7 +468,8 @@ namespace hscpp
 
         if (error.value() != ERROR_SUCCESS)
         {
-            Log::Error() << HSCPP_LOG_PREFIX << "Failed to find temp directory path. " << ErrorLog(error) << EndLog();
+            log::Error() << HSCPP_LOG_PREFIX << "Failed to find temp directory path. "
+                << log::OsError(error) << log::End();
             return false;
         }
 
@@ -480,8 +478,8 @@ namespace hscpp
         fs::remove_all(hscppTemp, error);
         if (!fs::create_directory(hscppTemp, error))
         {
-            Log::Error() << HSCPP_LOG_PREFIX << "Failed to create directory "
-                << hscppTemp << ". " << ErrorLog(error) << EndLog();
+            log::Error() << HSCPP_LOG_PREFIX << "Failed to create directory "
+                << hscppTemp << ". " << log::OsError(error) << log::End();
             return false;
         }
 
@@ -506,8 +504,8 @@ namespace hscpp
         std::error_code error;
         if (!fs::create_directory(m_BuildDirectory, error))
         {
-            Log::Error() << HSCPP_LOG_PREFIX << "Failed to create directory "
-                << m_BuildDirectory << ErrorLog(error) << EndLog();
+            log::Error() << HSCPP_LOG_PREFIX << "Failed to create directory "
+                << m_BuildDirectory << ". " << log::OsError(error) << log::End();
             return false;
         }
 
@@ -537,15 +535,15 @@ namespace hscpp
             }
             else if (error.value() != ERROR_SUCCESS)
             {
-                Log::Error() << HSCPP_LOG_PREFIX << "Failed to get canonical path of "
-                    << event.filepath << ". " << ErrorLog(error) << EndLog();
+                log::Error() << HSCPP_LOG_PREFIX << "Failed to get canonical path of "
+                    << event.filepath << ". " << log::OsError(error) << log::End();
                 continue;
             }
 
             if (!util::IsHeaderFile(canonicalPath) && !util::IsSourceFile(canonicalPath))
             {
-                Log::Info() << HSCPP_LOG_PREFIX << "File " << canonicalPath
-                    << " will be skipped; its extension is not being watched." << EndLog();
+                log::Info() << HSCPP_LOG_PREFIX << "File " << canonicalPath
+                    << " will be skipped; its extension is not being watched." << log::End();
                 continue;
             }
 

@@ -14,7 +14,8 @@ namespace hscpp
         {
             if (!TerminateProcess(m_hProcess, EXIT_SUCCESS))
             {
-                Log::Warning() << HSCPP_LOG_PREFIX << "Failed to terminate cmd process. " << LastErrorLog() << EndLog();
+                log::Warning() << HSCPP_LOG_PREFIX << "Failed to terminate cmd process. "
+                    << log::LastOsError() << log::End();
             }
         }
     }
@@ -29,14 +30,16 @@ namespace hscpp
         HANDLE hStdoutWrite = INVALID_HANDLE_VALUE;
         if (!CreatePipe(&m_hStdoutRead, &hStdoutWrite, &securityAttrs, 0))
         {
-            Log::Error() << HSCPP_LOG_PREFIX << "Failed to create stdout pipe. " << LastErrorLog() << EndLog();
+            log::Error() << HSCPP_LOG_PREFIX << "Failed to create stdout pipe. "
+                << log::LastOsError() << log::End();
             return false;
         }
 
         HANDLE hStdinRead = INVALID_HANDLE_VALUE;
         if (!CreatePipe(&hStdinRead, &m_hStdinWrite, &securityAttrs, 0))
         {
-            Log::Error() << HSCPP_LOG_PREFIX << "Failed to create stdin pipe." << LastErrorLog() << EndLog();
+            log::Error() << HSCPP_LOG_PREFIX << "Failed to create stdin pipe."
+                << log::LastOsError() << log::End();
             return false;
         }
 
@@ -74,7 +77,8 @@ namespace hscpp
 
         if (!bSuccess)
         {
-            Log::Error() << HSCPP_LOG_PREFIX << "Failed to create cmd process. " << LastErrorLog() << EndLog();
+            log::Error() << HSCPP_LOG_PREFIX << "Failed to create cmd process. "
+                << log::LastOsError() << log::End();
             return false;
         }
 
@@ -89,7 +93,7 @@ namespace hscpp
 
     void CmdShell::StartTask(const std::string& command, int taskId)
     {
-        bool bSuccess = false;
+        bool bSuccess = true;
 
         bSuccess &= SendCommand(command);
         bSuccess &= SendCommand("echo " + TASK_COMPLETION_KEY);
@@ -188,7 +192,7 @@ namespace hscpp
 
         if (m_hProcess == INVALID_HANDLE_VALUE)
         {
-            Log::Error() << HSCPP_LOG_PREFIX << "Command process is not running." << EndLog();
+            log::Error() << HSCPP_LOG_PREFIX << "Command process is not running." << log::End();
             return false;
         }
 
@@ -201,7 +205,8 @@ namespace hscpp
             DWORD nBytesWritten = 0;
             if (!WriteFile(m_hStdinWrite, pStr + offset, nBytesToWrite, &nBytesWritten, NULL))
             {
-                Log::Error() << HSCPP_LOG_PREFIX << "Failed to write to cmd process. " << LastErrorLog() << EndLog();
+                log::Error() << HSCPP_LOG_PREFIX << "Failed to write to cmd process. "
+                    << log::LastOsError() << log::End();
                 return false;
             }
 
@@ -218,7 +223,7 @@ namespace hscpp
 
         if (m_hProcess == INVALID_HANDLE_VALUE)
         {
-            Log::Error() << HSCPP_LOG_PREFIX << "Command process is not running." << EndLog();
+            log::Error() << HSCPP_LOG_PREFIX << "Command process is not running." << log::End();
             return false;
         }
 
@@ -230,7 +235,8 @@ namespace hscpp
             DWORD nBytesAvailable = 0;
             if (!PeekNamedPipe(m_hStdoutRead, NULL, 0, NULL, &nBytesAvailable, NULL))
             {
-                Log::Error() << HSCPP_LOG_PREFIX << "Failed to peek cmd pipe. " << LastErrorLog() << EndLog();
+                log::Error() << HSCPP_LOG_PREFIX << "Failed to peek cmd pipe. "
+                    << log::LastOsError() << log::End();
                 return false;
             }
 
@@ -240,7 +246,8 @@ namespace hscpp
                 if (!ReadFile(m_hStdoutRead, m_ReadBuffer.data(),
                     static_cast<DWORD>(m_ReadBuffer.size()), &nBytesRead, NULL))
                 {
-                    Log::Error() << HSCPP_LOG_PREFIX << "Failed to read from cmd process. " << LastErrorLog() << EndLog();
+                    log::Error() << HSCPP_LOG_PREFIX << "Failed to read from cmd process. "
+                        << log::LastOsError() << log::End();
                     return false;
                 }
 

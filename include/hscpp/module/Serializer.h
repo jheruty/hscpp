@@ -28,10 +28,10 @@ namespace hscpp
         template <typename T>
         void Serialize(const std::string& name, const T& val)
         {
-           auto property = std::make_unique<SerializedProperty<T>>();
-           property->value = val;
+           auto pProperty = std::make_unique<SerializedProperty<T>>();
+           pProperty->value = val;
 
-            m_Properties[name] = std::move(property);
+            m_Properties[name] = std::move(pProperty);
         }
 
         template <typename T>

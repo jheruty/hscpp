@@ -15,7 +15,7 @@ namespace hscpp
         std::function<void(Preprocessor::Input&)> BeforePreprocessor;
         std::function<void(Preprocessor::Output&)> AfterPreprocessor;
 
-        std::function<void(Compiler::CompileInfo&)> BeforeCompile;
+        std::function<void(Compiler::Input&)> BeforeCompile;
         std::function<void()> AfterCompile;
     };
 }

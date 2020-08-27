@@ -13,15 +13,21 @@ namespace hscpp
 
     Compiler::Compiler()
     {
-        m_CmdShell.CreateCmdProcess();
-        StartVsPathTask();
+        if (m_CmdShell.CreateCmdProcess())
+        {
+            StartVsPathTask();
+        }
+        else
+        {
+            log::Error() << HSCPP_LOG_PREFIX << "Failed to create compiler cmd process." << log::End();
+        }
     }
 
-    bool Compiler::StartBuild(const CompileInfo& info)
+    bool Compiler::StartBuild(const Input& info)
     {
         if (!m_Initialized)
         {
-            Log::Info() << HSCPP_LOG_PREFIX << "Compiler is not initialized, skipping compilation." << EndLog();
+            log::Info() << HSCPP_LOG_PREFIX << "Compiler is still initializing, skipping compilation." << log::End();
             return false;
         }
 
@@ -33,12 +39,11 @@ namespace hscpp
             return false;
         }
 
-        // Create compile command.
-        std::string cmd = "cl @\"" + info.buildDirectory.string() + "\\" + COMMAND_FILENAME + "\" ";
-
+        // Execute compile command.
         m_iCompileOutput = 0;
         m_CompiledModule.clear();
 
+        std::string cmd = "cl @\"" + info.buildDirectory.string() + "\\" + COMMAND_FILENAME + "\"";
         m_CmdShell.StartTask(cmd, static_cast<int>(CompilerTask::Build));
 
         return true;
@@ -46,22 +51,25 @@ namespace hscpp
 
     void Compiler::Update()
     {
-        int taskId;
+        int taskId = -1;
         CmdShell::TaskState taskState = m_CmdShell.Update(taskId);
-
-        // If compiling, write out output in real time.
-        if (static_cast<CompilerTask>(taskId) == CompilerTask::Build)
-        {
-            const std::vector<std::string>& output = m_CmdShell.PeekTaskOutput();
-            for (m_iCompileOutput; m_iCompileOutput < output.size(); ++m_iCompileOutput)
-            {
-                Log::Build() << output.at(m_iCompileOutput) << EndLog();
-            }
-        }
 
         switch (taskState)
         {
-        case CmdShell::TaskState::Running: // TODO: Timeout on visual studio path, print logs on compiling...
+        case CmdShell::TaskState::Running:
+        {
+            // If compiling, write out output in real time.
+            if (static_cast<CompilerTask>(taskId) == CompilerTask::Build)
+            {
+                const std::vector<std::string>& output = m_CmdShell.PeekTaskOutput();
+                for (m_iCompileOutput; m_iCompileOutput < output.size(); ++m_iCompileOutput)
+                {
+                    log::Build() << output.at(m_iCompileOutput) << log::End();
+                }
+            }
+
+            break;
+        }
         case CmdShell::TaskState::Idle:
             // Do nothing.
             break;
@@ -69,7 +77,8 @@ namespace hscpp
             HandleTaskComplete(static_cast<CompilerTask>(taskId));
             break;
         case CmdShell::TaskState::Error:
-            // TODO: Handle error.
+            log::Error() << HSCPP_LOG_PREFIX << "Compiler shell task '"
+                << taskId << "' resulted in error." << log::End();
             break;
         default:
             assert(false);
@@ -95,7 +104,7 @@ namespace hscpp
         return module;
     }
 
-    bool Compiler::CreateClCommandFile(const CompileInfo& info)
+    bool Compiler::CreateClCommandFile(const Input& info)
     {
         fs::path commandFilepath = info.buildDirectory / COMMAND_FILENAME;
         std::ofstream commandFile(commandFilepath.native().c_str(), std::ios_base::binary);
@@ -103,7 +112,8 @@ namespace hscpp
 
         if (!commandFile.is_open())
         {
-            Log::Error() << HSCPP_LOG_PREFIX << "Failed to create command file " << commandFilepath << EndLog(".");
+            log::Error() << HSCPP_LOG_PREFIX << "Failed to create command file "
+                << commandFilepath << log::End(".");
             return false;
         }
 
@@ -117,7 +127,8 @@ namespace hscpp
         commandFile.open(commandFilepath.native().c_str(), std::ios::app);
         if (!commandFile.is_open())
         {
-            Log::Error() << HSCPP_LOG_PREFIX << "Failed to open command file " << commandFilepath << EndLog(".");
+            log::Error() << HSCPP_LOG_PREFIX << "Failed to open command file "
+                << commandFilepath << log::End(".");
             return false;
         }
 
@@ -138,7 +149,7 @@ namespace hscpp
             command << "/I " << "\"" << includeDirectory.u8string() << "\"" << std::endl;
         }
 
-        for (const auto& file : info.files)
+        for (const auto& file : info.sourceFiles)
         {
             command << "\"" << file.u8string() << "\"" << std::endl;
         }
@@ -165,7 +176,7 @@ namespace hscpp
 
         // Print effective command line. The /MP flag causes the VS logo to print multiple times,
         // so the default compile options use /nologo to suppress it.
-        Log::Build() << "cl " << command.str() << EndLog();
+        log::Build() << "cl " << command.str() << log::End();
 
         // Write command file.
         commandFile << command.str();
@@ -196,8 +207,9 @@ namespace hscpp
             compilerVersion = "16.0";
             break;
         default:
-            Log::Warning() << HSCPP_LOG_PREFIX << "Unknown compiler version, using default version '"
-                << compilerVersion << EndLog("'.");
+            log::Warning() << HSCPP_LOG_PREFIX << "Unknown compiler version, using default version '"
+                << compilerVersion << log::End("'.");
+            break;
         }
 
         // VS2017 and up ships with vswhere.exe, which can be used to find the Visual Studio install path.
@@ -233,7 +245,7 @@ namespace hscpp
     {
         if (output.empty())
         {
-            Log::Error() << HSCPP_LOG_PREFIX << "Failed to run vswhere.exe command." << EndLog();
+            log::Error() << HSCPP_LOG_PREFIX << "Failed to run vswhere.exe command." << log::End();
             return false;
         }
 
@@ -250,14 +262,14 @@ namespace hscpp
 
         if (bestVsPath.empty())
         {
-            Log::Error() << HSCPP_LOG_PREFIX << "vswhere.exe failed to find Visual Studio installation path." << EndLog();
+            log::Error() << HSCPP_LOG_PREFIX << "vswhere.exe failed to find Visual Studio installation path." << log::End();
             return false;
         }
 
         fs::path vcVarsAllPath = bestVsPath / "VC\\Auxiliary\\Build\\vcvarsall.bat";
         if (!fs::exists(vcVarsAllPath))
         {
-            Log::Error() << HSCPP_LOG_PREFIX << "Could not find vcvarsall.bat in path " << vcVarsAllPath << EndLog(".");
+            log::Error() << HSCPP_LOG_PREFIX << "Could not find vcvarsall.bat in path " << vcVarsAllPath << log::End(".");
             return false;
         }
 
@@ -285,7 +297,7 @@ namespace hscpp
     {
         if (output.empty())
         {
-            Log::Error() << HSCPP_LOG_PREFIX << "Failed to run vcvarsall.bat command." << EndLog();
+            log::Error() << HSCPP_LOG_PREFIX << "Failed to run vcvarsall.bat command." << log::End();
             return false;
         }
 
@@ -299,7 +311,7 @@ namespace hscpp
             }
         }
 
-        Log::Error() << HSCPP_LOG_PREFIX << "Failed to initialize environment." << EndLog();
+        log::Error() << HSCPP_LOG_PREFIX << "Failed to initialize environment with vcvarsall.bat." << log::End();
         return false;
     }
 

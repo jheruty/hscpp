@@ -9,7 +9,7 @@ namespace hscpp
         // hscpp_preprocessor_definitions, and hscpp_module.
         Preprocessor,
 
-        // TODO: implement
+        // #TODO
         DependentCompilation,
 
         // Do not automatically trigger compilation on file changes. User must call the

@@ -14,10 +14,10 @@ namespace hscpp
     class Compiler
     {
     public:
-        struct CompileInfo
+        struct Input
         {
             fs::path buildDirectory;
-            std::vector<fs::path> files;
+            std::vector<fs::path> sourceFiles;
             std::vector<fs::path> includeDirectories;
             std::vector<fs::path> libraries;
             std::vector<std::string> preprocessorDefinitions;
@@ -27,7 +27,7 @@ namespace hscpp
 
         Compiler();
         
-        bool StartBuild(const CompileInfo& info);
+        bool StartBuild(const Input& info);
         void Update();
 
         bool IsCompiling();
@@ -50,7 +50,7 @@ namespace hscpp
         fs::path m_CompilingModule;
         fs::path m_CompiledModule;
 
-        bool CreateClCommandFile(const CompileInfo& info);
+        bool CreateClCommandFile(const Input& info);
 
         void StartVsPathTask();
         bool HandleTaskComplete(CompilerTask task);

@@ -12,7 +12,7 @@ namespace hscpp
     {
         m_DependencyGraph.Clear();
 
-        for (const auto& file : input.files)
+        for (const auto& file : input.sourceFiles)
         {
             FileParser::ParseInfo parseInfo = m_FileParser.Parse(file);
             UpdateDependencyGraph(input, parseInfo);
@@ -23,7 +23,7 @@ namespace hscpp
     {
         Reset(input);
 
-        for (const auto& file : input.files)
+        for (const auto& file : input.sourceFiles)
         {
             FileParser::ParseInfo parseInfo = m_FileParser.Parse(file);
 
@@ -32,7 +32,7 @@ namespace hscpp
             UpdateDependencyGraph(input, parseInfo);
         }
 
-        for (const auto& file : input.files)
+        for (const auto& file : input.sourceFiles)
         {
             std::vector<fs::path> additionalFiles = m_DependencyGraph.ResolveGraph(file);
             m_SourceFiles.insert(additionalFiles.begin(), additionalFiles.end());
@@ -48,7 +48,7 @@ namespace hscpp
         m_Libraries.clear();
         m_PreprocessorDefinitions.clear();
 
-        m_SourceFiles.insert(input.files.begin(), input.files.end());
+        m_SourceFiles.insert(input.sourceFiles.begin(), input.sourceFiles.end());
         m_IncludeDirectories.insert(input.includeDirectories.begin(), input.includeDirectories.end());
         m_Libraries.insert(input.libraries.begin(), input.libraries.end());
         m_PreprocessorDefinitions.insert(input.preprocessorDefinitions.begin(), input.preprocessorDefinitions.end());
@@ -108,8 +108,8 @@ namespace hscpp
                 }
                 else
                 {
-                    Log::Error() << HSCPP_LOG_PREFIX << "Failed to get canonical path of "
-                        << fullpath << ". " << ErrorLog(error) << EndLog();
+                    log::Error() << HSCPP_LOG_PREFIX << "Failed to get canonical path of "
+                        << fullpath << ". " << log::OsError(error) << log::End();
                 }
             }
         }
@@ -130,8 +130,8 @@ namespace hscpp
         
         if (error.value() != ERROR_SUCCESS)
         {
-            Log::Error() << HSCPP_LOG_PREFIX << "Failed to get canonical path of "
-                << canoncialFile << ". " << ErrorLog(error) << EndLog();
+            log::Error() << HSCPP_LOG_PREFIX << "Failed to get canonical path of "
+                << canoncialFile << ". " << log::OsError(error) << log::End();
             return;
         }
 

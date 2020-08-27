@@ -32,8 +32,8 @@ bool hscpp::ModuleManager::PerformRuntimeSwap(const fs::path& moduleFilepath)
     HMODULE hModule = LoadLibrary(moduleFilepath.native().c_str());
     if (hModule == nullptr)
     {
-        Log::Error() << HSCPP_LOG_PREFIX << "Failed to load module "
-            << moduleFilepath << ". " << LastErrorLog() << EndLog();
+        log::Error() << HSCPP_LOG_PREFIX << "Failed to load module "
+            << moduleFilepath << ". " << log::LastOsError() << log::End();
         return false;
     }
 
@@ -43,15 +43,15 @@ bool hscpp::ModuleManager::PerformRuntimeSwap(const fs::path& moduleFilepath)
 
     if (getModuleInterfaceProc == nullptr)
     {
-        Log::Error() << HSCPP_LOG_PREFIX << "Failed to load Hscpp_GetModuleInterface procedure. "
-            << LastErrorLog() << EndLog();
+        log::Error() << HSCPP_LOG_PREFIX << "Failed to load Hscpp_GetModuleInterface procedure. "
+            << log::LastOsError() << log::End();
         return false;
     }
 
     ModuleInterface* pModuleInterface = getModuleInterfaceProc();
     if (pModuleInterface == nullptr)
     {
-        Log::Error() << HSCPP_LOG_PREFIX << "Failed to get pointer to module interface." << EndLog();
+        log::Error() << HSCPP_LOG_PREFIX << "Failed to get pointer to module interface." << log::End();
         return false;
     }
 
@@ -72,7 +72,7 @@ void hscpp::ModuleManager::WarnDuplicateKeys(ModuleInterface* pModuleInterface)
     auto duplicateKeys = pModuleInterface->GetDuplicateKeys();
     for (const auto& duplicate : duplicateKeys)
     {
-        Log::Warning() << HSCPP_LOG_PREFIX << "Duplicate HSCPP_TRACK key detected (key="
-            << duplicate.key << ", type=" << duplicate.type << EndLog(").");
+        log::Warning() << HSCPP_LOG_PREFIX << "Duplicate HSCPP_TRACK key detected (key="
+            << duplicate.key << ", type=" << duplicate.type << log::End(").");
     }
 }

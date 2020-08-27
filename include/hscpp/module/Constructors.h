@@ -86,6 +86,7 @@ namespace hscpp
         static void RegisterConstructor(const std::string& key)
         {
             TypesByKey()[key].insert(std::type_index(typeid(T)));
+
             GetConstructorKeys().push_back(key);
 
             GetConstructors().push_back(std::make_unique<Constructor<T>>());
@@ -119,14 +120,14 @@ namespace hscpp
         {
             std::vector<DuplicateKey> duplicates;
 
-            for (const auto& pair : TypesByKey())
+            for (const auto& [key, types] : TypesByKey())
             {
-                if (pair.second.size() > 1)
+                if (types.size() > 1)
                 {
-                    for (const auto& type : pair.second)
+                    for (const auto& type : types)
                     {
                         DuplicateKey duplicate;
-                        duplicate.key = pair.first;
+                        duplicate.key = key;
                         duplicate.type = type.name();
 
                         duplicates.push_back(duplicate);

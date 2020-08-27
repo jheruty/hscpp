@@ -35,7 +35,7 @@ Printer::Printer()
     // Set the lambda callback. When HSCPP_DISABLE is defined, this macro evaluates to nothing. To avoid
     // creating a lambda in a shipped build, the lambda can be placed directly within the macro. However,
     // this will make it more difficult to debug, as breakpoints can't be placed in a macro's arguments.
-    HscppSetSwapHandler(cb);
+    Hscpp_SetSwapHandler(cb);
 }
 
 Printer::Printer(const std::string& name, int index)

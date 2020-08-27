@@ -15,16 +15,16 @@ namespace hscpp
         std::ifstream file(filepath.native().c_str());
         if (!file.is_open())
         {
-            Log::Error() << HSCPP_LOG_PREFIX << "Failed to open file " << filepath << EndLog(".");
+            log::Error() << HSCPP_LOG_PREFIX << "Failed to open file " << filepath << log::End(".");
             return info;
         }
 
         std::stringstream buf;
         buf << file.rdbuf();
 
+        m_Content = buf.str();
         m_Filepath = filepath;
         m_iChar = 0;
-        m_Content = buf.str();
 
         Parse(info);
         return info;
@@ -37,11 +37,14 @@ namespace hscpp
         while (!IsAtEnd())
         {
             size_t iStartChar = m_iChar;
+            m_Context.clear();
 
             // We only care to find:
             //    hscpp_require_source
             //    hscpp_require_include
             //    hscpp_require_lib
+            //    hscpp_preprocessor_definitions
+            //    hscpp_module 
             //    #include
             switch (Peek())
             {
@@ -60,16 +63,22 @@ namespace hscpp
                 {
                     if (Match("source"))
                     {
+                        m_Context = "hscpp_require_source";
+
                         bRequire = true;
                         require.type = Require::Type::Source;
                     }
                     else if (Match("include"))
                     {
+                        m_Context = "hscpp_require_include";
+
                         bRequire = true;
                         require.type = Require::Type::Include;
                     }
                     else if (Match("lib"))
                     {
+                        m_Context = "hscpp_require_lib";
+
                         bRequire = true;
                         require.type = Require::Type::Library;
                     }
@@ -84,6 +93,8 @@ namespace hscpp
                 }
                 else if (Match("hscpp_preprocessor_definitions"))
                 {
+                    m_Context = "hscpp_preprocessor_definitions";
+
                     std::vector<std::string> definitions;
                     if (ParsePreprocessorDefinitions(definitions))
                     {
@@ -93,6 +104,8 @@ namespace hscpp
                 }
                 else if (Match("hscpp_module"))
                 {
+                    m_Context = "hscpp_module";
+
                     std::vector<std::string> modules;
                     if (ParseModules(modules))
                     {
@@ -109,6 +122,8 @@ namespace hscpp
 
                 if (Match("include"))
                 {
+                    m_Context = "#include";
+
                     std::filesystem::path include;
                     if (ParseInclude(include))
                     {
@@ -120,7 +135,7 @@ namespace hscpp
             }
             }
 
-            if (iStartChar == m_iChar)
+            if (m_iChar == iStartChar)
             {
                 Advance();
             }
@@ -129,62 +144,26 @@ namespace hscpp
 
     bool FileParser::ParseRequire(Require& require)
     {
-        SkipWhitespace();      
-
-        if (Peek() != '(')
-        {
-            // Not a true error, in case user defined something like hscpp_require_source_custom.
-            return false;
-        }
-
-        do
-        {
-            // Parse argument list (ex. hscpp_require_source(file1.cpp, file2.cpp) ).
-            Advance();
-            SkipWhitespace();
-
+        return ParseArgumentList([&]() {
             std::string path;
-            if (!ParseString(path, '"', '"'))
+            if (!ParseString('"', '"', path))
             {
                 return false;
             }
 
             require.paths.push_back(path);
-
-            SkipWhitespace();
-        } while (Peek() == ',');
-
-        if (Peek() != ')')
-        {
-            LogParseError("hscpp_require missing closing ')'.");
-            return false;
-        }
-
-        Advance();
-        return true;
+            return true;
+        });
     }
 
     bool FileParser::ParsePreprocessorDefinitions(std::vector<std::string>& definitions)
     {
-        SkipWhitespace();
-
-        if (Peek() != '(')
-        {
-            // Not a true error, in case user defined something like hscpp_preprocessor_definition_custom.
-            return false;
-        }
-
-        do 
-        {
-            // Parse argument list (ex. hscpp_preprocessor_definition(DEFINE1, "DEFINE2")
-            Advance();
-            SkipWhitespace();
-
+        return ParseArgumentList([&]() {
             // Preprocessor definitions are accepted as both strings and literal identifiers.
             std::string definition;
             if (Peek() == '"')
             {
-                if (!ParseString(definition, '"', '"'))
+                if (!ParseString('"', '"', definition))
                 {
                     return false;
                 }
@@ -198,53 +177,22 @@ namespace hscpp
             }
 
             definitions.push_back(definition);
-
-            SkipWhitespace();
-        } while (Peek() == ',');
-
-        if (Peek() != ')')
-        {
-            LogParseError("hscpp_preprocessor_definitions missing closing ')'.");
-            return false;
-        }
-
-        Advance();
-        return true;
+            return true;
+        });
     }
 
     bool FileParser::ParseModules(std::vector<std::string>& modules)
     {
-        SkipWhitespace();
-
-        if (Peek() != '(')
-        {
-            // Not a true error, in case user defined something like hscpp_module_custom.
-            return false;
-        }
-
-        do
-        {
-            // Parse argument list (ex. "vector")
-            Advance();
-            SkipWhitespace();
-
+        return ParseArgumentList([&]() {
             std::string module;
-            if (!ParseString(module, '"', '"'))
+            if (!ParseString('"', '"', module))
             {
                 return false;
             }
 
             modules.push_back(module);
-        } while (Peek() == ',');
-
-        if (Peek() != ')')
-        {
-            LogParseError("hscpp_module missing closing ')'.");
-            return false;
-        }
-
-        Advance();
-        return true;
+            return true;
+        });
     }
 
     bool FileParser::ParseInclude(fs::path& include)
@@ -254,14 +202,14 @@ namespace hscpp
         std::string includeStr;
         if (Peek() == '"')
         {
-            if (!ParseString(includeStr, '"', '"'))
+            if (!ParseString('"', '"', includeStr))
             {
                 return false;
             }
         }
         else if (Peek() == '<')
         {
-            if (!ParseString(includeStr, '<', '>'))
+            if (!ParseString('<', '>', includeStr))
             {
                 return false;
             }
@@ -275,11 +223,47 @@ namespace hscpp
         return true;
     }
 
-    bool FileParser::ParseString(std::string& strContent, char startChar, char endChar)
+    bool FileParser::ParseArgumentList(const std::function<bool()>& parseArgumentCb)
+    {
+        SkipWhitespace();
+
+        if (Peek() != '(')
+        {
+            // Not a true error, in case user defined something like hscpp_require_source_custom.
+            return false;
+        }
+
+        do
+        {
+            // Parse argument list (ex. hscpp_require_source(file1.cpp, file2.cpp) ).
+            Advance();
+            SkipWhitespace();
+
+            if (!parseArgumentCb())
+            {
+                // Do not report error, that is expected to be done in the parseArgumentCb.
+                return false;
+            }
+
+            SkipWhitespace();
+        } while (Peek() == ',');
+
+        if (Peek() != ')')
+        {
+            std::string error = "Expected a ')' but saw '" + std::string(1, Peek()) + "'.";
+            LogParseError(error);
+            return false;
+        }
+
+        Advance();
+        return true;
+    }
+
+    bool FileParser::ParseString(char startChar, char endChar, std::string& strContent)
     {
         if (Peek() != startChar)
         {
-            std::string error = std::string("Missing opening ") + startChar + ".";
+            std::string error = "Expected a '\"' but saw '" + std::string(1, Peek()) + "'.";
             LogParseError(error);
             return false;
         }
@@ -341,7 +325,7 @@ namespace hscpp
             {
                 return false;
             }
-            
+
             ++iChar;
             ++iOffset;
         }
@@ -462,7 +446,19 @@ namespace hscpp
 
     void FileParser::LogParseError(const std::string& error)
     {
-        Log::Error() << HSCPP_LOG_PREFIX << "Failed to parse file " << m_Filepath << ": " << error << EndLog();
+        log::Stream logStream = log::Error();
+        logStream << HSCPP_LOG_PREFIX << "Parse error in file " << m_Filepath;
+
+        if (!m_Context.empty())
+        {
+            logStream << "[" << m_Context << "]: ";
+        }
+        else
+        {
+            logStream << ": ";
+        }
+
+        logStream << error << log::End();
     }
 
 }

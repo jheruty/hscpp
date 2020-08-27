@@ -11,8 +11,8 @@ namespace hscpp
 
     namespace util
     {
-        std::string GetErrorString(DWORD error);
-        std::string GetLastErrorString();
+        std::wstring GetErrorString(DWORD error);
+        std::wstring GetLastErrorString();
 
         bool IsWhitespace(const std::string& str);
         std::string Trim(const std::string& str);

@@ -2,6 +2,7 @@
 
 #include <filesystem>
 #include <vector>
+#include <functional>
 
 namespace hscpp
 {
@@ -40,6 +41,7 @@ namespace hscpp
 
         size_t m_iChar = 0;
         std::string m_Content;
+        std::string m_Context;
 
         void Parse(ParseInfo& info);
         bool ParseRequire(Require& require);
@@ -47,7 +49,8 @@ namespace hscpp
         bool ParseModules(std::vector<std::string>& modules);
         bool ParseInclude(fs::path& include);
 
-        bool ParseString(std::string& strContent, char startChar, char endChar);
+        bool ParseArgumentList(const std::function<bool()>& parseArgumentCb);
+        bool ParseString(char startChar, char endChar, std::string& strContent);
         bool ParseIdentifier(std::string& identifier);
 
         bool Match(const std::string& str);

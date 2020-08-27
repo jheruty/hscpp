@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 #include <assert.h>
+#include <limits>
 
 #include "hscpp/module/Serializer.h"
 
@@ -60,7 +61,7 @@ namespace hscpp
         friend class ModuleInterface;
 
         SwapPhase m_Phase = {};
-        uint64_t m_Id;
+        uint64_t m_Id = (std::numeric_limits<uint64_t>::max)();
         Serializer m_Serializer;
     };
 

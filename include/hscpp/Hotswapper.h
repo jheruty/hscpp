@@ -174,9 +174,9 @@ namespace hscpp
     template <typename T>
     void Hotswapper::Enumerate(const std::function<void(int handle, const T& value)>& cb, std::unordered_map<int, T>& map)
     {
-        for (const auto& it : map)
+        for (const auto& [handle, val] : map)
         {
-            cb(it.first, it.second);
+            cb(handle, val);
         }
     }
 
@@ -184,9 +184,9 @@ namespace hscpp
     std::vector<T> Hotswapper::AsVector(std::unordered_map<int, T>& map)
     {
         std::vector<T> vec;
-        for (const auto& it : map)
+        for (const auto& [handle, val] : map)
         {
-            vec.push_back(it.second);
+            vec.push_back(val);
         }
 
         return vec;

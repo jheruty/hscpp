@@ -42,13 +42,13 @@ Printer::Printer()
     // Multiple hscpp_requires are allowed, anywhere in the source file.
     hscpp_require_source("./BaseState.cpp")
 
-    HscppSetSwapHandler([this](hscpp::SwapInfo& info) {
+    Hscpp_SetSwapHandler([this](hscpp::SwapInfo& info) {
         BaseState::HandleSwap(info);
         });
 
     //int bla = *(int*)nullptr;
 
-    if (HscppIsSwapping())
+    if (Hscpp_IsSwapping())
     {
         return;
     }

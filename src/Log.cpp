@@ -7,141 +7,146 @@
 
 namespace hscpp
 {
-    LogLevel Log::s_LogLevel = LogLevel::Info;
-    bool Log::s_bLogBuild = true;
 
-    EndLog::EndLog(const std::string& value)
-        : m_Value(value)
-    {}
-
-    std::string EndLog::Value() const
+    namespace log
     {
-        return m_Value;
-    }
+        static Level s_Level = Level::Info;
+        static bool s_bLogBuild = true;
 
-    ErrorLog::ErrorLog(DWORD value)
-        : m_Value(value)
-    {}
+        End::End(const std::string& str)
+            : m_Str(str)
+        {}
 
-    ErrorLog::ErrorLog(const std::error_code& value)
-        : m_Value(value.value())
-    {}
-
-    DWORD ErrorLog::Value() const
-    {
-        return m_Value;
-    }
-
-    LoggerStream::LoggerStream(bool bEnabled, const std::function<void(const std::wstringstream&)>& endCb /* = nullptr */)
-        : m_bEnabled(bEnabled)
-        , m_EndCb(endCb)
-    {}
-
-    LoggerStream& LoggerStream::operator<<(const std::string& str)
-    {
-        if (!m_bEnabled)
+        std::string End::Str() const
         {
+            return m_Str;
+        }
+
+        OsError::OsError(DWORD errorCode)
+            : m_ErrorCode(errorCode)
+        {}
+
+        OsError::OsError(const std::error_code& errorCode)
+            : m_ErrorCode(errorCode.value())
+        {}
+
+        DWORD OsError::ErrorCode() const
+        {
+            return m_ErrorCode;
+        }
+
+        Stream::Stream(bool bEnabled, const std::function<void(const std::wstringstream&)>& endCb /* = nullptr */)
+            : m_bEnabled(bEnabled)
+            , m_EndCb(endCb)
+        {}
+
+        Stream& Stream::operator<<(const std::string& str)
+        {
+            if (!m_bEnabled)
+            {
+                return *this;
+            }
+
+            std::wstring ws(str.size(), L' ');
+            ws.resize(std::mbstowcs(ws.data(), str.c_str(), str.size()));
+
+            m_Stream << ws;
             return *this;
         }
 
-        std::wstring ws(str.size(), L' ');
-        ws.resize(std::mbstowcs(ws.data(), str.c_str(), str.size()));
-
-        m_Stream << ws;
-        return *this;
-    }
-
-    LoggerStream& LoggerStream::operator<<(const LastErrorLog& lastErrorLog)
-    {
-        (void)lastErrorLog;
-
-        if (!m_bEnabled)
+        Stream& Stream::operator<<(const LastOsError& lastOsError)
         {
+            (void)lastOsError;
+
+            if (!m_bEnabled)
+            {
+                return *this;
+            }
+
+            m_Stream << L"[" << util::GetLastErrorString() << L"]";
             return *this;
         }
 
-        *this << "[" << util::GetLastErrorString() << "]";
-        return *this;
-    }
-
-    LoggerStream& LoggerStream::operator<<(const ErrorLog& errorLog)
-    {
-        if (!m_bEnabled)
+        Stream& Stream::operator<<(const OsError& osError)
         {
+            if (!m_bEnabled)
+            {
+                return *this;
+            }
+
+            m_Stream << L"[" << util::GetErrorString(osError.ErrorCode()) << L"]";
             return *this;
         }
 
-        *this << "[" << util::GetErrorString(errorLog.Value()) << "]";
-        return *this;
-    }
-
-    void LoggerStream::operator<<(const EndLog& endLog)
-    {
-        if (!m_bEnabled)
+        void Stream::operator<<(const End& endLog)
         {
-            return;
+            if (!m_bEnabled)
+            {
+                return;
+            }
+
+            *this << endLog.Str();
+            m_Stream << std::endl;
+
+            std::wcout << m_Stream.str();
+
+            if (m_EndCb != nullptr)
+            {
+                m_EndCb(m_Stream);
+            }
         }
 
-        *this << endLog.Value();
-        m_Stream << std::endl;
-
-        std::wcout << m_Stream.str();
-
-        if (m_EndCb != nullptr)
+        static bool IsLevelActive(Level level)
         {
-            m_EndCb(m_Stream);
+            return static_cast<int>(level) >= static_cast<int>(s_Level);
         }
-    }
 
-    void Log::SetLogLevel(LogLevel level)
-    {
-        s_LogLevel = level;
-    }
+        Stream Debug()
+        {
+            bool bEnabled = IsLevelActive(Level::Debug);
+            return Stream(bEnabled);
+        }
 
-    void Log::EnableBuildLogging()
-    {
-        s_bLogBuild = true;
-    }
+        Stream Info()
+        {
+            bool bEnabled = IsLevelActive(Level::Info);
+            return Stream(bEnabled);
+        }
 
-    void Log::DisableBuildLogging()
-    {
-        s_bLogBuild = false;
-    }
+        Stream Warning()
+        {
+            bool bEnabled = IsLevelActive(Level::Warning);
+            return Stream(bEnabled);
+        }
 
-    LoggerStream Log::Debug()
-    {
-        bool bEnabled = IsLogLevelActive(LogLevel::Debug);
-        return LoggerStream(bEnabled);
-    }
+        Stream Error()
+        {
+            bool bEnabled = IsLevelActive(Level::Error);
+            return Stream(bEnabled);
+        }
 
-    LoggerStream Log::Info()
-    {
-        bool bEnabled = IsLogLevelActive(LogLevel::Info);
-        return LoggerStream(bEnabled);
-    }
+        Stream Build()
+        {
+            return Stream(s_bLogBuild, [](const std::wstringstream& stream) {
+                OutputDebugString(stream.str().c_str());
+                });
+        }
 
-    LoggerStream Log::Warning()
-    {
-        bool bEnabled = IsLogLevelActive(LogLevel::Warning);
-        return LoggerStream(bEnabled);
-    }
+        void SetLevel(Level level)
+        {
+            s_Level = level;
+        }
 
-    LoggerStream Log::Error()
-    {
-        bool bEnabled = IsLogLevelActive(LogLevel::Error);
-        return LoggerStream(bEnabled);
-    }
+        void EnableBuildLogging()
+        {
+            s_bLogBuild = true;
+        }
 
-    LoggerStream Log::Build()
-    {
-        return LoggerStream(s_bLogBuild, [](const std::wstringstream& stream) {
-            OutputDebugString(stream.str().c_str());
-            });
-    }
-
-    bool Log::IsLogLevelActive(LogLevel level)
-    {
-        return static_cast<int>(level) >= static_cast<int>(s_LogLevel);
+        void DisableBuildLogging()
+        {
+            s_bLogBuild = false;
+        }
+    
     }
 
 }

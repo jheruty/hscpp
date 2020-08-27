@@ -21,7 +21,7 @@ namespace hscpp
             bool bHscppMacros = false;
             bool bDependentCompilation = false;
 
-            std::vector<fs::path> files;
+            std::vector<fs::path> sourceFiles;
             std::vector<fs::path> includeDirectories;
             std::vector<fs::path> sourceDirectories;
             std::vector<fs::path> libraries;
