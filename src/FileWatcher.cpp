@@ -156,10 +156,10 @@ namespace hscpp
             pNotify = reinterpret_cast<FILE_NOTIFY_INFORMATION*>(&pWatch->buffer[offset]);
             offset += pNotify->NextEntryOffset;
 
-            std::wstring filename(pNotify->FileName, pNotify->FileNameLength / sizeof(WCHAR));
+            std::wstring fileName(pNotify->FileName, pNotify->FileNameLength / sizeof(WCHAR));
 
             Event event;
-            event.filePath = pWatch->directoryPath / filename;
+            event.filePath = pWatch->directoryPath / fileName;
 
             // Check that this is a regular file, to ignore updates to directories. Pass in an
             // std::error_code to suppress exceptions. It is possible temporary files have been

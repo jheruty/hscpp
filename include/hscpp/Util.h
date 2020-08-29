@@ -5,9 +5,10 @@
 #include <vector>
 #include <filesystem>
 
+#include "hscpp/Platform.h"
+
 namespace hscpp
 {
-    namespace fs = std::filesystem;
 
     namespace util
     {

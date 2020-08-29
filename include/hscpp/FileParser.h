@@ -4,10 +4,10 @@
 #include <vector>
 #include <functional>
 
+#include "hscpp/Platform.h"
+
 namespace hscpp
 {
-
-    namespace fs = std::filesystem;
 
     class FileParser
     {

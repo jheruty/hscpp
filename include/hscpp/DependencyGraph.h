@@ -6,10 +6,10 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include "hscpp/Platform.h"
+
 namespace hscpp
 {
-
-    namespace fs = std::filesystem;
 
     class DependencyGraph
     {

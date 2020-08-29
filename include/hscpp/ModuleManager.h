@@ -4,6 +4,7 @@
 #include <memory>
 #include <filesystem>
 
+#include "hscpp/Platform.h"
 #include "hscpp/module/ITracker.h"
 #include "hscpp/module/IAllocator.h"
 #include "hscpp/module/Constructors.h"
@@ -11,8 +12,6 @@
 
 namespace hscpp
 {
-
-    namespace fs = std::filesystem;
 
     class ModuleManager
     {

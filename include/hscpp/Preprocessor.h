@@ -5,14 +5,14 @@
 #include <unordered_set>
 #include <unordered_map>
 
+#include "hscpp/Platform.h"
 #include "hscpp/DependencyGraph.h"
 #include "hscpp/FileParser.h"
+#include "hscpp/FsPathHasher.h"
 
 namespace hscpp
 {
     
-    namespace fs = std::filesystem;
-
     class Preprocessor
     {
     public:
@@ -44,9 +44,9 @@ namespace hscpp
         FileParser m_FileParser;
         DependencyGraph m_DependencyGraph;
 
-        std::unordered_set<std::wstring> m_SourceFiles;
-        std::unordered_set<std::wstring> m_IncludeDirectories;
-        std::unordered_set<std::wstring> m_Libraries;
+        std::unordered_set<fs::path, FsPathHasher> m_SourceFiles;
+        std::unordered_set<fs::path, FsPathHasher> m_IncludeDirectories;
+        std::unordered_set<fs::path, FsPathHasher> m_Libraries;
         std::unordered_set<std::string> m_PreprocessorDefinitions;
 
         void Reset(const Input& input);

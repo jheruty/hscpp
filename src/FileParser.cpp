@@ -124,7 +124,7 @@ namespace hscpp
                 {
                     m_Context = "#include";
 
-                    std::filesystem::path includePath;
+                    fs::path includePath;
                     if (ParseInclude(includePath))
                     {
                         info.includePaths.push_back(includePath);

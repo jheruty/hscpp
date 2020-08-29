@@ -86,20 +86,20 @@ namespace hscpp
                 InterpolateRequireVariables(input, fullPath);
 
                 std::error_code error;
-                fullPath = fs::canonical(fullPath, error);
+                fs::path canonicalPath = fs::canonical(fullPath, error);
 
                 if (error.value() == ERROR_SUCCESS)
                 {
                     switch (require.type)
                     {
                     case FileParser::Require::Type::Source:
-                        m_SourceFiles.insert(fullPath.wstring());
+                        m_SourceFiles.insert(canonicalPath);
                         break;
                     case FileParser::Require::Type::Include:
-                        m_IncludeDirectories.insert(fullPath.wstring());
+                        m_IncludeDirectories.insert(canonicalPath);
                         break;
                     case FileParser::Require::Type::Library:
-                        m_Libraries.insert(fullPath.wstring());
+                        m_Libraries.insert(canonicalPath);
                         break;
                     default:
                         assert(false);

@@ -6,6 +6,7 @@
 #include <unordered_set>
 #include <unordered_map>
 
+#include "hscpp/Platform.h"
 #include "hscpp/FileWatcher.h"
 #include "hscpp/Preprocessor.h"
 #include "hscpp/Compiler.h"
@@ -18,8 +19,6 @@
 
 namespace hscpp
 {
-
-    namespace fs = std::filesystem;
 
     class Hotswapper
     {

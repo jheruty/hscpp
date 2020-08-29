@@ -7,9 +7,10 @@
 #include <chrono>
 #include <filesystem>
 
+#include "hscpp/Platform.h"
+
 namespace hscpp
 {
-    namespace fs = std::filesystem;
 
     class FileWatcher
     {

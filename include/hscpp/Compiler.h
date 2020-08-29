@@ -4,12 +4,11 @@
 #include <string>
 #include <filesystem>
 
+#include "hscpp/Platform.h"
 #include "hscpp/CmdShell.h"
 
 namespace hscpp
 {
-
-    namespace fs = std::filesystem;
 
     class Compiler
     {
