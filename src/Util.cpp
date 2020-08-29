@@ -94,15 +94,15 @@ namespace hscpp
             return buf;
         }
 
-        bool IsHeaderFile(const fs::path& path)
+        bool IsHeaderFile(const fs::path& filePath)
         {
-            fs::path extension = path.extension();
+            fs::path extension = filePath.extension();
             return HEADER_EXTENSIONS.find(extension.string()) != HEADER_EXTENSIONS.end();
         }
 
-        bool IsSourceFile(const fs::path& path)
+        bool IsSourceFile(const fs::path& filePath)
         {
-            fs::path extension = path.extension();
+            fs::path extension = filePath.extension();
             return SOURCE_EXTENSIONS.find(extension.string()) != SOURCE_EXTENSIONS.end();
         }
 

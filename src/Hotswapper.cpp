@@ -8,6 +8,8 @@
 #include "hscpp/Log.h"
 #include "hscpp/Util.h"
 
+#include <functional>
+
 namespace hscpp
 {
 
@@ -99,8 +101,8 @@ namespace hscpp
     void Hotswapper::CreateDependencyGraph()
     {
         Preprocessor::Input input;
-        input.includeDirectories = AsVector(m_IncludeDirectoriesByHandle);
-        input.sourceDirectories = AsVector(m_SourceDirectoriesByHandle);
+        input.includeDirectoryPaths = AsVector(m_IncludeDirectoriesByHandle);
+        input.sourceDirectoryPaths = AsVector(m_SourceDirectoriesByHandle);
         
         for (const auto& pair : m_SourceDirectoriesByHandle)
         {
@@ -108,7 +110,7 @@ namespace hscpp
             {
                 if (util::IsSourceFile(file))
                 {
-                    input.sourceFiles.push_back(file);
+                    input.sourceFilePaths.push_back(file);
                 }
             }
         }
@@ -119,7 +121,7 @@ namespace hscpp
             {
                 if (util::IsHeaderFile(file))
                 {
-                    input.sourceFiles.push_back(file);
+                    input.sourceFilePaths.push_back(file);
                 }
             }
         }
@@ -134,9 +136,9 @@ namespace hscpp
             preprocessorInput.bHscppMacros = IsFeatureEnabled(Feature::Preprocessor);
             preprocessorInput.bDependentCompilation = IsFeatureEnabled(Feature::DependentCompilation);
 
-            preprocessorInput.includeDirectories = AsVector(m_IncludeDirectoriesByHandle);
-            preprocessorInput.sourceDirectories = AsVector(m_SourceDirectoriesByHandle);
-            preprocessorInput.libraries = AsVector(m_LibrariesByHandle);
+            preprocessorInput.includeDirectoryPaths = AsVector(m_IncludeDirectoriesByHandle);
+            preprocessorInput.sourceDirectoryPaths = AsVector(m_SourceDirectoriesByHandle);
+            preprocessorInput.libraryPaths = AsVector(m_LibrariesByHandle);
             preprocessorInput.preprocessorDefinitions = AsVector(m_PreprocessorDefinitionsByHandle);
             preprocessorInput.hscppRequireVariables = m_HscppRequireVariables;
 
@@ -153,10 +155,10 @@ namespace hscpp
             }
 
             Compiler::Input compileInfo;
-            compileInfo.buildDirectory = m_BuildDirectory;
-            compileInfo.sourceFiles = preprocessorOutput.files;
-            compileInfo.includeDirectories = preprocessorOutput.includeDirectories;
-            compileInfo.libraries = preprocessorOutput.libraries;
+            compileInfo.buildDirectoryPath = m_BuildDirectory;
+            compileInfo.sourceFilePaths = preprocessorOutput.sourceFilePaths;
+            compileInfo.includeDirectoryPaths = preprocessorOutput.includeDirectoryPaths;
+            compileInfo.libraryPaths = preprocessorOutput.libraryPaths;
             compileInfo.preprocessorDefinitions = preprocessorOutput.preprocessorDefinitions;
             compileInfo.compileOptions = AsVector(m_CompileOptionsByHandle);
             compileInfo.linkOptions = AsVector(m_LinkOptionsByHandle);
@@ -166,7 +168,7 @@ namespace hscpp
                 m_Callbacks.BeforeCompile(compileInfo);
             }
 
-            if (!compileInfo.sourceFiles.empty())
+            if (!compileInfo.sourceFilePaths.empty())
             {
                 m_Compiler.StartBuild(compileInfo);
                 while (m_Compiler.IsCompiling())
@@ -216,10 +218,10 @@ namespace hscpp
                 preprocessorInput.bHscppMacros = IsFeatureEnabled(Feature::Preprocessor);
                 preprocessorInput.bDependentCompilation = IsFeatureEnabled(Feature::DependentCompilation);
 
-                preprocessorInput.sourceFiles = GetChangedFiles();
-                preprocessorInput.includeDirectories = AsVector(m_IncludeDirectoriesByHandle);
-                preprocessorInput.sourceDirectories = AsVector(m_SourceDirectoriesByHandle);
-                preprocessorInput.libraries = AsVector(m_LibrariesByHandle);
+                preprocessorInput.sourceFilePaths = GetChangedFiles();
+                preprocessorInput.includeDirectoryPaths = AsVector(m_IncludeDirectoriesByHandle);
+                preprocessorInput.sourceDirectoryPaths = AsVector(m_SourceDirectoriesByHandle);
+                preprocessorInput.libraryPaths = AsVector(m_LibrariesByHandle);
                 preprocessorInput.preprocessorDefinitions = AsVector(m_PreprocessorDefinitionsByHandle);
                 preprocessorInput.hscppRequireVariables = m_HscppRequireVariables;
 
@@ -236,10 +238,10 @@ namespace hscpp
                 }
 
                 Compiler::Input compileInfo;
-                compileInfo.buildDirectory = m_BuildDirectory;
-                compileInfo.sourceFiles = preprocessorOutput.files;
-                compileInfo.includeDirectories = preprocessorOutput.includeDirectories;
-                compileInfo.libraries = preprocessorOutput.libraries;
+                compileInfo.buildDirectoryPath = m_BuildDirectory;
+                compileInfo.sourceFilePaths = preprocessorOutput.sourceFilePaths;
+                compileInfo.includeDirectoryPaths = preprocessorOutput.includeDirectoryPaths;
+                compileInfo.libraryPaths = preprocessorOutput.libraryPaths;
                 compileInfo.preprocessorDefinitions = preprocessorOutput.preprocessorDefinitions;
                 compileInfo.compileOptions = AsVector(m_CompileOptionsByHandle);
                 compileInfo.linkOptions = AsVector(m_LinkOptionsByHandle);
@@ -249,7 +251,7 @@ namespace hscpp
                     m_Callbacks.BeforeCompile(compileInfo);
                 }
 
-                if (!compileInfo.sourceFiles.empty())
+                if (!compileInfo.sourceFilePaths.empty())
                 {
                     m_Compiler.StartBuild(compileInfo);
 
@@ -305,10 +307,10 @@ namespace hscpp
     // Add & Remove Functions
     //============================================================================
 
-    int Hotswapper::AddIncludeDirectory(const fs::path& directory)
+    int Hotswapper::AddIncludeDirectory(const fs::path& directoryPath)
     {
-        m_FileWatcher.AddWatch(directory);
-        return Add(directory, m_NextIncludeDirectoryHandle, m_IncludeDirectoriesByHandle);
+        m_FileWatcher.AddWatch(directoryPath);
+        return Add(directoryPath, m_NextIncludeDirectoryHandle, m_IncludeDirectoriesByHandle);
     }
 
     bool Hotswapper::RemoveIncludeDirectory(int handle)
@@ -332,10 +334,10 @@ namespace hscpp
         m_IncludeDirectoriesByHandle.clear();
     }
 
-    int Hotswapper::AddSourceDirectory(const fs::path& directory)
+    int Hotswapper::AddSourceDirectory(const fs::path& directoryPath)
     {
-        m_FileWatcher.AddWatch(directory);
-        return Add(directory, m_NextSourceDirectoryHandle, m_SourceDirectoriesByHandle);
+        m_FileWatcher.AddWatch(directoryPath);
+        return Add(directoryPath, m_NextSourceDirectoryHandle, m_SourceDirectoriesByHandle);
     }
 
     bool Hotswapper::RemoveSourceDirectory(int handle)
@@ -516,7 +518,7 @@ namespace hscpp
     {
         // When Visual Studio saves, it can create several events for a single file, so use a
         // set to remove these duplicates.
-        std::unordered_set<std::wstring> files;
+        std::unordered_set<std::wstring> uniqueFilePaths;
         for (const auto& event : m_FileEvents)
         {
             if (event.type == FileWatcher::EventType::Removed)
@@ -526,7 +528,7 @@ namespace hscpp
             }
 
             std::error_code error;
-            fs::path canonicalPath = fs::canonical(event.filepath, error);
+            fs::path canonicalFilePath = fs::canonical(event.filePath, error);
 
             if (error.value() == ERROR_FILE_NOT_FOUND)
             {
@@ -536,13 +538,13 @@ namespace hscpp
             else if (error.value() != ERROR_SUCCESS)
             {
                 log::Error() << HSCPP_LOG_PREFIX << "Failed to get canonical path of "
-                    << event.filepath << ". " << log::OsError(error) << log::End();
+                    << event.filePath << ". " << log::OsError(error) << log::End();
                 continue;
             }
 
-            if (!util::IsHeaderFile(canonicalPath) && !util::IsSourceFile(canonicalPath))
+            if (!util::IsHeaderFile(canonicalFilePath) && !util::IsSourceFile(canonicalFilePath))
             {
-                log::Info() << HSCPP_LOG_PREFIX << "File " << canonicalPath
+                log::Info() << HSCPP_LOG_PREFIX << "File " << canonicalFilePath
                     << " will be skipped; its extension is not being watched." << log::End();
                 continue;
             }
@@ -551,7 +553,7 @@ namespace hscpp
             {
             case FileWatcher::EventType::Added:
             case FileWatcher::EventType::Modified:
-                files.insert(canonicalPath.wstring());
+                uniqueFilePaths.insert(canonicalFilePath.wstring());
                 break;
             default:
                 assert(false);
@@ -559,7 +561,7 @@ namespace hscpp
             }
         }
 
-        return std::vector<fs::path>(files.begin(), files.end());
+        return std::vector<fs::path>(uniqueFilePaths.begin(), uniqueFilePaths.end());
     }
 
 }

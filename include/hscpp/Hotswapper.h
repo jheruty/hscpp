@@ -56,14 +56,14 @@ namespace hscpp
         // Add & Remove Functions
         //============================================================================
         
-        int AddIncludeDirectory(const fs::path& directory);
+        int AddIncludeDirectory(const fs::path& directoryPath);
         bool RemoveIncludeDirectory(int handle);
-        void EnumerateIncludeDirectories(const std::function<void(int handle, const fs::path& directory)>& cb);
+        void EnumerateIncludeDirectories(const std::function<void(int handle, const fs::path& directoryPath)>& cb);
         void ClearIncludeDirectories();
 
-        int AddSourceDirectory(const fs::path& directory);
+        int AddSourceDirectory(const fs::path& directoryPath);
         bool RemoveSourceDirectory(int handle);
-        void EnumerateSourceDirectories(const std::function<void(int handle,  const fs::path& directory)>& cb);
+        void EnumerateSourceDirectories(const std::function<void(int handle, const fs::path& directoryPath)>& cb);
         void ClearSourceDirectories();
 
         int AddLibrary(const fs::path& libraryPath);
@@ -90,7 +90,7 @@ namespace hscpp
 
     private:
         std::unordered_set<Feature> m_Features;
-        fs::path m_HscppTempDirectory;
+        fs::path m_HscppTempDirectoryPath;
 
         int m_NextIncludeDirectoryHandle = 0;
         int m_NextSourceDirectoryHandle = 0;
@@ -99,10 +99,10 @@ namespace hscpp
         int m_NextCompileOptionHandle = 0;
         int m_NextLinkOptionHandle = 0;
 
-        fs::path m_BuildDirectory;
-        std::unordered_map<int, fs::path> m_IncludeDirectoriesByHandle;
-        std::unordered_map<int, fs::path> m_SourceDirectoriesByHandle;
-        std::unordered_map<int, fs::path> m_LibrariesByHandle;
+        fs::path m_BuildDirectoryPath;
+        std::unordered_map<int, fs::path> m_IncludeDirectoryPathsByHandle;
+        std::unordered_map<int, fs::path> m_SourceDirectoryPathsByHandle;
+        std::unordered_map<int, fs::path> m_LibraryPathsByHandle;
         std::unordered_map<int, std::string> m_PreprocessorDefinitionsByHandle;
         std::unordered_map<int, std::string> m_CompileOptionsByHandle;
         std::unordered_map<int, std::string> m_LinkOptionsByHandle;

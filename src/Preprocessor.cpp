@@ -12,7 +12,7 @@ namespace hscpp
     {
         m_DependencyGraph.Clear();
 
-        for (const auto& file : input.sourceFiles)
+        for (const auto& file : input.sourceFilePaths)
         {
             FileParser::ParseInfo parseInfo = m_FileParser.Parse(file);
             UpdateDependencyGraph(input, parseInfo);
@@ -23,7 +23,7 @@ namespace hscpp
     {
         Reset(input);
 
-        for (const auto& file : input.sourceFiles)
+        for (const auto& file : input.sourceFilePaths)
         {
             FileParser::ParseInfo parseInfo = m_FileParser.Parse(file);
 
@@ -32,10 +32,10 @@ namespace hscpp
             UpdateDependencyGraph(input, parseInfo);
         }
 
-        for (const auto& file : input.sourceFiles)
+        for (const auto& file : input.sourceFilePaths)
         {
-            std::vector<fs::path> additionalFiles = m_DependencyGraph.ResolveGraph(file);
-            m_SourceFiles.insert(additionalFiles.begin(), additionalFiles.end());
+            std::vector<fs::path> additionalFilePaths = m_DependencyGraph.ResolveGraph(file);
+            m_SourceFiles.insert(additionalFilePaths.begin(), additionalFilePaths.end());
         }
 
         return CreateOutput();
@@ -48,9 +48,9 @@ namespace hscpp
         m_Libraries.clear();
         m_PreprocessorDefinitions.clear();
 
-        m_SourceFiles.insert(input.sourceFiles.begin(), input.sourceFiles.end());
-        m_IncludeDirectories.insert(input.includeDirectories.begin(), input.includeDirectories.end());
-        m_Libraries.insert(input.libraries.begin(), input.libraries.end());
+        m_SourceFiles.insert(input.sourceFilePaths.begin(), input.sourceFilePaths.end());
+        m_IncludeDirectories.insert(input.includeDirectoryPaths.begin(), input.includeDirectoryPaths.end());
+        m_Libraries.insert(input.libraryPaths.begin(), input.libraryPaths.end());
         m_PreprocessorDefinitions.insert(input.preprocessorDefinitions.begin(), input.preprocessorDefinitions.end());
     }
 
@@ -58,11 +58,11 @@ namespace hscpp
     {
         Output output;
 
-        output.files = std::vector<fs::path>(
+        output.sourceFilePaths = std::vector<fs::path>(
             m_SourceFiles.begin(), m_SourceFiles.end());
-        output.includeDirectories = std::vector<fs::path>(
+        output.includeDirectoryPaths = std::vector<fs::path>(
             m_IncludeDirectories.begin(), m_IncludeDirectories.end());
-        output.libraries = std::vector<fs::path>(
+        output.libraryPaths = std::vector<fs::path>(
             m_Libraries.begin(), m_Libraries.end());
         output.preprocessorDefinitions = std::vector<std::string>(
             m_PreprocessorDefinitions.begin(), m_PreprocessorDefinitions.end());
@@ -77,29 +77,29 @@ namespace hscpp
             for (const auto& path : require.paths)
             {
                 // Paths can be either relative or absolute.
-                fs::path fullpath = path;
+                fs::path fullPath = path;
                 if (path.is_relative())
                 {
-                    fullpath = parseInfo.file.parent_path() / path;
+                    fullPath = parseInfo.filePath.parent_path() / path;
                 }
 
-                InterpolateRequireVariables(input, fullpath);
+                InterpolateRequireVariables(input, fullPath);
 
                 std::error_code error;
-                fullpath = fs::canonical(fullpath, error);
+                fullPath = fs::canonical(fullPath, error);
 
                 if (error.value() == ERROR_SUCCESS)
                 {
                     switch (require.type)
                     {
                     case FileParser::Require::Type::Source:
-                        m_SourceFiles.insert(fullpath.wstring());
+                        m_SourceFiles.insert(fullPath.wstring());
                         break;
                     case FileParser::Require::Type::Include:
-                        m_IncludeDirectories.insert(fullpath.wstring());
+                        m_IncludeDirectories.insert(fullPath.wstring());
                         break;
                     case FileParser::Require::Type::Library:
-                        m_Libraries.insert(fullpath.wstring());
+                        m_Libraries.insert(fullPath.wstring());
                         break;
                     default:
                         assert(false);
@@ -109,7 +109,7 @@ namespace hscpp
                 else
                 {
                     log::Error() << HSCPP_LOG_PREFIX << "Failed to get canonical path of "
-                        << fullpath << ". " << log::OsError(error) << log::End();
+                        << fullPath << ". " << log::OsError(error) << log::End();
                 }
             }
         }
@@ -126,24 +126,24 @@ namespace hscpp
     void Preprocessor::UpdateDependencyGraph(const Input& input, const FileParser::ParseInfo& parseInfo)
     {
         std::error_code error;
-        fs::path canoncialFile = fs::canonical(parseInfo.file, error);
+        fs::path canonicalFilePath = fs::canonical(parseInfo.filePath, error);
         
         if (error.value() != ERROR_SUCCESS)
         {
             log::Error() << HSCPP_LOG_PREFIX << "Failed to get canonical path of "
-                << canoncialFile << ". " << log::OsError(error) << log::End();
+                << canonicalFilePath << ". " << log::OsError(error) << log::End();
             return;
         }
 
         for (const auto& module : parseInfo.modules)
         {
-            m_DependencyGraph.LinkFileToModule(canoncialFile, module);
+            m_DependencyGraph.LinkFileToModule(canonicalFilePath, module);
         }
 
-        std::vector<fs::path> canonicalIncludes;
-        for (const auto& include : parseInfo.includes)
+        std::vector<fs::path> canonicalIncludePaths;
+        for (const auto& include : parseInfo.includePaths)
         {
-            for (const auto& directory : input.includeDirectories)
+            for (const auto& directory : input.includeDirectoryPaths)
             {
                 fs::path fullIncludePath = directory / include;
                 if (fs::exists(fullIncludePath))
@@ -151,12 +151,12 @@ namespace hscpp
                     fullIncludePath = fs::canonical(fullIncludePath, error);
                     if (error.value() == ERROR_SUCCESS)
                     {
-                        canonicalIncludes.push_back(fullIncludePath);
+                        canonicalIncludePaths.push_back(fullIncludePath);
                     }
                 }
             }
 
-            m_DependencyGraph.SetFileDependencies(canoncialFile, canonicalIncludes);
+            m_DependencyGraph.SetFileDependencies(canonicalFilePath, canonicalIncludePaths);
         }
     }
 

@@ -7,15 +7,15 @@
 namespace hscpp
 {
 
-    FileParser::ParseInfo FileParser::Parse(const fs::path& filepath)
+    FileParser::ParseInfo FileParser::Parse(const fs::path& filePath)
     {
         ParseInfo info;
-        info.file = filepath;
+        info.filePath = filePath;
 
-        std::ifstream file(filepath.native().c_str());
+        std::ifstream file(filePath.native().c_str());
         if (!file.is_open())
         {
-            log::Error() << HSCPP_LOG_PREFIX << "Failed to open file " << filepath << log::End(".");
+            log::Error() << HSCPP_LOG_PREFIX << "Failed to open file " << filePath << log::End(".");
             return info;
         }
 
@@ -23,7 +23,7 @@ namespace hscpp
         buf << file.rdbuf();
 
         m_Content = buf.str();
-        m_Filepath = filepath;
+        m_FilePath = filePath;
         m_iChar = 0;
 
         Parse(info);
@@ -124,10 +124,10 @@ namespace hscpp
                 {
                     m_Context = "#include";
 
-                    std::filesystem::path include;
-                    if (ParseInclude(include))
+                    std::filesystem::path includePath;
+                    if (ParseInclude(includePath))
                     {
-                        info.includes.push_back(include);
+                        info.includePaths.push_back(includePath);
                     }
                 }
 
@@ -195,7 +195,7 @@ namespace hscpp
         });
     }
 
-    bool FileParser::ParseInclude(fs::path& include)
+    bool FileParser::ParseInclude(fs::path& includePath)
     {
         SkipWhitespace();
 
@@ -219,7 +219,7 @@ namespace hscpp
             return false;
         }
 
-        include = includeStr;
+        includePath = includeStr;
         return true;
     }
 
@@ -447,7 +447,7 @@ namespace hscpp
     void FileParser::LogParseError(const std::string& error)
     {
         log::Stream logStream = log::Error();
-        logStream << HSCPP_LOG_PREFIX << "Parse error in file " << m_Filepath;
+        logStream << HSCPP_LOG_PREFIX << "Parse error in file " << m_FilePath;
 
         if (!m_Context.empty())
         {

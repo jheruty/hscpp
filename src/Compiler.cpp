@@ -41,9 +41,9 @@ namespace hscpp
 
         // Execute compile command.
         m_iCompileOutput = 0;
-        m_CompiledModule.clear();
+        m_CompiledModulePath.clear();
 
-        std::string cmd = "cl @\"" + info.buildDirectory.string() + "\\" + COMMAND_FILENAME + "\"";
+        std::string cmd = "cl @\"" + info.buildDirectoryPath.string() + "\\" + COMMAND_FILENAME + "\"";
         m_CmdShell.StartTask(cmd, static_cast<int>(CompilerTask::Build));
 
         return true;
@@ -88,32 +88,32 @@ namespace hscpp
 
     bool Compiler::IsCompiling()
     {
-        return !m_CompilingModule.empty();
+        return !m_CompilingModulePath.empty();
     }
 
     bool Compiler::HasCompiledModule()
     {
-        return !m_CompiledModule.empty();
+        return !m_CompiledModulePath.empty();
     }
 
     fs::path Compiler::PopModule()
     {
-        fs::path module = m_CompiledModule;
-        m_CompiledModule.clear();
+        fs::path modulePath = m_CompiledModulePath;
+        m_CompiledModulePath.clear();
 
-        return module;
+        return modulePath;
     }
 
     bool Compiler::CreateClCommandFile(const Input& info)
     {
-        fs::path commandFilepath = info.buildDirectory / COMMAND_FILENAME;
-        std::ofstream commandFile(commandFilepath.native().c_str(), std::ios_base::binary);
+        fs::path commandFilePath = info.buildDirectoryPath / COMMAND_FILENAME;
+        std::ofstream commandFile(commandFilePath.native().c_str(), std::ios_base::binary);
         std::stringstream command;
 
         if (!commandFile.is_open())
         {
             log::Error() << HSCPP_LOG_PREFIX << "Failed to create command file "
-                << commandFilepath << log::End(".");
+                << commandFilePath << log::End(".");
             return false;
         }
 
@@ -124,11 +124,11 @@ namespace hscpp
         commandFile.close();
 
         // Reopen file and write command.
-        commandFile.open(commandFilepath.native().c_str(), std::ios::app);
+        commandFile.open(commandFilePath.native().c_str(), std::ios::app);
         if (!commandFile.is_open())
         {
             log::Error() << HSCPP_LOG_PREFIX << "Failed to open command file "
-                << commandFilepath << log::End(".");
+                << commandFilePath << log::End(".");
             return false;
         }
 
@@ -138,23 +138,23 @@ namespace hscpp
         }
 
         // Output dll name.
-        m_CompilingModule = info.buildDirectory / MODULE_FILENAME;
-        command << "/Fe" << "\"" << m_CompilingModule.u8string() << "\"" << std::endl;
+        m_CompilingModulePath = info.buildDirectoryPath / MODULE_FILENAME;
+        command << "/Fe" << "\"" << m_CompilingModulePath.u8string() << "\"" << std::endl;
 
         // Object file output directory. Trailing slash is required.
-        command << "/Fo" << "\"" << info.buildDirectory.u8string() << "\"\\" << std::endl;
+        command << "/Fo" << "\"" << info.buildDirectoryPath.u8string() << "\"\\" << std::endl;
 
-        for (const auto& includeDirectory : info.includeDirectories)
+        for (const auto& includeDirectory : info.includeDirectoryPaths)
         {
             command << "/I " << "\"" << includeDirectory.u8string() << "\"" << std::endl;
         }
 
-        for (const auto& file : info.sourceFiles)
+        for (const auto& file : info.sourceFilePaths)
         {
             command << "\"" << file.u8string() << "\"" << std::endl;
         }
 
-        for (const auto& library : info.libraries)
+        for (const auto& library : info.libraryPaths)
         {
             command << "\"" << library.u8string() << "\"" << std::endl;
         }
@@ -317,8 +317,8 @@ namespace hscpp
 
     bool Compiler::HandleBuildTaskComplete()
     {
-        m_CompiledModule = m_CompilingModule;
-        m_CompilingModule.clear();
+        m_CompiledModulePath = m_CompilingModulePath;
+        m_CompilingModulePath.clear();
 
         return true;
     }

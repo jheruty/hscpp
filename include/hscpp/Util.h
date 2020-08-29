@@ -19,7 +19,7 @@ namespace hscpp
 
         std::string CreateGuid();
 
-        bool IsHeaderFile(const fs::path& path);
-        bool IsSourceFile(const fs::path& path);
+        bool IsHeaderFile(const fs::path& filePath);
+        bool IsSourceFile(const fs::path& filePath);
     }
 }

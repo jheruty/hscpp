@@ -21,19 +21,19 @@ namespace hscpp
             bool bHscppMacros = false;
             bool bDependentCompilation = false;
 
-            std::vector<fs::path> sourceFiles;
-            std::vector<fs::path> includeDirectories;
-            std::vector<fs::path> sourceDirectories;
-            std::vector<fs::path> libraries;
+            std::vector<fs::path> sourceFilePaths;
+            std::vector<fs::path> includeDirectoryPaths;
+            std::vector<fs::path> sourceDirectoryPaths;
+            std::vector<fs::path> libraryPaths;
             std::vector<std::string> preprocessorDefinitions;
             std::unordered_map<std::string, std::string> hscppRequireVariables;
         };
 
         struct Output
         {
-            std::vector<fs::path> files;
-            std::vector<fs::path> includeDirectories;
-            std::vector<fs::path> libraries;
+            std::vector<fs::path> sourceFilePaths;
+            std::vector<fs::path> includeDirectoryPaths;
+            std::vector<fs::path> libraryPaths;
             std::vector<std::string> preprocessorDefinitions;
         };
 

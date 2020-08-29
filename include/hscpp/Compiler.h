@@ -16,10 +16,10 @@ namespace hscpp
     public:
         struct Input
         {
-            fs::path buildDirectory;
-            std::vector<fs::path> sourceFiles;
-            std::vector<fs::path> includeDirectories;
-            std::vector<fs::path> libraries;
+            fs::path buildDirectoryPath;
+            std::vector<fs::path> sourceFilePaths;
+            std::vector<fs::path> includeDirectoryPaths;
+            std::vector<fs::path> libraryPaths;
             std::vector<std::string> preprocessorDefinitions;
             std::vector<std::string> compileOptions;
             std::vector<std::string> linkOptions;
@@ -47,8 +47,8 @@ namespace hscpp
         CmdShell m_CmdShell;
 
         size_t m_iCompileOutput = 0;
-        fs::path m_CompilingModule;
-        fs::path m_CompiledModule;
+        fs::path m_CompilingModulePath;
+        fs::path m_CompiledModulePath;
 
         bool CreateClCommandFile(const Input& info);
 

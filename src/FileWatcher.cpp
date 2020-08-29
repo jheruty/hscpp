@@ -15,13 +15,13 @@ namespace hscpp
         ClearAllWatches();
     }
 
-    bool FileWatcher::AddWatch(const fs::path& directory)
+    bool FileWatcher::AddWatch(const fs::path& directoryPath)
     {
         auto pWatch = std::make_unique<DirectoryWatch>();
 
         // FILE_FLAG_BACKUP_SEMANTICS is necessary to open a directory.
         HANDLE hDirectory = CreateFile(
-            directory.native().c_str(),
+            directoryPath.native().c_str(),
             FILE_LIST_DIRECTORY,
             FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
             NULL,
@@ -32,11 +32,11 @@ namespace hscpp
         if (hDirectory == INVALID_HANDLE_VALUE)
         {
             log::Error() << HSCPP_LOG_PREFIX << "Failed to add directory " 
-                << directory << " to watch. " << log::LastOsError() << log::End();
+                << directoryPath << " to watch. " << log::LastOsError() << log::End();
             return false;
         }
 
-        pWatch->directory = directory;
+        pWatch->directoryPath = directoryPath;
         pWatch->hDirectory = hDirectory;
         pWatch->pFileWatcher = this;
 
@@ -55,16 +55,16 @@ namespace hscpp
         return true;
     }
 
-    bool FileWatcher::RemoveWatch(const fs::path& directory)
+    bool FileWatcher::RemoveWatch(const fs::path& directoryPath)
     {
         auto watchIt = std::find_if(m_Watchers.begin(), m_Watchers.end(),
-            [directory](const std::unique_ptr<DirectoryWatch>& pWatch) {
-                return pWatch->directory == directory;
+            [directoryPath](const std::unique_ptr<DirectoryWatch>& pWatch) {
+                return pWatch->directoryPath == directoryPath;
             });
 
         if (watchIt == m_Watchers.end())
         {
-            log::Error() << HSCPP_LOG_PREFIX << "Directory " << directory << "could not be found." << log::End();
+            log::Error() << HSCPP_LOG_PREFIX << "Directory " << directoryPath << "could not be found." << log::End();
             return false;
         }
 
@@ -159,13 +159,13 @@ namespace hscpp
             std::wstring filename(pNotify->FileName, pNotify->FileNameLength / sizeof(WCHAR));
 
             Event event;
-            event.filepath = pWatch->directory / filename;
+            event.filePath = pWatch->directoryPath / filename;
 
             // Check that this is a regular file, to ignore updates to directories. Pass in an
             // std::error_code to suppress exceptions. It is possible temporary files have been
             // deleted since the notification.
             std::error_code stdError;
-            if (fs::is_regular_file(event.filepath, stdError))
+            if (fs::is_regular_file(event.filePath, stdError))
             {
                 switch (pNotify->Action)
                 {

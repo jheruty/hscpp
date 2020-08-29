@@ -25,13 +25,13 @@ namespace hscpp
         struct Event
         {
             EventType type = EventType::None;
-            fs::path filepath;
+            fs::path filePath;
         };
 
         ~FileWatcher();
 
-        bool AddWatch(const fs::path& directory);
-        bool RemoveWatch(const fs::path& directory);
+        bool AddWatch(const fs::path& directoryPath);
+        bool RemoveWatch(const fs::path& directoryPath);
         void ClearAllWatches();
 
         void SetPollFrequencyMs(int ms);
@@ -48,7 +48,7 @@ namespace hscpp
             // Buffer passed into ReadDirectoryChangesW must be aligned on DWORD boundary.
             alignas(sizeof(DWORD)) uint8_t buffer[32 * 1024];
 
-            fs::path directory;
+            fs::path directoryPath;
             HANDLE hDirectory = INVALID_HANDLE_VALUE;
 
             FileWatcher* pFileWatcher = nullptr;
