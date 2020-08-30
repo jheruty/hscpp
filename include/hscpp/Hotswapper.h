@@ -17,6 +17,7 @@
 #include "hscpp/ProtectedFunction.h"
 #include "hscpp/Callbacks.h"
 #include "hscpp/FeatureManager.h"
+#include "hscpp/FsPathHasher.h"
 
 namespace hscpp
 {
@@ -119,6 +120,12 @@ namespace hscpp
         AllocationResolver m_AllocationResolver;
         Callbacks m_Callbacks;
 
+        Preprocessor::Input CreatePreprocessorInput(const std::vector<fs::path>& sourceFilePaths);
+        Preprocessor::Output Preprocess(Preprocessor::Input& preprocessorInput);
+
+        Compiler::Input CreateCompilerInput(const Preprocessor::Output& preprocessorOutput);
+        bool StartCompile(Compiler::Input& compilerInput);
+
         void PerformRuntimeSwap();
 
         fs::path GetHscppIncludePath();
@@ -127,6 +134,8 @@ namespace hscpp
         bool CreateBuildDirectory();
 
         std::vector<fs::path> GetChangedFiles();
+        void AppendDirectoryFiles(const std::unordered_map<int, fs::path>& directoryPathsByHandle,
+            std::unordered_set<fs::path, FsPathHasher>& sourceFilePaths);
 
         template <typename T>
         int Add(const T& value, int& handle, std::unordered_map<int, T>& map);
