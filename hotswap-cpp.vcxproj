@@ -101,6 +101,7 @@
     <ClInclude Include="include\hscpp\Callbacks.h" />
     <ClInclude Include="include\hscpp\DependencyGraph.h" />
     <ClInclude Include="include\hscpp\Feature.h" />
+    <ClInclude Include="include\hscpp\FeatureManager.h" />
     <ClInclude Include="include\hscpp\FileParser.h" />
     <ClInclude Include="include\hscpp\FsPathHasher.h" />
     <ClInclude Include="include\hscpp\module\AllocationResolver.h" />
@@ -126,6 +127,7 @@
     <ClInclude Include="include\hscpp\Util.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\FeatureManager.cpp" />
     <ClCompile Include="src\FsPathHasher.cpp" />
     <ClCompile Include="src\DependencyGraph.cpp" />
     <ClCompile Include="src\FileParser.cpp" />

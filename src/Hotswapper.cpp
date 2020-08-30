@@ -80,22 +80,17 @@ namespace hscpp
 
     void Hotswapper::EnableFeature(Feature feature)
     {
-        m_Features.insert(feature);
+        m_FeatureManager.EnableFeature(feature);
     }
 
     void Hotswapper::DisableFeature(Feature feature)
     {
-        auto it = m_Features.find(feature);
-        if (it != m_Features.end())
-        {
-            m_Features.erase(it);
-        }
+        m_FeatureManager.DisableFeature(feature);
     }
 
     bool Hotswapper::IsFeatureEnabled(Feature feature)
     {
-        auto it = m_Features.find(feature);
-        return it != m_Features.end();
+        return m_FeatureManager.IsFeatureEnabled(feature);
     }
 
     void Hotswapper::CreateDependencyGraph()
@@ -133,8 +128,7 @@ namespace hscpp
         if (CreateBuildDirectory())
         {
             Preprocessor::Input preprocessorInput;
-            preprocessorInput.bHscppMacros = IsFeatureEnabled(Feature::Preprocessor);
-            preprocessorInput.bDependentCompilation = IsFeatureEnabled(Feature::DependentCompilation);
+            preprocessorInput.pFeatureManager = &m_FeatureManager;
 
             preprocessorInput.includeDirectoryPaths = AsVector(m_IncludeDirectoryPathsByHandle);
             preprocessorInput.sourceDirectoryPaths = AsVector(m_SourceDirectoryPathsByHandle);
@@ -215,8 +209,7 @@ namespace hscpp
             if (CreateBuildDirectory())
             {
                 Preprocessor::Input preprocessorInput;
-                preprocessorInput.bHscppMacros = IsFeatureEnabled(Feature::Preprocessor);
-                preprocessorInput.bDependentCompilation = IsFeatureEnabled(Feature::DependentCompilation);
+                preprocessorInput.pFeatureManager = &m_FeatureManager;
 
                 preprocessorInput.sourceFilePaths = GetChangedFiles();
                 preprocessorInput.includeDirectoryPaths = AsVector(m_IncludeDirectoryPathsByHandle);

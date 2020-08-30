@@ -30,6 +30,7 @@
     <ClInclude Include="include\hscpp\module\PreprocessorMacros.h" />
     <ClInclude Include="include\hscpp\Platform.h" />
     <ClInclude Include="include\hscpp\FsPathHasher.h" />
+    <ClInclude Include="include\hscpp\FeatureManager.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\Hotswapper.cpp" />
@@ -45,5 +46,6 @@
     <ClCompile Include="src\DependencyGraph.cpp" />
     <ClCompile Include="src\Util.cpp" />
     <ClCompile Include="src\FsPathHasher.cpp" />
+    <ClCompile Include="src\FeatureManager.cpp" />
   </ItemGroup>
 </Project>

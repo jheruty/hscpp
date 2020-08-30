@@ -9,6 +9,7 @@
 #include "hscpp/DependencyGraph.h"
 #include "hscpp/FileParser.h"
 #include "hscpp/FsPathHasher.h"
+#include "hscpp/FeatureManager.h"
 
 namespace hscpp
 {
@@ -18,8 +19,7 @@ namespace hscpp
     public:
         struct Input
         {
-            bool bHscppMacros = false;
-            bool bDependentCompilation = false;
+            FeatureManager* pFeatureManager = nullptr;
 
             std::vector<fs::path> sourceFilePaths;
             std::vector<fs::path> includeDirectoryPaths;

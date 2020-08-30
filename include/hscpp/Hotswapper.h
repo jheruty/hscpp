@@ -16,6 +16,7 @@
 #include "hscpp/FileParser.h"
 #include "hscpp/ProtectedFunction.h"
 #include "hscpp/Callbacks.h"
+#include "hscpp/FeatureManager.h"
 
 namespace hscpp
 {
@@ -88,7 +89,6 @@ namespace hscpp
         void SetHscppRequireVariable(const std::string& name, const std::string& val);
 
     private:
-        std::unordered_set<Feature> m_Features;
         fs::path m_HscppTempDirectoryPath;
 
         int m_NextIncludeDirectoryHandle = 0;
@@ -114,6 +114,7 @@ namespace hscpp
         Preprocessor m_Preprocessor;
         Compiler m_Compiler;
         ModuleManager m_ModuleManager;
+        FeatureManager m_FeatureManager;
 
         AllocationResolver m_AllocationResolver;
         Callbacks m_Callbacks;
