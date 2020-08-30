@@ -219,7 +219,8 @@ namespace hscpp
             return false;
         }
 
-        includePath = includeStr;
+        // Assume file is either ANSI or UTF-8, and read as UTF-8 to support Unicode include paths.
+        includePath = fs::u8path(includeStr);
         return true;
     }
 
