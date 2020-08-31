@@ -19,9 +19,9 @@ namespace hscpp
         {
             m_DependencyGraph.Clear();
 
-            for (const auto& file : input.sourceFilePaths)
+            for (const auto& sourceFilePath : input.sourceFilePaths)
             {
-                FileParser::ParseInfo parseInfo = m_FileParser.Parse(file);
+                FileParser::ParseInfo parseInfo = m_FileParser.Parse(sourceFilePath);
                 UpdateDependencyGraph(input, parseInfo);
             }
         }
@@ -41,9 +41,9 @@ namespace hscpp
         {
             Reset(input);
 
-            for (const auto& file : input.sourceFilePaths)
+            for (const auto& sourceFilePath : input.sourceFilePaths)
             {
-                FileParser::ParseInfo parseInfo = m_FileParser.Parse(file);
+                FileParser::ParseInfo parseInfo = m_FileParser.Parse(sourceFilePath);
 
                 AddRequires(input, parseInfo);
                 AddPreprocessorDefinitions(parseInfo);
@@ -56,9 +56,9 @@ namespace hscpp
 
             if (m_pFeatureManager->IsFeatureEnabled(Feature::DependentCompilation))
             {
-                for (const auto& file : input.sourceFilePaths)
+                for (const auto& sourceFilePath : input.sourceFilePaths)
                 {
-                    std::vector<fs::path> additionalFilePaths = m_DependencyGraph.ResolveGraph(file);
+                    std::vector<fs::path> additionalFilePaths = m_DependencyGraph.ResolveGraph(sourceFilePath);
                     m_SourceFiles.insert(additionalFilePaths.begin(), additionalFilePaths.end());
                 }
             }
@@ -166,11 +166,14 @@ namespace hscpp
         m_DependencyGraph.SetLinkedModules(canonicalFilePath, parseInfo.modules);
 
         std::vector<fs::path> canonicalIncludePaths;
-        for (const auto& include : parseInfo.includePaths)
+        for (const auto& includePath : parseInfo.includePaths)
         {
-            for (const auto& directory : input.includeDirectoryPaths)
+            for (const auto& includeDirectoryPath : input.includeDirectoryPaths)
             {
-                fs::path fullIncludePath = directory / include;
+                // For example, the includePath may be "MathUtil.h", but we want to find the full
+                // for creating the dependency graph. Iterate through our include directories to
+                // find the folder that contains a matching include.
+                fs::path fullIncludePath = includeDirectoryPath / includePath;
                 if (fs::exists(fullIncludePath))
                 {
                     fullIncludePath = fs::canonical(fullIncludePath, error);
