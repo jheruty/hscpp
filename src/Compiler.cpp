@@ -54,22 +54,19 @@ namespace hscpp
         int taskId = -1;
         CmdShell::TaskState taskState = m_CmdShell.Update(taskId);
 
+        // If compiling, write out output in real time.
+        if (static_cast<CompilerTask>(taskId) == CompilerTask::Build)
+        {
+            const std::vector<std::string>& output = m_CmdShell.PeekTaskOutput();
+            for (m_iCompileOutput; m_iCompileOutput < output.size(); ++m_iCompileOutput)
+            {
+                log::Build() << output.at(m_iCompileOutput) << log::End();
+            }
+        }
+
         switch (taskState)
         {
         case CmdShell::TaskState::Running:
-        {
-            // If compiling, write out output in real time.
-            if (static_cast<CompilerTask>(taskId) == CompilerTask::Build)
-            {
-                const std::vector<std::string>& output = m_CmdShell.PeekTaskOutput();
-                for (m_iCompileOutput; m_iCompileOutput < output.size(); ++m_iCompileOutput)
-                {
-                    log::Build() << output.at(m_iCompileOutput) << log::End();
-                }
-            }
-
-            break;
-        }
         case CmdShell::TaskState::Idle:
             // Do nothing.
             break;
