@@ -7,63 +7,69 @@
 namespace hscpp
 {
 
-    std::vector<fs::path> DependencyGraph::ResolveGraph(const fs::path& file)
+
+
+    std::vector<hscpp::fs::path> DependencyGraph::ResolveGraph(const fs::path& filePath)
     {
-        std::vector<fs::path> files;
+        std::unordered_set<fs::path, FsPathHasher> collectedDependencyFilePaths;
+        std::unordered_set<fs::path, FsPathHasher> collectedDependentFilePaths;
 
-        std::unordered_set<std::wstring> filepaths;
-        Collect(file, filepaths);
-
-        std::unordered_set<std::wstring> visitedIncludeDirectories;
-        for (const auto& filepath : filepaths)
+        // When compiling a module, add dependents of that module must also be compiled.
+        if (IsModule(filePath))
         {
-            fs::path file = filepath;
+            CollectDependents(filePath, collectedDependentFilePaths);
+        }
 
-            if (util::IsSourceFile(file))
+        // We want to compile all dependencies that are modules. If we have any dependents, their
+        // dependencies must also be added to the compilation list.
+        CollectDependencies(filePath, collectedDependencyFilePaths);
+        for (const auto& collectedFilePath : collectedDependentFilePaths)
+        {
+            CollectDependencies(collectedFilePath, collectedDependencyFilePaths);
+        }
+
+        std::unordered_set<fs::path, FsPathHasher> collectedFilePaths;
+        collectedFilePaths.insert(collectedDependencyFilePaths.begin(), collectedDependencyFilePaths.end());
+        collectedFilePaths.insert(collectedDependentFilePaths.begin(), collectedDependentFilePaths.end());
+        
+        std::vector<fs::path> resolvedFilePaths;
+        for (const auto& collectedFilePath : collectedFilePaths)
+        {
+            if (util::IsSourceFile(collectedFilePath))
             {
-                files.push_back(file);
+                resolvedFilePaths.push_back(collectedFilePath);
             }
         }
-
-        return files;
+            
+        return resolvedFilePaths;
     }
 
-    void DependencyGraph::LinkFileToModule(const fs::path& file, const std::string& module)
+    void DependencyGraph::LinkFileToModule(const fs::path& filePath, const std::string& module)
     {
-        if (!FilePassesFilter(file))
-        {
-            return;
-        }
-
-        m_FilepathsByModule[module].insert(file.wstring());
-        m_ModulesByFilepath[file.wstring()].insert(module);
+        m_FilePathsByModule[module].insert(filePath);
+        m_ModulesByFilePath[filePath].insert(module);
     }
 
-    void DependencyGraph::SetFileDependencies(const fs::path& file, const std::vector<fs::path>& dependencies)
+    void DependencyGraph::SetFileDependencies(const fs::path& filePath, const std::vector<fs::path>& dependencies)
     {
-        if (!FilePassesFilter(file))
-        {
-            return;
-        }
+        int fileHandle = GetHandle(filePath);
 
-        std::vector<fs::path> filteredDependencies = FilterFiles(dependencies);
-
-        Node* pNode = GetNode(file);
+        Node* pNode = GetNode(filePath);
         if (pNode == nullptr)
         {
-            pNode = CreateNode(file);
+            pNode = CreateNode(filePath);
         }
 
-        // Dependencies have been updated, remove reference to self from old dependencies.
-        for (int dependencyHandle : pNode->dependencies)
+        // Remove reference to self from old dependencies.
+        for (int dependencyHandle : pNode->dependencyHandles)
         {
             Node* pDependency = GetNode(dependencyHandle);
-            pDependency->dependents.erase(dependencyHandle);
+            pDependency->dependentHandles.erase(dependencyHandle);
         }
 
-        // Add reference to self to dependencies.
-        pNode->dependencies = AsHandleSet(filteredDependencies);
-        for (int dependencyHandle : pNode->dependencies)
+        // Add reference to self to new dependencies.
+        pNode->dependencyHandles = AsHandleSet(dependencies);
+        for (int dependencyHandle : pNode->dependencyHandles)
         {
             Node* pDependency = GetNode(dependencyHandle);
             if (pDependency == nullptr)
@@ -71,142 +77,144 @@ namespace hscpp
                 pDependency = CreateNode(dependencyHandle);
             }
 
-            int handle = GetHandle(file);
-            pDependency->dependents.insert(handle);
+            pDependency->dependentHandles.insert(fileHandle);
         }
     }
 
     void DependencyGraph::Clear()
     {
-        m_FilepathsByModule.clear();
-        m_ModulesByFilepath.clear();
-
-        m_HandleByFilepath;
-        m_FilepathByHandle.clear();
-
+        m_FilePathsByModule.clear();
+        m_ModulesByFilePath.clear();
+        m_FilePathByHandle.clear();
+        m_HandleByFilePath.clear();
         m_NodeByHandle.clear();
-
-        m_NextHandle = 0;
     }
 
-    void DependencyGraph::Collect(const fs::path& file, std::unordered_set<std::wstring>& filepaths)
+    void DependencyGraph::Collect(const fs::path& filePath,
+        std::unordered_set<fs::path, FsPathHasher>& collectedFilePaths, std::function<void(Node*)> cb)
     {
-        if (filepaths.find(file) != filepaths.end())
+        if (collectedFilePaths.find(filePath) != collectedFilePaths.end())
         {
             return;
         }
 
-        std::vector<fs::path> files = GetLinkedModuleFiles(file);
+        std::vector<fs::path> linkedFilePaths;
 
-        bool bCollectDependents = true;
-        if (files.empty())
+        bool bModule = IsModule(filePath);
+        if (bModule)
         {
-            // TODO: Explain how this fixes issue with Main.cpp.
-            bCollectDependents = false;
-            files = { file };
+            linkedFilePaths = GetLinkedModuleFiles(filePath);
+        }
+        else
+        {
+            linkedFilePaths = { filePath };
         }
 
-        for (const auto& linkedFile : files)
+        for (const auto& linkedFilePath : linkedFilePaths)
         {
-            if (filepaths.find(linkedFile) == filepaths.end())
+            if (collectedFilePaths.find(linkedFilePath) == collectedFilePaths.end())
             {
-                filepaths.insert(linkedFile);
-
-                Node* pNode = GetNode(linkedFile);
+                collectedFilePaths.insert(linkedFilePath);
+                Node* pNode = GetNode(linkedFilePath);
                 if (pNode != nullptr)
                 {
-                    for (int dependencyHandle : pNode->dependencies)
-                    {
-                        fs::path dependencyPath = GetFilepath(dependencyHandle);
-                        Collect(dependencyPath, filepaths);
-                    }
-
-                    if (bCollectDependents)
-                    {
-                        for (int dependentHandle : pNode->dependents)
-                        {
-                            fs::path dependentPath = GetFilepath(dependentHandle);
-                            Collect(dependentPath, filepaths);
-                        }
-                    }
+                    cb(pNode);
                 }
             }
         }
     }
 
-    bool DependencyGraph::FilePassesFilter(const fs::path& file)
+    void DependencyGraph::CollectDependencies(const fs::path& filePath,
+        std::unordered_set<fs::path, FsPathHasher>& collectedFilePaths)
     {
-        if (util::IsHeaderFile(file) || util::IsSourceFile(file))
-        {
-            return true;
-        }
-
-        return false;
+        Collect(filePath, collectedFilePaths, [&](Node* pNode) {
+            for (int dependencyHandle : pNode->dependencyHandles)
+            {
+                fs::path dependencyPath = GetFilepath(dependencyHandle);
+                CollectDependencies(dependencyPath, collectedFilePaths);
+            }
+        });
     }
 
-    std::vector<fs::path> DependencyGraph::FilterFiles(const std::vector<fs::path>& files)
+    void DependencyGraph::CollectDependents(const fs::path& filePath,
+        std::unordered_set<fs::path, FsPathHasher>& collectedFilePaths)
     {
-        std::vector<fs::path> filteredFiles;
-        for (const auto& file : files)
-        {
-            if (FilePassesFilter(file))
+        Collect(filePath, collectedFilePaths, [&](Node* pNode) {
+            for (int dependentHandle : pNode->dependentHandles)
             {
-                filteredFiles.push_back(file);
+                fs::path dependentPath = GetFilepath(dependentHandle);
+                CollectDependents(dependentPath, collectedFilePaths);
+            }
+        });
+    }
+
+    bool DependencyGraph::IsModule(const fs::path& filePath)
+    {
+        return m_ModulesByFilePath.find(filePath) != m_ModulesByFilePath.end();
+    }
+
+    std::vector<hscpp::fs::path> DependencyGraph::GetLinkedModuleFiles(const fs::path& filePath)
+    {
+        std::unordered_set<fs::path, FsPathHasher> linkedFilePaths;
+
+        auto modulesIt = m_ModulesByFilePath.find(filePath);
+        if (modulesIt != m_ModulesByFilePath.end())
+        {
+            for (const std::string& module : modulesIt->second)
+            {
+                auto linkedFilePathsIt = m_FilePathsByModule.find(module);
+                if (linkedFilePathsIt != m_FilePathsByModule.end())
+                {
+                    for (const auto& linkedFilePath : linkedFilePathsIt->second)
+                    {
+                        linkedFilePaths.insert(linkedFilePath);
+                    }
+                }
             }
         }
 
-        return filteredFiles;
+        return std::vector<fs::path>(linkedFilePaths.begin(), linkedFilePaths.end());
     }
 
-    int DependencyGraph::CreateHandle(const fs::path& path)
+    int DependencyGraph::CreateHandle(const fs::path& filePath)
     {
+        int handle = m_NextHandle;
         ++m_NextHandle;
-        m_HandleByFilepath[path.wstring()] = m_NextHandle;
-        m_FilepathByHandle[m_NextHandle] = path.wstring();
 
-        return m_NextHandle;
+        m_HandleByFilePath[filePath] = handle;
+        m_FilePathByHandle[handle] = filePath;
+
+        return handle;
     }
 
-    int DependencyGraph::GetHandle(const fs::path& path)
+    int DependencyGraph::GetHandle(const fs::path& filePath)
     {
-        auto it = m_HandleByFilepath.find(path.wstring());
-        if (it != m_HandleByFilepath.end())
+        auto it = m_HandleByFilePath.find(filePath);
+        if (it != m_HandleByFilePath.end())
         {
             return it->second;
         }
 
-        return CreateHandle(path);
+        return CreateHandle(filePath);
     }
 
-    hscpp::fs::path DependencyGraph::GetFilepath(int handle)
+    hscpp::DependencyGraph::Node* DependencyGraph::CreateNode(const fs::path& filePath)
     {
-        auto it = m_FilepathByHandle.find(handle);
-        if (it != m_FilepathByHandle.end())
-        {
-            return it->second;
-        }
-
-        return fs::path();
+        int handle = GetHandle(filePath);
+        return CreateNode(handle);
     }
 
-    hscpp::DependencyGraph::Node* DependencyGraph::CreateNode(const fs::path& file)
+    hscpp::DependencyGraph::Node* DependencyGraph::CreateNode(int handle)
     {
-        int handle = GetHandle(file);
         m_NodeByHandle[handle] = std::make_unique<Node>();
 
         Node* pNode = m_NodeByHandle[handle].get();
         return pNode;
     }
 
-    hscpp::DependencyGraph::Node* DependencyGraph::CreateNode(int handle)
+    hscpp::DependencyGraph::Node* DependencyGraph::GetNode(const fs::path& filePath)
     {
-        fs::path filepath = GetFilepath(handle);
-        return CreateNode(filepath);
-    }
-
-    hscpp::DependencyGraph::Node* DependencyGraph::GetNode(const fs::path& file)
-    {
-        int handle = GetHandle(file);
+        int handle = GetHandle(filePath);
         return GetNode(handle);
     }
 
@@ -221,27 +229,15 @@ namespace hscpp
         return nullptr;
     }
 
-    std::vector<fs::path> DependencyGraph::GetLinkedModuleFiles(const fs::path& file)
+    hscpp::fs::path DependencyGraph::GetFilepath(int handle)
     {
-        std::unordered_set<std::wstring> linkedFiles;
-
-        auto modulesIt = m_ModulesByFilepath.find(file.wstring());
-        if (modulesIt != m_ModulesByFilepath.end())
+        auto it = m_FilePathByHandle.find(handle);
+        if (it != m_FilePathByHandle.end())
         {
-            for (const std::string& module : modulesIt->second)
-            {
-                auto filepathsIt = m_FilepathsByModule.find(module);
-                if (filepathsIt != m_FilepathsByModule.end())
-                {
-                    for (const std::wstring& filepath : filepathsIt->second)
-                    {
-                        linkedFiles.insert(filepath);
-                    }
-                }
-            }
+            return it->second;
         }
 
-        return std::vector<fs::path>(linkedFiles.begin(), linkedFiles.end());
+        return fs::path();
     }
 
     std::unordered_set<int> DependencyGraph::AsHandleSet(const std::vector<fs::path>& paths)
