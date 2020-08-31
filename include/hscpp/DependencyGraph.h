@@ -32,8 +32,8 @@ namespace hscpp
             std::unordered_set<int> dependentHandles;
         };
 
-        std::unordered_map<std::string, std::unordered_set<fs::path, FsPathHasher>> m_FilePathsByModule;
-        std::unordered_map<fs::path, std::unordered_set<std::string>, FsPathHasher> m_ModulesByFilePath;
+        std::unordered_map<std::string, std::unordered_set<int>> m_HandlesByModule;
+        std::unordered_map<int, std::unordered_set<std::string>> m_ModulesByHandle;
 
         std::unordered_map<int, fs::path> m_FilePathByHandle;
         std::unordered_map<fs::path, int, FsPathHasher> m_HandleByFilePath;
@@ -42,22 +42,18 @@ namespace hscpp
 
         int m_NextHandle = 0;
 
-        void Collect(const fs::path& filePath,
-            std::unordered_set<fs::path, FsPathHasher>& collectedFilePaths, std::function<void(Node*)> cb);
-        void CollectDependencies(const fs::path& filePath,
-            std::unordered_set<fs::path, FsPathHasher>& collectedFilePaths);
-        void CollectDependents(const fs::path& filePath,
-            std::unordered_set<fs::path, FsPathHasher>& collectedFilePaths);
+        void Collect(int handle, std::unordered_set<int>& collectedHandles, std::function<void(Node*)> cb);
+        void CollectDependencies(int handle, std::unordered_set<int>& collectedHandles);
+        void CollectDependents(int handle, std::unordered_set<int>& collectedHandles);
 
-        bool IsModule(const fs::path& filePath);
-        std::vector<fs::path> GetLinkedModuleFiles(const fs::path& filePath);
+        bool IsModule(int handle);
+        std::vector<int> GetLinkedModuleHandles(int fileHandle);
 
         int CreateHandle(const fs::path& filePath);
         int GetHandle(const fs::path& filePath);
 
         Node* CreateNode(const fs::path& filePath);
         Node* CreateNode(int handle);
-        Node* GetNode(const fs::path& filePath);
         Node* GetNode(int handle);
 
         fs::path GetFilepath(int handle);
