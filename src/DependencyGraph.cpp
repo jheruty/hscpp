@@ -79,7 +79,7 @@ namespace hscpp
         for (int dependencyHandle : pNode->dependencyHandles)
         {
             Node* pDependency = GetNode(dependencyHandle);
-            pDependency->dependentHandles.erase(dependencyHandle);
+            pDependency->dependentHandles.erase(fileHandle);
         }
 
         // Add reference to self to new dependencies.
@@ -129,7 +129,14 @@ namespace hscpp
         for (int dependencyHandle : pNode->dependencyHandles)
         {
             Node* pDependency = GetNode(dependencyHandle);
-            pDependency->dependentHandles.erase(dependencyHandle);
+            pDependency->dependentHandles.erase(fileHandle);
+        }
+
+        // Remove reference to self from old dependents.
+        for (int dependentHandle : pNode->dependentHandles)
+        {
+            Node* pDependent = GetNode(dependentHandle);
+            pDependent->dependencyHandles.erase(fileHandle);
         }
 
         m_NodeByHandle.erase(m_NodeByHandle.find(fileHandle));

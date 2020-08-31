@@ -180,9 +180,9 @@ namespace hscpp
                     }
                 }
             }
-
-            m_DependencyGraph.SetFileDependencies(canonicalFilePath, canonicalIncludePaths);
         }
+
+        m_DependencyGraph.SetFileDependencies(canonicalFilePath, canonicalIncludePaths);
     }
 
     void Preprocessor::InterpolateRequireVariables(const Input& input, fs::path& path)
