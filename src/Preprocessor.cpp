@@ -8,37 +8,65 @@
 namespace hscpp
 {
 
+    void Preprocessor::SetFeatureManager(FeatureManager* pFeatureManager)
+    {
+        m_pFeatureManager = pFeatureManager;
+    }
+
     void Preprocessor::CreateDependencyGraph(const Input& input)
     {
-        m_DependencyGraph.Clear();
-
-        for (const auto& file : input.sourceFilePaths)
+        if (m_pFeatureManager->IsFeatureEnabled(Feature::DependentCompilation))
         {
-            FileParser::ParseInfo parseInfo = m_FileParser.Parse(file);
-            UpdateDependencyGraph(input, parseInfo);
+            m_DependencyGraph.Clear();
+
+            for (const auto& file : input.sourceFilePaths)
+            {
+                FileParser::ParseInfo parseInfo = m_FileParser.Parse(file);
+                UpdateDependencyGraph(input, parseInfo);
+            }
+        }
+    }
+
+    void Preprocessor::PruneDeletedFilesFromDependencyGraph()
+    {
+        if (m_pFeatureManager->IsFeatureEnabled(Feature::DependentCompilation))
+        {
+            m_DependencyGraph.PruneDeletedFiles();
         }
     }
 
     Preprocessor::Output Preprocessor::Preprocess(const Input& input)
     {
-        Reset(input);
-
-        for (const auto& file : input.sourceFilePaths)
+        if (m_pFeatureManager->IsFeatureEnabled(Feature::Preprocessor))
         {
-            FileParser::ParseInfo parseInfo = m_FileParser.Parse(file);
+            Reset(input);
 
-            AddRequires(input, parseInfo);
-            AddPreprocessorDefinitions(parseInfo);
-            UpdateDependencyGraph(input, parseInfo);
+            for (const auto& file : input.sourceFilePaths)
+            {
+                FileParser::ParseInfo parseInfo = m_FileParser.Parse(file);
+
+                AddRequires(input, parseInfo);
+                AddPreprocessorDefinitions(parseInfo);
+
+                if (m_pFeatureManager->IsFeatureEnabled(Feature::DependentCompilation))
+                {
+                    UpdateDependencyGraph(input, parseInfo);
+                }
+            }
+
+            if (m_pFeatureManager->IsFeatureEnabled(Feature::DependentCompilation))
+            {
+                for (const auto& file : input.sourceFilePaths)
+                {
+                    std::vector<fs::path> additionalFilePaths = m_DependencyGraph.ResolveGraph(file);
+                    m_SourceFiles.insert(additionalFilePaths.begin(), additionalFilePaths.end());
+                }
+            }
+
+            return CreateOutput();
         }
 
-        for (const auto& file : input.sourceFilePaths)
-        {
-            std::vector<fs::path> additionalFilePaths = m_DependencyGraph.ResolveGraph(file);
-            m_SourceFiles.insert(additionalFilePaths.begin(), additionalFilePaths.end());
-        }
-
-        return CreateOutput();
+        return Output();
     }
 
     void Preprocessor::Reset(const Input& input)
@@ -135,10 +163,7 @@ namespace hscpp
             return;
         }
 
-        for (const auto& module : parseInfo.modules)
-        {
-            m_DependencyGraph.LinkFileToModule(canonicalFilePath, module);
-        }
+        m_DependencyGraph.SetLinkedModules(canonicalFilePath, parseInfo.modules);
 
         std::vector<fs::path> canonicalIncludePaths;
         for (const auto& include : parseInfo.includePaths)

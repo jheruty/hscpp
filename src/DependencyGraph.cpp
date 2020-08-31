@@ -47,12 +47,22 @@ namespace hscpp
         return resolvedFilePaths;
     }
 
-    void DependencyGraph::LinkFileToModule(const fs::path& filePath, const std::string& module)
+    void DependencyGraph::SetLinkedModules(const fs::path& filePath, const std::vector<std::string>& modules)
     {
         int handle = GetHandle(filePath);
 
-        m_HandlesByModule[module].insert(handle);
-        m_ModulesByHandle[handle].insert(module);
+        // Remove old links.
+        RemoveLinkedModule(handle);
+
+        // Add new links.
+        if (!modules.empty())
+        {
+            for (const auto& module : modules)
+            {
+                m_ModulesByHandle[handle].insert(module);
+                m_HandlesByModule[module].insert(handle);
+            }
+        }
     }
 
     void DependencyGraph::SetFileDependencies(const fs::path& filePath, const std::vector<fs::path>& dependencies)
@@ -84,6 +94,46 @@ namespace hscpp
 
             pDependency->dependentHandles.insert(fileHandle);
         }
+    }
+
+    void DependencyGraph::PruneDeletedFiles()
+    {
+        std::vector<fs::path> deletedFilePaths;
+
+        for (const auto& [handle, pNode] : m_NodeByHandle)
+        {
+            fs::path filePath = GetFilepath(handle);
+            if (!fs::exists(filePath))
+            {
+                deletedFilePaths.push_back(filePath);
+            }
+        }
+
+        for (const auto& deletedFilePath : deletedFilePaths)
+        {
+            RemoveFile(deletedFilePath);
+        }
+    }
+
+    void DependencyGraph::RemoveFile(const fs::path& filePath)
+    {
+        int fileHandle = GetHandle(filePath);
+
+        Node* pNode = GetNode(fileHandle);
+        if (pNode == nullptr)
+        {
+            return;
+        }
+
+        // Remove reference to self from old dependencies.
+        for (int dependencyHandle : pNode->dependencyHandles)
+        {
+            Node* pDependency = GetNode(dependencyHandle);
+            pDependency->dependentHandles.erase(dependencyHandle);
+        }
+
+        m_NodeByHandle.erase(m_NodeByHandle.find(fileHandle));
+        RemoveLinkedModule(fileHandle);
     }
 
     void DependencyGraph::Clear()
@@ -180,6 +230,25 @@ namespace hscpp
         }
 
         return std::vector<int>(linkedHandles.begin(), linkedHandles.end());
+    }
+
+    void DependencyGraph::RemoveLinkedModule(int handle)
+    {
+        auto oldModulesIt = m_ModulesByHandle.find(handle);
+        if (oldModulesIt != m_ModulesByHandle.end())
+        {
+            // Create copy, to allow deletion during iteration.
+            std::unordered_set<std::string> oldModulesCopy = oldModulesIt->second;
+
+            // Remove all previously linked modules associated with this handle.
+            m_ModulesByHandle.erase(oldModulesIt);
+
+            // Remove stale handles.
+            for (const auto& oldModule : oldModulesCopy)
+            {
+                m_HandlesByModule[oldModule].erase(handle);
+            }
+        }
     }
 
     int DependencyGraph::CreateHandle(const fs::path& filePath)

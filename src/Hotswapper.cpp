@@ -60,6 +60,8 @@ namespace hscpp
             // library will need to be compiled into each new module.
             Add(GetHscppIncludePath(), m_NextIncludeDirectoryHandle, m_IncludeDirectoryPathsByHandle);
         }
+
+        m_Preprocessor.SetFeatureManager(&m_FeatureManager);
     }
 
     hscpp::AllocationResolver* Hotswapper::GetAllocationResolver()
@@ -153,6 +155,8 @@ namespace hscpp
 
         if (m_FileEvents.size() > 0)
         {
+            HandleRemovedFiles();
+
             if (CreateBuildDirectory())
             {
                 Preprocessor::Input preprocessorInput = CreatePreprocessorInput(GetChangedFiles());
@@ -350,7 +354,6 @@ namespace hscpp
     Preprocessor::Input Hotswapper::CreatePreprocessorInput(const std::vector<fs::path>& sourceFilePaths)
     {
         Preprocessor::Input preprocessorInput;
-        preprocessorInput.pFeatureManager = &m_FeatureManager;
         preprocessorInput.sourceFilePaths = sourceFilePaths;
         preprocessorInput.includeDirectoryPaths = AsVector(m_IncludeDirectoryPathsByHandle);
         preprocessorInput.sourceDirectoryPaths = AsVector(m_SourceDirectoryPathsByHandle);
@@ -476,6 +479,23 @@ namespace hscpp
         }
 
         return true;
+    }
+
+    void Hotswapper::HandleRemovedFiles()
+    {
+        // Check if any files were removed.
+        auto removeEventIt = std::find_if(m_FileEvents.begin(), m_FileEvents.end(),
+            [](const FileWatcher::Event& event) {
+            return event.type == FileWatcher::EventType::Removed;
+        });
+
+        if (removeEventIt != m_FileEvents.end())
+        {
+            // At least one file was removed. Prune files that no longer exist from the tree. This
+            // requires an exhaustive search, since we cannot get the canonical path to a deleted
+            // file.
+            m_Preprocessor.PruneDeletedFilesFromDependencyGraph();
+        }
     }
 
     std::vector<fs::path> Hotswapper::GetChangedFiles()

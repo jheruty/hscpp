@@ -133,6 +133,7 @@ namespace hscpp
         bool CreateHscppTempDirectory();
         bool CreateBuildDirectory();
 
+        void HandleRemovedFiles();
         std::vector<fs::path> GetChangedFiles();
         void AppendDirectoryFiles(const std::unordered_map<int, fs::path>& directoryPathsByHandle,
             std::unordered_set<fs::path, FsPathHasher>& sourceFilePaths);

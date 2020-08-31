@@ -18,8 +18,10 @@ namespace hscpp
     public:
         std::vector<fs::path> ResolveGraph(const fs::path& filePath);
 
-        void LinkFileToModule(const fs::path& filePath, const std::string& module);
+        void SetLinkedModules(const fs::path& filePath, const std::vector<std::string>& modules);
         void SetFileDependencies(const fs::path& filePath, const std::vector<fs::path>& dependencies);
+        void PruneDeletedFiles();
+        void RemoveFile(const fs::path& filePath);
 
         void Clear();
         
@@ -47,7 +49,8 @@ namespace hscpp
         void CollectDependents(int handle, std::unordered_set<int>& collectedHandles);
 
         bool IsModule(int handle);
-        std::vector<int> GetLinkedModuleHandles(int fileHandle);
+        std::vector<int> GetLinkedModuleHandles(int handle);
+        void RemoveLinkedModule(int handle);
 
         int CreateHandle(const fs::path& filePath);
         int GetHandle(const fs::path& filePath);

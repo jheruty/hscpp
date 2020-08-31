@@ -19,8 +19,6 @@ namespace hscpp
     public:
         struct Input
         {
-            FeatureManager* pFeatureManager = nullptr;
-
             std::vector<fs::path> sourceFilePaths;
             std::vector<fs::path> includeDirectoryPaths;
             std::vector<fs::path> sourceDirectoryPaths;
@@ -37,7 +35,10 @@ namespace hscpp
             std::vector<std::string> preprocessorDefinitions;
         };
 
+        void SetFeatureManager(FeatureManager* pFeatureManager);
+
         void CreateDependencyGraph(const Input& input);
+        void PruneDeletedFilesFromDependencyGraph();
         Output Preprocess(const Input& input);
 
     private:
@@ -48,6 +49,8 @@ namespace hscpp
         std::unordered_set<fs::path, FsPathHasher> m_IncludeDirectories;
         std::unordered_set<fs::path, FsPathHasher> m_Libraries;
         std::unordered_set<std::string> m_PreprocessorDefinitions;
+
+        FeatureManager* m_pFeatureManager = nullptr;
 
         void Reset(const Input& input);
         Output CreateOutput();
