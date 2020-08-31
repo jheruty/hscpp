@@ -491,10 +491,13 @@ namespace hscpp
 
         if (removeEventIt != m_FileEvents.end())
         {
-            // At least one file was removed. Prune files that no longer exist from the tree. This
-            // requires an exhaustive search, since we cannot get the canonical path to a deleted
-            // file.
-            m_Preprocessor.PruneDeletedFilesFromDependencyGraph();
+            if (util::IsSourceFile(removeEventIt->filePath) || util::IsHeaderFile(removeEventIt->filePath))
+            {
+                // At least one file was removed. Prune files that no longer exist from the tree.
+                // This requires an exhaustive search, since we cannot get the canonical path to
+                // a deleted file.
+                m_Preprocessor.PruneDeletedFilesFromDependencyGraph();
+            }
         }
     }
 
@@ -512,6 +515,12 @@ namespace hscpp
             }
 
             std::error_code error;
+            if (!fs::is_regular_file(event.filePath, error))
+            {
+                // For example, a directory. Skip silently.
+                continue;
+            }
+
             fs::path canonicalFilePath = fs::canonical(event.filePath, error);
 
             if (error.value() == ERROR_FILE_NOT_FOUND)
