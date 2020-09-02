@@ -31,6 +31,7 @@ namespace hscpp
             Compiling,
             StartedCompiling,
             PerformedSwap,
+            FailedSwap,
         };
 
         Hotswapper(bool bUseDefaults = true);
@@ -107,6 +108,8 @@ namespace hscpp
         std::unordered_map<int, std::string> m_CompileOptionsByHandle;
         std::unordered_map<int, std::string> m_LinkOptionsByHandle;
 
+        std::unordered_set<fs::path, FsPathHasher> m_QueuedSourceFilePaths;
+
         std::unordered_map<std::string, std::string> m_HscppRequireVariables;
 
         FileWatcher m_FileWatcher;
@@ -126,7 +129,7 @@ namespace hscpp
         Compiler::Input CreateCompilerInput(const Preprocessor::Output& preprocessorOutput);
         bool StartCompile(Compiler::Input& compilerInput);
 
-        void PerformRuntimeSwap();
+        bool PerformRuntimeSwap();
 
         fs::path GetHscppIncludePath();
 

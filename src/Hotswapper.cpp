@@ -144,8 +144,16 @@ namespace hscpp
 
         if (m_Compiler.HasCompiledModule())
         {
-            PerformRuntimeSwap();
-            return UpdateResult::PerformedSwap;
+            if (PerformRuntimeSwap())
+            {
+                // Successfully performed runtime swap. No files remain in queue.
+                m_QueuedSourceFilePaths.clear();
+                return UpdateResult::PerformedSwap;
+            }
+            else
+            {
+                return UpdateResult::FailedSwap;
+            }
         }
 
         if (!IsFeatureEnabled(Feature::ManualCompilationOnly))
@@ -159,7 +167,9 @@ namespace hscpp
 
             if (CreateBuildDirectory())
             {
-                Preprocessor::Input preprocessorInput = CreatePreprocessorInput(GetChangedFiles());
+                std::vector<fs::path> changedFiles = GetChangedFiles();
+
+                Preprocessor::Input preprocessorInput = CreatePreprocessorInput(changedFiles);
                 Preprocessor::Output preprocessorOutput = Preprocess(preprocessorInput);
 
                 Compiler::Input compilerInput = CreateCompilerInput(preprocessorOutput);
@@ -413,19 +423,21 @@ namespace hscpp
         return false;
     }
 
-    void Hotswapper::PerformRuntimeSwap()
+    bool Hotswapper::PerformRuntimeSwap()
     {
         if (m_Callbacks.BeforeSwap != nullptr)
         {
             m_Callbacks.BeforeSwap();
         }
 
-        m_ModuleManager.PerformRuntimeSwap(m_Compiler.PopModule());
+        bool bResult = m_ModuleManager.PerformRuntimeSwap(m_Compiler.PopModule());
 
         if (m_Callbacks.AfterSwap != nullptr)
         {
             m_Callbacks.AfterSwap();
         }
+
+        return bResult;
     }
 
     //============================================================================
@@ -504,8 +516,9 @@ namespace hscpp
     std::vector<fs::path> Hotswapper::GetChangedFiles()
     {
         // When Visual Studio saves, it can create several events for a single file, so use a
-        // set to remove these duplicates.
-        std::unordered_set<fs::path, FsPathHasher> uniqueFilePaths;
+        // set to remove these duplicates. Start with the queued source file paths, from previous
+        // failed compilations.
+        std::unordered_set<fs::path, FsPathHasher> uniqueFilePaths = m_QueuedSourceFilePaths;
         for (const auto& event : m_FileEvents)
         {
             if (event.type == FileWatcher::EventType::Removed)
@@ -553,6 +566,9 @@ namespace hscpp
                 break;
             }
         }
+
+        // Add files to queue, in case compilation fails.
+        m_QueuedSourceFilePaths.insert(uniqueFilePaths.begin(), uniqueFilePaths.end());
 
         return std::vector<fs::path>(uniqueFilePaths.begin(), uniqueFilePaths.end());
     }
