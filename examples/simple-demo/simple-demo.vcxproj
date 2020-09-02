@@ -16,12 +16,12 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\Main.cpp" />
-    <ClCompile Include="src\Printer.cpp" />
+    <ClCompile Include="Main.cpp" />
+    <ClCompile Include="Printer.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="src\Printer.h" />
-    <ClInclude Include="src\SimpleDemoData.h" />
+    <ClInclude Include="Printer.h" />
+    <ClInclude Include="SimpleDemoData.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
