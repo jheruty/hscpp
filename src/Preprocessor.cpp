@@ -37,10 +37,10 @@ namespace hscpp
 
     Preprocessor::Output Preprocessor::Preprocess(const Input& input)
     {
+        Reset(input);
+
         if (m_pFeatureManager->IsFeatureEnabled(Feature::Preprocessor))
         {
-            Reset(input);
-
             for (const auto& sourceFilePath : input.sourceFilePaths)
             {
                 FileParser::ParseInfo parseInfo = m_FileParser.Parse(sourceFilePath);
@@ -62,11 +62,9 @@ namespace hscpp
                     m_SourceFiles.insert(additionalFilePaths.begin(), additionalFilePaths.end());
                 }
             }
-
-            return CreateOutput();
         }
 
-        return Output();
+        return CreateOutput();
     }
 
     void Preprocessor::Reset(const Input& input)
