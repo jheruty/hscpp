@@ -568,7 +568,8 @@ namespace hscpp
         }
 
         // Add files to queue, in case compilation fails.
-        m_QueuedSourceFilePaths.insert(uniqueFilePaths.begin(), uniqueFilePaths.end());
+        // TODO: Reenable queue once bugs are worked out.
+        //m_QueuedSourceFilePaths.insert(uniqueFilePaths.begin(), uniqueFilePaths.end());
 
         return std::vector<fs::path>(uniqueFilePaths.begin(), uniqueFilePaths.end());
     }
