@@ -59,20 +59,20 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\src\Debug\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">glfw.dir\Debug\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(Platform)\$(Configuration)\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">glfw3</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.lib</TargetExt>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\src\Release\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">glfw.dir\Release\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(Platform)\$(Configuration)\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">glfw3</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.lib</TargetExt>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\src\MinSizeRel\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">glfw.dir\MinSizeRel\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">$(Platform)\$(Configuration)\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">glfw3</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">.lib</TargetExt>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\src\RelWithDebInfo\</OutDir>
-    <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">glfw.dir\RelWithDebInfo\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">$(SolutionDir)$(Platform)\$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">$(Platform)\$(Configuration)\</IntDir>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">glfw3</TargetName>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">.lib</TargetExt>
   </PropertyGroup>
@@ -95,10 +95,10 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_GLFW_USE_CONFIG_H;_UNICODE;_CRT_SECURE_NO_WARNINGS;CMAKE_INTDIR=\"Debug\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\include;C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\include;C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -128,10 +128,10 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_GLFW_USE_CONFIG_H;_UNICODE;_CRT_SECURE_NO_WARNINGS;CMAKE_INTDIR=\"Release\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\include;C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\include;C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -161,10 +161,10 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_GLFW_USE_CONFIG_H;_UNICODE;_CRT_SECURE_NO_WARNINGS;CMAKE_INTDIR=\"MinSizeRel\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\include;C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\include;C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -193,10 +193,10 @@
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_GLFW_USE_CONFIG_H;_UNICODE;_CRT_SECURE_NO_WARNINGS;CMAKE_INTDIR=\"RelWithDebInfo\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\include;C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
     <Midl>
-      <AdditionalIncludeDirectories>C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\include;C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
       <HeaderFileName>%(Filename).h</HeaderFileName>
       <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
@@ -208,95 +208,33 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <CustomBuild Include="C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\src\CMakeLists.txt">
-      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Building Custom Rule C:/Users/jheru/Downloads/glfw-3.3.2 (1)/glfw-3.3.2/src/CMakeLists.txt</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">setlocal
-"C:\Program Files\CMake\bin\cmake.exe" "-SC:/Users/jheru/Downloads/glfw-3.3.2 (1)/glfw-3.3.2" "-BC:/Users/jheru/Downloads/glfw-3.3.2 (1)/glfw-3.3.2" --check-stamp-file "C:/Users/jheru/Downloads/glfw-3.3.2 (1)/glfw-3.3.2/src/CMakeFiles/generate.stamp"
-if %errorlevel% neq 0 goto :cmEnd
-:cmEnd
-endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
-:cmErrorLevel
-exit /b %1
-:cmDone
-if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\src\CMakeFiles\generate.stamp</Outputs>
-      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</LinkObjects>
-      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Building Custom Rule C:/Users/jheru/Downloads/glfw-3.3.2 (1)/glfw-3.3.2/src/CMakeLists.txt</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">setlocal
-"C:\Program Files\CMake\bin\cmake.exe" "-SC:/Users/jheru/Downloads/glfw-3.3.2 (1)/glfw-3.3.2" "-BC:/Users/jheru/Downloads/glfw-3.3.2 (1)/glfw-3.3.2" --check-stamp-file "C:/Users/jheru/Downloads/glfw-3.3.2 (1)/glfw-3.3.2/src/CMakeFiles/generate.stamp"
-if %errorlevel% neq 0 goto :cmEnd
-:cmEnd
-endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
-:cmErrorLevel
-exit /b %1
-:cmDone
-if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\src\CMakeFiles\generate.stamp</Outputs>
-      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkObjects>
-      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">Building Custom Rule C:/Users/jheru/Downloads/glfw-3.3.2 (1)/glfw-3.3.2/src/CMakeLists.txt</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">setlocal
-"C:\Program Files\CMake\bin\cmake.exe" "-SC:/Users/jheru/Downloads/glfw-3.3.2 (1)/glfw-3.3.2" "-BC:/Users/jheru/Downloads/glfw-3.3.2 (1)/glfw-3.3.2" --check-stamp-file "C:/Users/jheru/Downloads/glfw-3.3.2 (1)/glfw-3.3.2/src/CMakeFiles/generate.stamp"
-if %errorlevel% neq 0 goto :cmEnd
-:cmEnd
-endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
-:cmErrorLevel
-exit /b %1
-:cmDone
-if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\src\CMakeFiles\generate.stamp</Outputs>
-      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">false</LinkObjects>
-      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">Building Custom Rule C:/Users/jheru/Downloads/glfw-3.3.2 (1)/glfw-3.3.2/src/CMakeLists.txt</Message>
-      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">setlocal
-"C:\Program Files\CMake\bin\cmake.exe" "-SC:/Users/jheru/Downloads/glfw-3.3.2 (1)/glfw-3.3.2" "-BC:/Users/jheru/Downloads/glfw-3.3.2 (1)/glfw-3.3.2" --check-stamp-file "C:/Users/jheru/Downloads/glfw-3.3.2 (1)/glfw-3.3.2/src/CMakeFiles/generate.stamp"
-if %errorlevel% neq 0 goto :cmEnd
-:cmEnd
-endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
-:cmErrorLevel
-exit /b %1
-:cmDone
-if %errorlevel% neq 0 goto :VCEnd</Command>
-      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">%(AdditionalInputs)</AdditionalInputs>
-      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\src\CMakeFiles\generate.stamp</Outputs>
-      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">false</LinkObjects>
-    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\src\context.c" />
-    <ClCompile Include="C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\src\init.c" />
-    <ClCompile Include="C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\src\input.c" />
-    <ClCompile Include="C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\src\monitor.c" />
-    <ClCompile Include="C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\src\vulkan.c" />
-    <ClCompile Include="C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\src\window.c" />
-    <ClCompile Include="C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\src\win32_init.c" />
-    <ClCompile Include="C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\src\win32_joystick.c" />
-    <ClCompile Include="C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\src\win32_monitor.c" />
-    <ClCompile Include="C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\src\win32_time.c" />
-    <ClCompile Include="C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\src\win32_thread.c" />
-    <ClCompile Include="C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\src\win32_window.c" />
-    <ClCompile Include="C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\src\wgl_context.c" />
-    <ClCompile Include="C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\src\egl_context.c" />
-    <ClCompile Include="C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\src\osmesa_context.c" />
-    <ClInclude Include="C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\src\internal.h" />
-    <ClInclude Include="C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\src\mappings.h" />
-    <ClInclude Include="C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\src\glfw_config.h" />
-    <ClInclude Include="C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\include\GLFW\glfw3.h" />
-    <ClInclude Include="C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\include\GLFW\glfw3native.h" />
-    <ClInclude Include="C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\src\win32_platform.h" />
-    <ClInclude Include="C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\src\win32_joystick.h" />
-    <ClInclude Include="C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\src\wgl_context.h" />
-    <ClInclude Include="C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\src\egl_context.h" />
-    <ClInclude Include="C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\src\osmesa_context.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="C:\Users\jheru\Downloads\glfw-3.3.2 (1)\glfw-3.3.2\ZERO_CHECK.vcxproj">
-      <Project>{0E22A6F3-CDE8-32A3-B07E-C09EDE9F120E}</Project>
-      <Name>ZERO_CHECK</Name>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
-    </ProjectReference>
+    <ClCompile Include="$(ProjectDir)\context.c" />
+    <ClCompile Include="$(ProjectDir)\init.c" />
+    <ClCompile Include="$(ProjectDir)\input.c" />
+    <ClCompile Include="$(ProjectDir)\monitor.c" />
+    <ClCompile Include="$(ProjectDir)\vulkan.c" />
+    <ClCompile Include="$(ProjectDir)\window.c" />
+    <ClCompile Include="$(ProjectDir)\win32_init.c" />
+    <ClCompile Include="$(ProjectDir)\win32_joystick.c" />
+    <ClCompile Include="$(ProjectDir)\win32_monitor.c" />
+    <ClCompile Include="$(ProjectDir)\win32_time.c" />
+    <ClCompile Include="$(ProjectDir)\win32_thread.c" />
+    <ClCompile Include="$(ProjectDir)\win32_window.c" />
+    <ClCompile Include="$(ProjectDir)\wgl_context.c" />
+    <ClCompile Include="$(ProjectDir)\egl_context.c" />
+    <ClCompile Include="$(ProjectDir)\osmesa_context.c" />
+    <ClInclude Include="$(ProjectDir)\internal.h" />
+    <ClInclude Include="$(ProjectDir)\mappings.h" />
+    <ClInclude Include="$(ProjectDir)\glfw_config.h" />
+    <ClInclude Include="$(ProjectDir)include\GLFW\glfw3.h" />
+    <ClInclude Include="$(ProjectDir)include\GLFW\glfw3native.h" />
+    <ClInclude Include="$(ProjectDir)\win32_platform.h" />
+    <ClInclude Include="$(ProjectDir)\win32_joystick.h" />
+    <ClInclude Include="$(ProjectDir)\wgl_context.h" />
+    <ClInclude Include="$(ProjectDir)\egl_context.h" />
+    <ClInclude Include="$(ProjectDir)\osmesa_context.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
