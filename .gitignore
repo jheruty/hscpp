@@ -4,6 +4,8 @@
 *.VC.db
 *.tlog
 **/.vs/**
+*.sln
+*.vcxproj.*
 
 **/Release/**
 **/Debug/**
