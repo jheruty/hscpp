@@ -8,19 +8,20 @@
 
 int main()
 {
-    hscpp::Hotswapper hotswapper;
+    hscpp::Hotswapper swapper;
 
-    // Watch the current directory for changes.
     auto srcPath = std::filesystem::path(__FILE__).parent_path();
     auto includePath = srcPath.parent_path() / "include";
-    hotswapper.AddIncludeDirectory(includePath);
-    hotswapper.AddSourceDirectory(srcPath);
+
+    // Watch the current directory for changes.
+    swapper.AddSourceDirectory(srcPath);
+    swapper.AddIncludeDirectory(includePath);
 
     // When an object is recompiled, a new DLL is linked into the running program with its own
     // statics and globals. You can give a pointer to user-defined data which will be shared
     // across all modules, since normal statics and globals will be lost.
     SimpleDemoData data;
-    hotswapper.SetGlobalUserData(&data);
+    swapper.SetGlobalUserData(&data);
 
     // Create a couple new Printers, and let them know their index into pInstances.
     data.pInstances[0] = new Printer("PrinterA", 0);
@@ -29,7 +30,7 @@ int main()
     while (true)
     {
         // Update the Hotswapper, which will load a new DLL on changes.
-        hotswapper.Update();
+        swapper.Update();
 
         data.pInstances[0]->Update();
         data.pInstances[1]->Update();

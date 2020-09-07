@@ -1,4 +1,4 @@
-#include "StringUtil.h"
+#include "dependent-compilation-demo/StringUtil.h"
 
 hscpp_module("string")
 

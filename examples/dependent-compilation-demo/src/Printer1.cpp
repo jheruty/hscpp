@@ -1,6 +1,6 @@
 #include <iostream>
-#include "Printer1.h"
-#include "MathUtil.h" // Go to this file, to see how to use hscpp_module
+#include "dependent-compilation-demo/Printer1.h"
+#include "dependent-compilation-demo/MathUtil.h" // Go to this file, to see how to use hscpp_module
 
 Printer1::Printer1()
 {

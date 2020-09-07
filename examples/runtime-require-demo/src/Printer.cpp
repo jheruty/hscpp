@@ -1,9 +1,9 @@
 #include <iostream>
-#include "Printer.h"
 
 #include "hscpp/module/SwapInfo.h"
-#include "PrintVariant.h"
-#include "PrintHello.h"
+#include "runtime-require-demo/Printer.h"
+#include "runtime-require-demo/PrintVariant.h"
+#include "runtime-require-demo/PrintHello.h"
 
 // The hscpp_require macros allow you to specify dependencies without setting those dependencies
 // through the hscpp::Hotswapper. These macros will be parsed by hscpp whenever the file is
@@ -17,7 +17,7 @@
 
 // Add a include directory with hscpp_require_include. All paths are relative to the path of the
 // file in which the macro is placed (absolute paths are also allowed).
-hscpp_require_include("../hscpp-example-utils/include")
+hscpp_require_include("../../hscpp-example-utils/include")
 
 // Add a source files with hscpp_require_source. All hscpp_require macros support comma separated
 // lists of dependencies.
@@ -27,7 +27,7 @@ hscpp_require_source("./PrintVariant.cpp", "./PrintHello.cpp")
 
 // Link in a library with hscpp_require_lib. %PROJECT_CONFIGURATION% is set to either Debug
 // or Release, using hscpp::Hotswappers "AddHscppRequireVariable" function.
-hscpp_require_lib("../x64/%PROJECT_CONFIGURATION%/hscpp-example-utils.lib")
+hscpp_require_lib("../../../build/examples/hscpp-example-utils/%PROJECT_CONFIGURATION%/hscpp-example-utils.lib")
 
 // Add preprocessor definitions when this file is compiled. Definitions can be strings or identifiers.
 hscpp_preprocessor_definitions("PREPROCESSOR_PRINTER_DEMO1", PREPROCESSOR_PRINTER_DEMO2);

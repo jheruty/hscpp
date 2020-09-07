@@ -1,7 +1,7 @@
 #pragma once
 
 #include "hscpp/module/Tracker.h"
-#include "IUpdateable.h"
+#include "memory-allocation-demo/IUpdateable.h"
 
 class TrackedPrinter : public IUpdatable
 {
@@ -10,7 +10,7 @@ class TrackedPrinter : public IUpdatable
 public:
     TrackedPrinter();
     ~TrackedPrinter();
-    
+
     hscpp_virtual void Init(int value);
     virtual void Update() override;
 

@@ -1,5 +1,5 @@
 #include "hscpp/module/PreprocessorMacros.h"
-#include "MathUtil.h"
+#include "dependent-compilation-demo/MathUtil.h"
 
 hscpp_module("math");
 

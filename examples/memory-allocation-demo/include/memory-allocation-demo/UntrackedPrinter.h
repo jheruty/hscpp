@@ -1,7 +1,7 @@
 #pragma once
 
 #include "hscpp/module/Tracker.h"
-#include "IUpdateable.h"
+#include "memory-allocation-demo/IUpdateable.h"
 
 class UntrackedPrinter : public IUpdatable
 {
@@ -13,10 +13,10 @@ class UntrackedPrinter : public IUpdatable
 public:
     UntrackedPrinter();
     ~UntrackedPrinter();
-    
+
     // hscpp_virtual is just the 'virtual' keyword, so it can be safely used even in untracked
     // objects when hscpp is enabled.
-    hscpp_virtual void Init(int value); 
+    hscpp_virtual void Init(int value);
     virtual void Update() override;
 
 private:

@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "TrackedPrinter.h"
+#include "memory-allocation-demo/TrackedPrinter.h"
 
 TrackedPrinter::TrackedPrinter()
 {

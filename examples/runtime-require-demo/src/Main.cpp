@@ -4,14 +4,17 @@
 
 #include "hscpp/Hotswapper.h"
 #include "hscpp-example-utils/MemoryManager.h"
-#include "Printer.h"
+#include "runtime-require-demo/Printer.h"
 
 int main()
 {
     hscpp::Hotswapper swapper;
 
-    swapper.AddIncludeDirectory(std::filesystem::current_path());
-    swapper.AddSourceDirectory(std::filesystem::current_path());
+    auto srcPath = std::filesystem::path(__FILE__).parent_path();
+    auto includePath = srcPath.parent_path() / "include";
+
+    swapper.AddSourceDirectory(srcPath);
+    swapper.AddIncludeDirectory(includePath);
 
     auto memoryManager = MemoryManager::Create(swapper.GetAllocationResolver());
     swapper.SetAllocator(&memoryManager);

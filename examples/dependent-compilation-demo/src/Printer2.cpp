@@ -1,8 +1,8 @@
 #include <iostream>
 
-#include "Printer2.h"
-#include "MathUtil.h" // Go to this file to see how to use hscpp_module
-#include "StringUtil.h" // This also uses hscpp_module
+#include "dependent-compilation-demo/Printer2.h"
+#include "dependent-compilation-demo/MathUtil.h" // Go to this file to see how to use hscpp_module
+#include "dependent-compilation-demo/StringUtil.h" // This also uses hscpp_module
 
 Printer2::Printer2()
 {

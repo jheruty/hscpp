@@ -6,16 +6,19 @@
 #include "hscpp-example-utils/Ref.h"
 #include "hscpp-example-utils/MemoryManager.h"
 
-#include "TrackedPrinter.h"
-#include "UntrackedPrinter.h"
-#include "IUpdateable.h"
+#include "memory-allocation-demo/TrackedPrinter.h"
+#include "memory-allocation-demo/UntrackedPrinter.h"
+#include "memory-allocation-demo/IUpdateable.h"
 
 int main()
 {
     hscpp::Hotswapper swapper;
 
-    swapper.AddIncludeDirectory(std::filesystem::current_path());
-    swapper.AddSourceDirectory(std::filesystem::current_path());
+    auto srcPath = std::filesystem::path(__FILE__).parent_path();
+    auto includePath = srcPath.parent_path() / "include";
+
+    swapper.AddSourceDirectory(srcPath);
+    swapper.AddIncludeDirectory(includePath);
 
     // After recompiling, the newly compiled module is capable of constructing new versions of of an
     // object. However, only hscpp knows about this new constructor. The MemoryManager is given a
@@ -72,9 +75,9 @@ int main()
                 // As a demo, make a change and and press 'a' to reconstruct a TrackedPrinter.
                 // you should see a new Printer implementation is spawned. Then, stop the program,
                 // and comment out this the code at the start of main:
-                // 
+                //
                 //      swapper.SetAllocator(&MemoryManager::Instance());
-                // 
+                //
                 // Now, TrackedPrinters that were already constructed will be correctly swapped out
                 // with new objects using the updated implementation. However, newly constructed
                 // TrackedPrinters will still be using the original implementation.

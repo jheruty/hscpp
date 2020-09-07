@@ -1,15 +1,22 @@
 #include <thread>
 
 #include "hscpp/Hotswapper.h"
-#include "Printer1.h"
-#include "Printer2.h"
+#include "dependent-compilation-demo/Printer1.h"
+#include "dependent-compilation-demo/Printer2.h"
 
 int main()
 {
     hscpp::Hotswapper swapper;
 
-    swapper.AddIncludeDirectory(std::filesystem::current_path());
-    swapper.AddSourceDirectory(std::filesystem::current_path());
+    auto srcPath = std::filesystem::path(__FILE__).parent_path();
+    auto includePath = srcPath.parent_path() / "include";
+
+    swapper.AddSourceDirectory(srcPath);
+    swapper.AddIncludeDirectory(includePath);
+
+    // Add include directory as a source directory, so that the dependency graph will be able to
+    // link hscpp_modules across source and include directories.
+    swapper.AddSourceDirectory(includePath / "dependent-compilation-demo");
 
     // Must enable hscpp::DependentCompilation feature. This also implicitly enables the
     // hscpp::Preprocessor feature.
