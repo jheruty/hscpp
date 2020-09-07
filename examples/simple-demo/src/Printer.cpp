@@ -1,7 +1,7 @@
 #include <iostream>
 
-#include "Printer.h"
-#include "SimpleDemoData.h"
+#include "simple-demo/Printer.h"
+#include "simple-demo/SimpleDemoData.h"
 
 Printer::Printer()
 {

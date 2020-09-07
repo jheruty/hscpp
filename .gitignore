@@ -9,5 +9,6 @@
 
 **/Release/**
 **/Debug/**
+build/*
 
 imgui.ini

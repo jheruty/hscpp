@@ -3,16 +3,18 @@
 #include <filesystem>
 
 #include "hscpp/Hotswapper.h"
-#include "SimpleDemoData.h"
-#include "Printer.h"
+#include "simple-demo/SimpleDemoData.h"
+#include "simple-demo/Printer.h"
 
 int main()
 {
     hscpp::Hotswapper hotswapper;
 
     // Watch the current directory for changes.
-    hotswapper.AddIncludeDirectory(std::filesystem::current_path());
-    hotswapper.AddSourceDirectory(std::filesystem::current_path());
+    auto srcPath = std::filesystem::path(__FILE__).parent_path();
+    auto includePath = srcPath.parent_path() / "include";
+    hotswapper.AddIncludeDirectory(includePath);
+    hotswapper.AddSourceDirectory(srcPath);
 
     // When an object is recompiled, a new DLL is linked into the running program with its own
     // statics and globals. You can give a pointer to user-defined data which will be shared
