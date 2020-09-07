@@ -14,8 +14,8 @@
 #include "hscpp/Hotswapper.h"
 #include "hscpp-example-utils/MemoryManager.h"
 #include "hscpp-example-utils/Ref.h"
-#include "Widget.h"
-#include "Globals.h"
+#include "imgui-demo/Widget.h"
+#include "imgui-demo/Globals.h"
 
 static bool SetupGlfw(GLFWwindow*& pWindow)
 {
@@ -74,10 +74,15 @@ int main(int, char**)
 {
     hscpp::Hotswapper swapper;
 
-    swapper.AddIncludeDirectory(std::filesystem::current_path());
-    swapper.AddIncludeDirectory(std::filesystem::current_path().parent_path() / "hscpp-example-utils" / "include");
-    swapper.AddIncludeDirectory(std::filesystem::current_path().parent_path() / "lib" / "imgui");
-    swapper.AddSourceDirectory(std::filesystem::current_path());
+    auto srcPath = std::filesystem::path(__FILE__).parent_path();
+    auto includePath = srcPath.parent_path() / "include";
+    auto exampleUtilsIncludePath = srcPath.parent_path().parent_path() / "hscpp-example-utils" / "include";
+    auto imguiIncludePath = srcPath.parent_path().parent_path() / "lib" / "imgui";
+
+    swapper.AddSourceDirectory(srcPath);
+    swapper.AddIncludeDirectory(includePath);
+    swapper.AddIncludeDirectory(exampleUtilsIncludePath);
+    swapper.AddIncludeDirectory(imguiIncludePath);
 
 #ifdef _DEBUG
     std::string configuration = "Debug";
@@ -85,10 +90,14 @@ int main(int, char**)
     std::string configuration = "Release";
 #endif
 
-    // We can link additional libraries. TODO: Implement / Explain hscpp_pragma.
-    std::filesystem::path libraryPath = std::filesystem::current_path().parent_path() / "x64" / configuration;
-    swapper.AddLibrary(libraryPath / "imgui.lib");
-    swapper.AddLibrary(libraryPath / "hscpp-example-utils.lib");
+    // We can link additional libraries.
+    auto imguiLibraryPath = std::filesystem::current_path().parent_path()
+        / "lib" / "imgui" / configuration / "imgui.lib";
+    auto exampleUtilsLibraryPath = std::filesystem::current_path().parent_path()
+        / "hscpp-example-utils" / configuration / "hscpp-example-utils.lib";
+    
+    swapper.AddLibrary(imguiLibraryPath);
+    swapper.AddLibrary(exampleUtilsLibraryPath);
 
     GLFWwindow* pWindow = nullptr;
     if (!SetupGlfw(pWindow))

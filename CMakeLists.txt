@@ -53,8 +53,8 @@ add_library(hscpp
 
 target_include_directories(hscpp PUBLIC ./include)
 
-option(BUILD_EXAMPLES "Enable building examples." OFF)
+option(HSCPP_BUILD_EXAMPLES "Enable building examples." ON)
 
-if (BUILD_EXAMPLES)
+if (HSCPP_BUILD_EXAMPLES)
     add_subdirectory(examples)
 endif()

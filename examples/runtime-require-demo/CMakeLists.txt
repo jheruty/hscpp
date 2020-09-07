@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.10.0)
 
-project(runtime-require-demo)
-
 add_executable(runtime-require-demo
     ./src/BaseState.cpp
     ./src/Main.cpp

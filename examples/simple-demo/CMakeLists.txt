@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.10.0)
 
-project(simple-demo)
-
 add_executable(simple-demo
     ./src/Main.cpp
     ./src/Printer.cpp

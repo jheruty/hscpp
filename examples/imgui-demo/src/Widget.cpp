@@ -1,6 +1,6 @@
-#include "Widget.h"
 #include "imgui.h"
-#include "Globals.h"
+#include "imgui-demo/Widget.h"
+#include "imgui-demo/Globals.h"
 
 Widget::Widget()
 {
@@ -51,7 +51,7 @@ void Widget::Update()
     }
 
     ImGui::Begin(m_Title.c_str());
-    ImGui::Text("Change this text!");
+    ImGui::Text("Change this text");
     ImGui::InputText("New widget title", m_InputBuffer.data(), m_InputBuffer.size());
 
     if (ImGui::Button("Create new widget"))

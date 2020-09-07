@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.10.0)
 
-project(dependent-compilation-demo)
-
 add_executable(dependent-compilation-demo
     ./src/Main.cpp
     ./src/MathUtil.cpp

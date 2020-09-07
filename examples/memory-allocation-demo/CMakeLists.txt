@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.10.0)
 
-project(memory-allocation-demo)
-
 add_executable(memory-allocation-demo
     ./src/Main.cpp
     ./src/TrackedPrinter.cpp
