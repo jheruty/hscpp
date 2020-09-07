@@ -46,9 +46,9 @@ namespace hscpp
         PROCESS_INFORMATION processInfo;
         ZeroMemory(&processInfo, sizeof(PROCESS_INFORMATION));
 
-        STARTUPINFO startupInfo;
+        STARTUPINFOW startupInfo;
         ZeroMemory(&startupInfo, sizeof(STARTUPINFO));
-
+        
         startupInfo.cb = sizeof(STARTUPINFO);
         startupInfo.hStdError = hStdoutWrite;
         startupInfo.hStdOutput = hStdoutWrite;
@@ -63,7 +63,7 @@ namespace hscpp
 
         std::wstring cmdLine = process + L" " + options;
 
-        bool bSuccess = CreateProcess(
+        bool bSuccess = CreateProcessW(
             NULL, // Application name.
             const_cast<wchar_t*>(cmdLine.c_str()), // Command line.
             NULL, // Process security attributes.

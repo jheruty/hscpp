@@ -128,7 +128,7 @@ namespace hscpp
         Stream Build()
         {
             return Stream(s_bLogBuild, [](const std::wstringstream& stream) {
-                OutputDebugString(stream.str().c_str());
+                OutputDebugStringW(stream.str().c_str());
                 });
         }
 

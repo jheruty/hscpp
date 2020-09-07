@@ -29,7 +29,7 @@ void hscpp::ModuleManager::SetGlobalUserData(void* pGlobalUserData)
 
 bool hscpp::ModuleManager::PerformRuntimeSwap(const fs::path& moduleFilepath)
 {
-    HMODULE hModule = LoadLibrary(moduleFilepath.native().c_str());
+    HMODULE hModule = LoadLibraryW(moduleFilepath.wstring().c_str());
     if (hModule == nullptr)
     {
         log::Error() << HSCPP_LOG_PREFIX << "Failed to load module "

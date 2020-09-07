@@ -20,8 +20,8 @@ namespace hscpp
         auto pWatch = std::make_unique<DirectoryWatch>();
 
         // FILE_FLAG_BACKUP_SEMANTICS is necessary to open a directory.
-        HANDLE hDirectory = CreateFile(
-            directoryPath.native().c_str(),
+        HANDLE hDirectory = CreateFileW(
+            directoryPath.wstring().c_str(),
             FILE_LIST_DIRECTORY,
             FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
             NULL,
