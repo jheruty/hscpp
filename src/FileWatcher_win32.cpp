@@ -1,7 +1,7 @@
 #include <algorithm>
 #include <assert.h>
 
-#include "hscpp/FileWatcher.h"
+#include "hscpp/FileWatcher_win32.h"
 #include "hscpp/Log.h"
 #include "hscpp/Util.h"
 

@@ -2,7 +2,7 @@
 
 #include <functional>
 
-#include "hscpp/Compiler.h"
+#include "hscpp/ICompiler.h"
 #include "hscpp/Preprocessor.h"
 
 namespace hscpp
@@ -15,6 +15,6 @@ namespace hscpp
         std::function<void(Preprocessor::Input&)> BeforePreprocessor;
         std::function<void(Preprocessor::Output&)> AfterPreprocessor;
 
-        std::function<void(Compiler::Input&)> BeforeCompile;
+        std::function<void(ICompiler::Input&)> BeforeCompile;
     };
 }

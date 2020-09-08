@@ -3,8 +3,9 @@
 #include <windows.h>
 #include <string>
 #include <sstream>
-#include <filesystem>
 #include <functional>
+
+#include "hscpp/Platform.h"
 
 #define HSCPP_LOG_PREFIX __func__ << "[" << __LINE__ << "]: "
 

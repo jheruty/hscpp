@@ -3,7 +3,6 @@
 #include <Windows.h>
 #include <string>
 #include <vector>
-#include <filesystem>
 
 #include "hscpp/Platform.h"
 

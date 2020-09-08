@@ -5,19 +5,13 @@
 #include <array>
 #include <vector>
 
+#include "hscpp/ICmdShell.h"
+
 namespace hscpp
 {
-    class CmdShell
+    class CmdShell : public ICmdShell
     {
     public:
-        enum class TaskState
-        {
-            Idle,
-            Running,
-            Done,
-            Error,
-        };
-
         ~CmdShell();
 
         bool CreateCmdProcess();

@@ -2,7 +2,6 @@
 
 #include <unordered_map>
 #include <memory>
-#include <filesystem>
 
 #include "hscpp/Platform.h"
 #include "hscpp/module/ITracker.h"

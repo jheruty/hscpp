@@ -7,16 +7,17 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_library(hscpp
-    ./src/CmdShell.cpp
-    ./src/Compiler.cpp
+    $<$<BOOL:WIN32>:./src/CmdShell_win32.cpp>
+    $<$<BOOL:WIN32>:./src/Compiler_win32.cpp>
     ./src/DependencyGraph.cpp
     ./src/FeatureManager.cpp
     ./src/FileParser.cpp
-    ./src/FileWatcher.cpp
+    $<$<BOOL:WIN32>:./src/FileWatcher_win32.cpp>
     ./src/FsPathHasher.cpp
     ./src/Hotswapper.cpp
     ./src/Log.cpp
     ./src/ModuleManager.cpp
+    ./src/Platform.cpp
     ./src/Preprocessor.cpp
     ./src/ProtectedFunction.cpp
     ./src/Util.cpp
@@ -34,15 +35,19 @@ add_library(hscpp
     ./include/hscpp/module/Tracker.h
 
     ./include/hscpp/Callbacks.h
-    ./include/hscpp/CmdShell.h
-    ./include/hscpp/Compiler.h
+    $<$<BOOL:WIN32>:./include/hscpp/CmdShell_win32.h>
+    $<$<BOOL:WIN32>:./include/hscpp/Compiler_win32.h>
     ./include/hscpp/DependencyGraph.h
     ./include/hscpp/Feature.h
     ./include/hscpp/FeatureManager.h
     ./include/hscpp/FileParser.h
-    ./include/hscpp/FileWatcher.h
+    ./include/hscpp/Filesystem.h
+    $<$<BOOL:WIN32>:./include/hscpp/FileWatcher_win32.h>
     ./include/hscpp/FsPathHasher.h
     ./include/hscpp/Hotswapper.h
+    ./include/hscpp/ICmdShell.h
+    ./include/hscpp/ICompiler.h
+    ./include/hscpp/IFileWatcher.h
     ./include/hscpp/Log.h
     ./include/hscpp/ModuleManager.h
     ./include/hscpp/Platform.h
@@ -52,6 +57,11 @@ add_library(hscpp
 )
 
 target_include_directories(hscpp PUBLIC ./include)
+
+target_compile_definitions(hscpp PRIVATE
+    $<$<BOOL:WIN32>:HSCPP_PLATFORM_WIN32>
+    $<$<BOOL:UNIX>:HSCPP_PLATFORM_UNIX>
+)
 
 option(HSCPP_BUILD_EXAMPLES "Enable building examples." ON)
 

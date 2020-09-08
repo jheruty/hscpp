@@ -2,14 +2,13 @@
 
 #include <string>
 #include <vector>
-#include <filesystem>
 #include <unordered_set>
 #include <unordered_map>
 
 #include "hscpp/Platform.h"
-#include "hscpp/FileWatcher.h"
+#include "hscpp/IFileWatcher.h"
 #include "hscpp/Preprocessor.h"
-#include "hscpp/Compiler.h"
+#include "hscpp/ICompiler.h"
 #include "hscpp/ModuleManager.h"
 #include "hscpp/module/AllocationResolver.h"
 #include "hscpp/Feature.h"
@@ -112,11 +111,11 @@ namespace hscpp
 
         std::unordered_map<std::string, std::string> m_HscppRequireVariables;
 
-        FileWatcher m_FileWatcher;
-        std::vector<FileWatcher::Event> m_FileEvents;
+        std::unique_ptr<IFileWatcher> m_pFileWatcher;
+        std::vector<IFileWatcher::Event> m_FileEvents;
 
         Preprocessor m_Preprocessor;
-        Compiler m_Compiler;
+        std::unique_ptr<ICompiler> m_pCompiler;
         ModuleManager m_ModuleManager;
         FeatureManager m_FeatureManager;
 
@@ -126,8 +125,8 @@ namespace hscpp
         Preprocessor::Input CreatePreprocessorInput(const std::vector<fs::path>& sourceFilePaths);
         Preprocessor::Output Preprocess(Preprocessor::Input& preprocessorInput);
 
-        Compiler::Input CreateCompilerInput(const Preprocessor::Output& preprocessorOutput);
-        bool StartCompile(Compiler::Input& compilerInput);
+        ICompiler::Input CreateCompilerInput(const Preprocessor::Output& preprocessorOutput);
+        bool StartCompile(ICompiler::Input& compilerInput);
 
         bool PerformRuntimeSwap();
 

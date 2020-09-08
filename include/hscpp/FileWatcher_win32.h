@@ -5,40 +5,24 @@
 #include <vector>
 #include <memory>
 #include <chrono>
-#include <filesystem>
 
 #include "hscpp/Platform.h"
+#include "hscpp/IFileWatcher.h"
 
 namespace hscpp
 {
 
-    class FileWatcher
+    class FileWatcher : public IFileWatcher
     {
     public:
-        enum class EventType
-        {
-            None,
-            Added,
-            Removed,
-            Modified,
-        };
-
-        struct Event
-        {
-            EventType type = EventType::None;
-            fs::path filePath;
-        };
-
         ~FileWatcher();
 
-        bool AddWatch(const fs::path& directoryPath);
-        bool RemoveWatch(const fs::path& directoryPath);
-        void ClearAllWatches();
+        virtual bool AddWatch(const fs::path& directoryPath) override;
+        virtual bool RemoveWatch(const fs::path& directoryPath) override;
+        virtual void ClearAllWatches() override;
 
-        void SetPollFrequencyMs(int ms);
-        void PollChanges(std::vector<Event>& events);
-
-        void PushPendingEvent(const Event& event);
+        virtual void SetPollFrequencyMs(int ms) override;
+        virtual void PollChanges(std::vector<Event>& events) override;
 
     private:
         struct DirectoryWatch
@@ -63,6 +47,8 @@ namespace hscpp
         std::vector<HANDLE> m_DirectoryHandles;
 
         std::vector<Event> m_PendingEvents;
+
+        void PushPendingEvent(const Event& event);
 
         static void WINAPI WatchCallback(DWORD error, DWORD nBytesTransferred, LPOVERLAPPED overlapped);
         static bool ReadDirectoryChangesAsync(DirectoryWatch* pWatch);

@@ -2,7 +2,7 @@
 #include <fstream>
 #include <sstream>
 
-#include "hscpp/Compiler.h"
+#include "hscpp/Compiler_win32.h"
 #include "hscpp/Log.h"
 #include "hscpp/Util.h"
 
@@ -13,7 +13,9 @@ namespace hscpp
 
     Compiler::Compiler()
     {
-        if (m_CmdShell.CreateCmdProcess())
+        m_pCmdShell = platform::CreateCmdShell();
+
+        if (m_pCmdShell->CreateCmdProcess())
         {
             StartVsPathTask();
         }
@@ -44,7 +46,7 @@ namespace hscpp
         m_CompiledModulePath.clear();
 
         std::string cmd = "cl @\"" + info.buildDirectoryPath.string() + "\\" + COMMAND_FILENAME + "\"";
-        m_CmdShell.StartTask(cmd, static_cast<int>(CompilerTask::Build));
+        m_pCmdShell->StartTask(cmd, static_cast<int>(CompilerTask::Build));
 
         return true;
     }
@@ -52,12 +54,12 @@ namespace hscpp
     void Compiler::Update()
     {
         int taskId = -1;
-        CmdShell::TaskState taskState = m_CmdShell.Update(taskId);
+        ICmdShell::TaskState taskState = m_pCmdShell->Update(taskId);
 
         // If compiling, write out output in real time.
         if (static_cast<CompilerTask>(taskId) == CompilerTask::Build)
         {
-            const std::vector<std::string>& output = m_CmdShell.PeekTaskOutput();
+            const std::vector<std::string>& output = m_pCmdShell->PeekTaskOutput();
             for (m_iCompileOutput; m_iCompileOutput < output.size(); ++m_iCompileOutput)
             {
                 log::Build() << output.at(m_iCompileOutput) << log::End();
@@ -66,14 +68,14 @@ namespace hscpp
 
         switch (taskState)
         {
-        case CmdShell::TaskState::Running:
-        case CmdShell::TaskState::Idle:
+        case ICmdShell::TaskState::Running:
+        case ICmdShell::TaskState::Idle:
             // Do nothing.
             break;
-        case CmdShell::TaskState::Done:
+        case ICmdShell::TaskState::Done:
             HandleTaskComplete(static_cast<CompilerTask>(taskId));
             break;
-        case CmdShell::TaskState::Error:
+        case ICmdShell::TaskState::Error:
             log::Error() << HSCPP_LOG_PREFIX << "Compiler shell task '"
                 << taskId << "' resulted in error." << log::End();
             break;
@@ -215,12 +217,12 @@ namespace hscpp
             " -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
             " -property installationPath";
 
-        m_CmdShell.StartTask(query, static_cast<int>(CompilerTask::GetVsPath));
+        m_pCmdShell->StartTask(query, static_cast<int>(CompilerTask::GetVsPath));
     }
 
     bool Compiler::HandleTaskComplete(CompilerTask task)
     {
-        const std::vector<std::string>& output = m_CmdShell.PeekTaskOutput();
+        const std::vector<std::string>& output = m_pCmdShell->PeekTaskOutput();
 
         switch (task)
         {
@@ -285,7 +287,7 @@ namespace hscpp
             break;
         }
 
-        m_CmdShell.StartTask(command, static_cast<int>(CompilerTask::SetVcVarsAll));
+        m_pCmdShell->StartTask(command, static_cast<int>(CompilerTask::SetVcVarsAll));
         
         return true;
     }

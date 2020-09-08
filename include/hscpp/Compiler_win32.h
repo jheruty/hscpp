@@ -2,37 +2,27 @@
 
 #include <vector>
 #include <string>
-#include <filesystem>
+#include <memory>
 
 #include "hscpp/Platform.h"
-#include "hscpp/CmdShell.h"
+#include "hscpp/ICompiler.h"
+#include "hscpp/ICmdShell.h"
 
 namespace hscpp
 {
 
-    class Compiler
+    class Compiler : public ICompiler
     {
     public:
-        struct Input
-        {
-            fs::path buildDirectoryPath;
-            std::vector<fs::path> sourceFilePaths;
-            std::vector<fs::path> includeDirectoryPaths;
-            std::vector<fs::path> libraryPaths;
-            std::vector<std::string> preprocessorDefinitions;
-            std::vector<std::string> compileOptions;
-            std::vector<std::string> linkOptions;
-        };
-
         Compiler();
         
-        bool StartBuild(const Input& info);
-        void Update();
+        virtual bool StartBuild(const Input& info) override;
+        virtual void Update() override;
 
-        bool IsCompiling();
+        virtual bool IsCompiling() override;
 
-        bool HasCompiledModule();
-        fs::path PopModule();
+        virtual bool HasCompiledModule() override;
+        virtual fs::path PopModule() override;
 
     private:
         enum class CompilerTask
@@ -43,7 +33,7 @@ namespace hscpp
         };
 
         bool m_Initialized = false;
-        CmdShell m_CmdShell;
+        std::unique_ptr<ICmdShell> m_pCmdShell;
 
         size_t m_iCompileOutput = 0;
         fs::path m_CompilingModulePath;

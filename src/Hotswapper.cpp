@@ -44,6 +44,9 @@ namespace hscpp
 
     Hotswapper::Hotswapper(bool bUseDefaults /* = true */)
     {
+        m_pFileWatcher = platform::CreateFileWatcher();
+        m_pCompiler = platform::CreateCompiler();
+
         if (bUseDefaults)
         {
             for (const auto& option : DEFAULT_COMPILE_OPTIONS)
@@ -114,17 +117,17 @@ namespace hscpp
             Preprocessor::Input preprocessorInput = CreatePreprocessorInput({});
             Preprocessor::Output preprocessorOutput = Preprocess(preprocessorInput);
 
-            Compiler::Input compilerInput = CreateCompilerInput(preprocessorOutput);
+            ICompiler::Input compilerInput = CreateCompilerInput(preprocessorOutput);
             
             if (StartCompile(compilerInput))
             {
-                while (m_Compiler.IsCompiling())
+                while (m_pCompiler->IsCompiling())
                 {
-                    m_Compiler.Update();
+                    m_pCompiler->Update();
                     std::this_thread::sleep_for(std::chrono::milliseconds(10));
                 }
 
-                if (m_Compiler.HasCompiledModule())
+                if (m_pCompiler->HasCompiledModule())
                 {
                     PerformRuntimeSwap();
                 }
@@ -134,15 +137,15 @@ namespace hscpp
 
     Hotswapper::UpdateResult Hotswapper::Update()
     {
-        m_Compiler.Update();
-        if (m_Compiler.IsCompiling())
+        m_pCompiler->Update();
+        if (m_pCompiler->IsCompiling())
         {
             // Currently compiling. Let file changes queue up, to be handled after the module
             // has been swapped.
             return UpdateResult::Compiling;
         }
 
-        if (m_Compiler.HasCompiledModule())
+        if (m_pCompiler->HasCompiledModule())
         {
             if (PerformRuntimeSwap())
             {
@@ -158,7 +161,7 @@ namespace hscpp
 
         if (!IsFeatureEnabled(Feature::ManualCompilationOnly))
         {
-            m_FileWatcher.PollChanges(m_FileEvents);
+            m_pFileWatcher->PollChanges(m_FileEvents);
         }
 
         if (m_FileEvents.size() > 0)
@@ -172,7 +175,7 @@ namespace hscpp
                 Preprocessor::Input preprocessorInput = CreatePreprocessorInput(changedFiles);
                 Preprocessor::Output preprocessorOutput = Preprocess(preprocessorInput);
 
-                Compiler::Input compilerInput = CreateCompilerInput(preprocessorOutput);
+                ICompiler::Input compilerInput = CreateCompilerInput(preprocessorOutput);
                 if (StartCompile(compilerInput))
                 {
                     return UpdateResult::StartedCompiling;
@@ -185,7 +188,7 @@ namespace hscpp
 
     bool Hotswapper::IsCompiling()
     {
-        return m_Compiler.IsCompiling();
+        return m_pCompiler->IsCompiling();
     }
 
     void Hotswapper::SetCallbacks(const Callbacks& callbacks)
@@ -224,7 +227,7 @@ namespace hscpp
 
     int Hotswapper::AddIncludeDirectory(const fs::path& directoryPath)
     {
-        m_FileWatcher.AddWatch(directoryPath);
+        m_pFileWatcher->AddWatch(directoryPath);
         return Add(directoryPath, m_NextIncludeDirectoryHandle, m_IncludeDirectoryPathsByHandle);
     }
 
@@ -233,7 +236,7 @@ namespace hscpp
         auto it = m_IncludeDirectoryPathsByHandle.find(handle);
         if (it != m_IncludeDirectoryPathsByHandle.end())
         {
-            m_FileWatcher.RemoveWatch(it->second);
+            m_pFileWatcher->RemoveWatch(it->second);
         }
 
         return Remove(handle, m_IncludeDirectoryPathsByHandle);
@@ -251,7 +254,7 @@ namespace hscpp
 
     int Hotswapper::AddSourceDirectory(const fs::path& directoryPath)
     {
-        m_FileWatcher.AddWatch(directoryPath);
+        m_pFileWatcher->AddWatch(directoryPath);
         return Add(directoryPath, m_NextSourceDirectoryHandle, m_SourceDirectoryPathsByHandle);
     }
 
@@ -260,7 +263,7 @@ namespace hscpp
         auto it = m_SourceDirectoryPathsByHandle.find(handle);
         if (it != m_SourceDirectoryPathsByHandle.end())
         {
-            m_FileWatcher.RemoveWatch(it->second);
+            m_pFileWatcher->RemoveWatch(it->second);
         }
 
         return Remove(handle, m_SourceDirectoryPathsByHandle);
@@ -391,9 +394,9 @@ namespace hscpp
         return preprocessorOutput;
     }
 
-    Compiler::Input Hotswapper::CreateCompilerInput(const Preprocessor::Output& preprocessorOutput)
+    ICompiler::Input Hotswapper::CreateCompilerInput(const Preprocessor::Output& preprocessorOutput)
     {
-        Compiler::Input compilerInput;
+        ICompiler::Input compilerInput;
         compilerInput.buildDirectoryPath = m_BuildDirectoryPath;
         compilerInput.sourceFilePaths = preprocessorOutput.sourceFilePaths;
         compilerInput.includeDirectoryPaths = preprocessorOutput.includeDirectoryPaths;
@@ -405,7 +408,7 @@ namespace hscpp
         return compilerInput;
     }
 
-    bool Hotswapper::StartCompile(Compiler::Input& compilerInput)
+    bool Hotswapper::StartCompile(ICompiler::Input& compilerInput)
     {
         if (m_Callbacks.BeforeCompile != nullptr)
         {
@@ -414,7 +417,7 @@ namespace hscpp
 
         if (!compilerInput.sourceFilePaths.empty())
         {
-            if (m_Compiler.StartBuild(compilerInput))
+            if (m_pCompiler->StartBuild(compilerInput))
             {
                 return true;
             }
@@ -430,7 +433,7 @@ namespace hscpp
             m_Callbacks.BeforeSwap();
         }
 
-        bool bResult = m_ModuleManager.PerformRuntimeSwap(m_Compiler.PopModule());
+        bool bResult = m_ModuleManager.PerformRuntimeSwap(m_pCompiler->PopModule());
 
         if (m_Callbacks.AfterSwap != nullptr)
         {
@@ -497,8 +500,8 @@ namespace hscpp
     {
         // Check if any files were removed.
         auto removeEventIt = std::find_if(m_FileEvents.begin(), m_FileEvents.end(),
-            [](const FileWatcher::Event& event) {
-            return event.type == FileWatcher::EventType::Removed;
+            [](const IFileWatcher::Event& event) {
+            return event.type == IFileWatcher::EventType::Removed;
         });
 
         if (removeEventIt != m_FileEvents.end())
@@ -521,7 +524,7 @@ namespace hscpp
         std::unordered_set<fs::path, FsPathHasher> uniqueFilePaths = m_QueuedSourceFilePaths;
         for (const auto& event : m_FileEvents)
         {
-            if (event.type == FileWatcher::EventType::Removed)
+            if (event.type == IFileWatcher::EventType::Removed)
             {
                 // Removed files don't matter, we simply will not attempt to compile them.
                 continue;
@@ -557,8 +560,8 @@ namespace hscpp
 
             switch (event.type)
             {
-            case FileWatcher::EventType::Added:
-            case FileWatcher::EventType::Modified:
+            case IFileWatcher::EventType::Added:
+            case IFileWatcher::EventType::Modified:
                 uniqueFilePaths.insert(canonicalFilePath);
                 break;
             default:
