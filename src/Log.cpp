@@ -3,7 +3,11 @@
 #include "hscpp/Log.h"
 #include "hscpp/Util.h"
 
+#ifdef HSCPP_PLATFORM_WIN32
+
 #pragma warning(disable:4996) // Disable security warning to allow std::mbstowcs.
+
+#endif
 
 namespace hscpp
 {
@@ -22,7 +26,7 @@ namespace hscpp
             return m_Str;
         }
 
-        OsError::OsError(DWORD errorCode)
+        OsError::OsError(TOsError errorCode)
             : m_ErrorCode(errorCode)
         {}
 
@@ -30,7 +34,7 @@ namespace hscpp
             : m_ErrorCode(errorCode.value())
         {}
 
-        DWORD OsError::ErrorCode() const
+        TOsError OsError::ErrorCode() const
         {
             return m_ErrorCode;
         }
@@ -127,9 +131,14 @@ namespace hscpp
 
         Stream Build()
         {
+#ifdef HSCPP_PLATFORM_WIN32
+            // Direct logs to Visual Studio output.
             return Stream(s_bLogBuild, [](const std::wstringstream& stream) {
                 OutputDebugStringW(stream.str().c_str());
                 });
+#else
+            return Stream(s_bLogBuild);
+#endif
         }
 
         void SetLevel(Level level)

@@ -1,9 +1,15 @@
-#include <windows.h>
 #include <algorithm>
 #include <array>
 #include <unordered_set>
 
 #include "hscpp/Util.h"
+
+#ifdef HSCPP_PLATFORM_WIN32
+
+#include <Windows.h>
+
+#elif HSCPP_PLATFORM_UNIX
+#endif
 
 namespace hscpp
 {
@@ -24,7 +30,9 @@ namespace hscpp
             ".cxx",
         };
 
-        std::wstring GetErrorString(DWORD error)
+#ifdef HSCPP_PLATFORM_WIN32
+
+        std::wstring GetErrorString(TOsError error)
         {
             if (error == ERROR_SUCCESS)
             {
@@ -60,6 +68,20 @@ namespace hscpp
         {
             return GetErrorString(GetLastError());
         }
+
+#elif HSCPP_PLATFORM_UNIX
+
+        std::wstring GetErrorString(TOsError error)
+        {
+            return L"";
+        }
+
+        std::wstring GetLastErrorString()
+        {
+            return L"";
+        }
+
+#endif
 
         bool IsWhitespace(const std::string& str)
         {

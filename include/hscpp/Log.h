@@ -1,6 +1,5 @@
 #pragma once
 
-#include <windows.h>
 #include <string>
 #include <sstream>
 #include <functional>
@@ -51,13 +50,13 @@ namespace hscpp
         class OsError
         {
         public:
-            OsError(DWORD errorCode);
+            OsError(TOsError errorCode);
             OsError(const std::error_code& errorCode);
 
-            DWORD ErrorCode() const;
+            TOsError ErrorCode() const;
 
         private:
-            DWORD m_ErrorCode;
+            TOsError m_ErrorCode;
         };
         
         //============================================================================
