@@ -74,7 +74,7 @@ namespace hscpp
             // This is a non-tracked type. Perform a normal allocation.
             if (ModuleSharedState::s_pAllocator != nullptr)
             {
-                uint64_t size = sizeof(std::aligned_storage<sizeof(T)>::type);
+                uint64_t size = sizeof(typename std::aligned_storage<sizeof(T)>::type);
 
                 AllocationInfo info = ModuleSharedState::s_pAllocator->Hscpp_Allocate(size);
                 T* pT = new (info.pMemory) T;

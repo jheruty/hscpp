@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <vector>
 #include <type_traits>
+#include <cstring>
 
 #include "hscpp/module/IAllocator.h"
 #include "hscpp/module/AllocationResolver.h"
@@ -43,7 +44,7 @@ public:
     {
         if (m_pHscppAllocationResolver == nullptr)
         {
-            size_t size = sizeof(std::aligned_storage<sizeof(T)>::type);
+            size_t size = sizeof(typename std::aligned_storage<sizeof(T)>::type);
             size_t iBlock = TakeFirstFreeBlock(size);
 
             T* pT = new (m_Blocks.at(iBlock).pMemory) T;

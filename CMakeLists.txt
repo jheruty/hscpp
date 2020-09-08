@@ -7,12 +7,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 add_library(hscpp
-    $<$<BOOL:WIN32>:./src/CmdShell_win32.cpp>
-    $<$<BOOL:WIN32>:./src/Compiler_win32.cpp>
+    $<$<BOOL:${UNIX}>:./src/CmdShell_unix.cpp>
+    $<$<BOOL:${WIN32}>:./src/CmdShell_win32.cpp>
+    $<$<BOOL:${UNIX}>:./src/Compiler_unix.cpp>
+    $<$<BOOL:${WIN32}>:./src/Compiler_win32.cpp>
     ./src/DependencyGraph.cpp
     ./src/FeatureManager.cpp
     ./src/FileParser.cpp
-    $<$<BOOL:WIN32>:./src/FileWatcher_win32.cpp>
+    $<$<BOOL:${UNIX}>:./src/FileWatcher_unix.cpp>
+    $<$<BOOL:${WIN32}>:./src/FileWatcher_win32.cpp>
     ./src/FsPathHasher.cpp
     ./src/Hotswapper.cpp
     ./src/Log.cpp
@@ -35,14 +38,17 @@ add_library(hscpp
     ./include/hscpp/module/Tracker.h
 
     ./include/hscpp/Callbacks.h
-    $<$<BOOL:WIN32>:./include/hscpp/CmdShell_win32.h>
-    $<$<BOOL:WIN32>:./include/hscpp/Compiler_win32.h>
+    $<$<BOOL:${UNIX}>:./include/hscpp/CmdShell_unix.h>
+    $<$<BOOL:${WIN32}>:./include/hscpp/CmdShell_win32.h>
+    $<$<BOOL:${UNIX}>:./include/hscpp/Compiler_unix.h>
+    $<$<BOOL:${WIN32}>:./include/hscpp/Compiler_win32.h>
     ./include/hscpp/DependencyGraph.h
     ./include/hscpp/Feature.h
     ./include/hscpp/FeatureManager.h
     ./include/hscpp/FileParser.h
     ./include/hscpp/Filesystem.h
-    $<$<BOOL:WIN32>:./include/hscpp/FileWatcher_win32.h>
+    $<$<BOOL:${UNIX}>:./include/hscpp/FileWatcher_unix.h>
+    $<$<BOOL:${WIN32}>:./include/hscpp/FileWatcher_win32.h>
     ./include/hscpp/FsPathHasher.h
     ./include/hscpp/Hotswapper.h
     ./include/hscpp/ICmdShell.h
@@ -58,9 +64,14 @@ add_library(hscpp
 
 target_include_directories(hscpp PUBLIC ./include)
 
-target_compile_definitions(hscpp PRIVATE
-    $<$<BOOL:WIN32>:HSCPP_PLATFORM_WIN32>
-    $<$<BOOL:UNIX>:HSCPP_PLATFORM_UNIX>
+target_compile_definitions(hscpp PUBLIC
+    $<$<BOOL:${WIN32}>:HSCPP_PLATFORM_WIN32>
+    $<$<BOOL:${UNIX}>:HSCPP_PLATFORM_UNIX>
+)
+
+target_link_libraries(hscpp
+    $<$<BOOL:${UNIX}>:dl>
+    $<$<BOOL:${UNIX}>:uuid>
 )
 
 option(HSCPP_BUILD_EXAMPLES "Enable building examples." ON)

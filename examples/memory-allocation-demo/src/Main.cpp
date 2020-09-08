@@ -1,6 +1,6 @@
 #include <iostream>
 #include <thread>
-#include <conio.h>
+// #include <conio.h>
 
 #include "hscpp/Hotswapper.h"
 #include "hscpp-example-utils/Ref.h"
@@ -65,39 +65,39 @@ int main()
             ref->Update();
         }
 
-        if (_kbhit())
-        {
-            int keycode = _getch();
-            if (keycode == 'a')
-            {
-                std::cout << "Keypress 'a'" << std::endl;
+        // if (_kbhit())
+        // {
+        //     int keycode = _getch();
+        //     if (keycode == 'a')
+        //     {
+        //         std::cout << "Keypress 'a'" << std::endl;
 
-                // As a demo, make a change and and press 'a' to reconstruct a TrackedPrinter.
-                // you should see a new Printer implementation is spawned. Then, stop the program,
-                // and comment out this the code at the start of main:
-                //
-                //      swapper.SetAllocator(&MemoryManager::Instance());
-                //
-                // Now, TrackedPrinters that were already constructed will be correctly swapped out
-                // with new objects using the updated implementation. However, newly constructed
-                // TrackedPrinters will still be using the original implementation.
-                //
-                // For this reason, you'll want to use swapper.Allocate<T>() when allocating objects
-                // with hscpp (see MemoryManager).
-                Ref<TrackedPrinter> newTrackedPrinter = memoryManager->Allocate<TrackedPrinter>();
-                Ref<UntrackedPrinter> newUntrackedPrinter = memoryManager->Allocate<UntrackedPrinter>();
+        //         // As a demo, make a change and and press 'a' to reconstruct a TrackedPrinter.
+        //         // you should see a new Printer implementation is spawned. Then, stop the program,
+        //         // and comment out this the code at the start of main:
+        //         //
+        //         //      swapper.SetAllocator(&MemoryManager::Instance());
+        //         //
+        //         // Now, TrackedPrinters that were already constructed will be correctly swapped out
+        //         // with new objects using the updated implementation. However, newly constructed
+        //         // TrackedPrinters will still be using the original implementation.
+        //         //
+        //         // For this reason, you'll want to use swapper.Allocate<T>() when allocating objects
+        //         // with hscpp (see MemoryManager).
+        //         Ref<TrackedPrinter> newTrackedPrinter = memoryManager->Allocate<TrackedPrinter>();
+        //         Ref<UntrackedPrinter> newUntrackedPrinter = memoryManager->Allocate<UntrackedPrinter>();
 
-                newTrackedPrinter->Init(++trackedCounter);
-                newUntrackedPrinter->Init(++untrackedCounter);
+        //         newTrackedPrinter->Init(++trackedCounter);
+        //         newUntrackedPrinter->Init(++untrackedCounter);
 
-                m_UpdatableObjects.push_back(newTrackedPrinter.As<IUpdatable>());
-                m_UpdatableObjects.push_back(newUntrackedPrinter.As<IUpdatable>());
-            }
-            else if (keycode == 'q')
-            {
-                break;
-            }
-        }
+        //         m_UpdatableObjects.push_back(newTrackedPrinter.As<IUpdatable>());
+        //         m_UpdatableObjects.push_back(newUntrackedPrinter.As<IUpdatable>());
+        //     }
+        //     else if (keycode == 'q')
+        //     {
+        //         break;
+        //     }
+        // }
 
         std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }

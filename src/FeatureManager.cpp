@@ -1,4 +1,5 @@
 #include <unordered_map>
+#include <vector>
 
 #include "hscpp/FeatureManager.h"
 

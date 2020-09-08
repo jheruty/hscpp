@@ -113,7 +113,7 @@ namespace hscpp
                 std::error_code error;
                 fs::path canonicalPath = fs::canonical(fullPath, error);
 
-                if (error.value() == ERROR_SUCCESS)
+                if (error.value() == HSCPP_ERROR_SUCCESS)
                 {
                     switch (require.type)
                     {
@@ -153,7 +153,7 @@ namespace hscpp
         std::error_code error;
         fs::path canonicalFilePath = fs::canonical(parseInfo.filePath, error);
         
-        if (error.value() != ERROR_SUCCESS)
+        if (error.value() != HSCPP_ERROR_SUCCESS)
         {
             log::Error() << HSCPP_LOG_PREFIX << "Failed to get canonical path of "
                 << canonicalFilePath << ". " << log::OsError(error) << log::End();
@@ -174,7 +174,7 @@ namespace hscpp
                 if (fs::exists(fullIncludePath))
                 {
                     fullIncludePath = fs::canonical(fullIncludePath, error);
-                    if (error.value() == ERROR_SUCCESS)
+                    if (error.value() == HSCPP_ERROR_SUCCESS)
                     {
                         canonicalIncludePaths.push_back(fullIncludePath);
                     }

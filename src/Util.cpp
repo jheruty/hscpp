@@ -9,6 +9,9 @@
 #include <Windows.h>
 
 #elif HSCPP_PLATFORM_UNIX
+
+#include <uuid/uuid.h>
+
 #endif
 
 namespace hscpp
@@ -105,6 +108,9 @@ namespace hscpp
 
         std::string CreateGuid()
         {
+
+#ifdef HSCPP_PLATFORM_WIN32
+
             GUID guid;
             CoCreateGuid(&guid);
 
@@ -114,6 +120,18 @@ namespace hscpp
                 guid.Data4[3], guid.Data4[4], guid.Data4[5], guid.Data4[6], guid.Data4[7]);
 
             return buf;
+
+#elif HSCPP_PLATFORM_UNIX
+
+            uuid_t uuid;
+            uuid_generate_random(uuid);
+
+            char buf[64];
+            uuid_unparse(uuid, buf);
+
+            return buf;
+#endif
+
         }
 
         bool IsHeaderFile(const fs::path& filePath)

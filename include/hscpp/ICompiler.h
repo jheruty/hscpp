@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include "hscpp/Filesystem.h"
 
 namespace hscpp

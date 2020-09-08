@@ -9,7 +9,15 @@
 #include "hscpp/module/Constructors.h"
 #include "hscpp/module/ITracker.h"
 
+#ifdef HSCPP_PLATFORM_WIN32
+
 #define HSCPP_API __declspec(dllexport)
+
+#elif HSCPP_PLATFORM_UNIX
+
+#define HSCPP_API __attribute__((visibility("default")))
+
+#endif
 
 namespace hscpp
 {

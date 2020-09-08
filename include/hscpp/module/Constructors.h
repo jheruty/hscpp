@@ -58,7 +58,7 @@ namespace hscpp
             }
             else
             {
-                uint64_t size = sizeof(std::aligned_storage<sizeof(T)>::type);
+                uint64_t size = sizeof(typename std::aligned_storage<sizeof(T)>::type);
                 AllocationInfo info = allocatorCb(size);
                 T* pT = new (info.pMemory) T;
 

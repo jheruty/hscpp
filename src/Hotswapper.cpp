@@ -450,7 +450,7 @@ namespace hscpp
         std::error_code error;
         fs::path temp = fs::temp_directory_path(error);
 
-        if (error.value() != ERROR_SUCCESS)
+        if (error.value() != HSCPP_ERROR_SUCCESS)
         {
             log::Error() << HSCPP_LOG_PREFIX << "Failed to find temp directory path. "
                 << log::OsError(error) << log::End();
@@ -539,12 +539,12 @@ namespace hscpp
 
             fs::path canonicalFilePath = fs::canonical(event.filePath, error);
 
-            if (error.value() == ERROR_FILE_NOT_FOUND)
+            if (error.value() == HSCPP_ERROR_FILE_NOT_FOUND)
             {
                 // While saving a file, temporary copies may be created and then removed. Skip them.
                 continue;
             }
-            else if (error.value() != ERROR_SUCCESS)
+            else if (error.value() != HSCPP_ERROR_SUCCESS)
             {
                 log::Error() << HSCPP_LOG_PREFIX << "Failed to get canonical path of "
                     << event.filePath << ". " << log::OsError(error) << log::End();
@@ -589,7 +589,7 @@ namespace hscpp
                     std::error_code error;
                     fs::path canonicalFilePath = fs::canonical(filePath, error);
 
-                    if (error.value() == ERROR_SUCCESS)
+                    if (error.value() == HSCPP_ERROR_SUCCESS)
                     {
                         sourceFilePaths.insert(filePath);
                     }
