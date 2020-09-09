@@ -8,7 +8,13 @@
 #include "hscpp/Filesystem.h"
 
 #ifdef HSCPP_PLATFORM_WIN32
+
+#include <Windows.h>
+
 #elif HSCPP_PLATFORM_UNIX
+
+#include <errno.h>
+
 #endif
 
 namespace hscpp
@@ -27,7 +33,7 @@ typedef int TOsError;
 
 // TODO
 #define HSCPP_ERROR_SUCCESS 0
-#define HSCPP_ERROR_FILE_NOT_FOUND 0
+#define HSCPP_ERROR_FILE_NOT_FOUND ENOENT
 
 #else
 #endif
