@@ -17,6 +17,8 @@ namespace hscpp
             Error,
         };
 
+        virtual ~ICmdShell() {};
+
         virtual bool CreateCmdProcess() = 0;
 
         virtual void StartTask(const std::string& command, int taskId) = 0;

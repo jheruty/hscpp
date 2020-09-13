@@ -169,17 +169,18 @@ namespace hscpp
         if (pNotifyEvent->mask & IN_CREATE || pNotifyEvent->mask & IN_MOVED_TO)
         {
             event.type = EventType::Added;
+            m_PendingEvents.push_back(event);
         }
         else if (pNotifyEvent->mask & IN_MODIFY)
         {
             event.type = EventType::Modified;
+            m_PendingEvents.push_back(event);
         }
         else if (pNotifyEvent->mask & IN_DELETE || pNotifyEvent->mask & IN_MOVED_FROM)
         {
             event.type = EventType::Removed;
+            m_PendingEvents.push_back(event);
         }
-
-        m_PendingEvents.push_back(event);
     }
 
     void FileWatcher::CloseWatch(int wd)

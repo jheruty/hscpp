@@ -6,6 +6,12 @@
 #include "hscpp/Compiler_win32.h"
 #include "hscpp/CmdShell_win32.h"
 
+#elif HSCPP_PLATFORM_APPLE
+
+#include "hscpp/FileWatcher_apple.h"
+#include "hscpp/Compiler_unix.h"
+#include "hscpp/CmdShell_unix.h"
+
 #elif HSCPP_PLATFORM_UNIX
 
 #include "hscpp/FileWatcher_unix.h"

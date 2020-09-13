@@ -6,16 +6,10 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-add_library(hscpp
-    $<$<BOOL:${UNIX}>:./src/CmdShell_unix.cpp>
-    $<$<BOOL:${WIN32}>:./src/CmdShell_win32.cpp>
-    $<$<BOOL:${UNIX}>:./src/Compiler_unix.cpp>
-    $<$<BOOL:${WIN32}>:./src/Compiler_win32.cpp>
+list(APPEND SRC_FILES
     ./src/DependencyGraph.cpp
     ./src/FeatureManager.cpp
     ./src/FileParser.cpp
-    $<$<BOOL:${UNIX}>:./src/FileWatcher_unix.cpp>
-    $<$<BOOL:${WIN32}>:./src/FileWatcher_win32.cpp>
     ./src/FsPathHasher.cpp
     ./src/Hotswapper.cpp
     ./src/Log.cpp
@@ -38,17 +32,11 @@ add_library(hscpp
     ./include/hscpp/module/Tracker.h
 
     ./include/hscpp/Callbacks.h
-    $<$<BOOL:${UNIX}>:./include/hscpp/CmdShell_unix.h>
-    $<$<BOOL:${WIN32}>:./include/hscpp/CmdShell_win32.h>
-    $<$<BOOL:${UNIX}>:./include/hscpp/Compiler_unix.h>
-    $<$<BOOL:${WIN32}>:./include/hscpp/Compiler_win32.h>
     ./include/hscpp/DependencyGraph.h
     ./include/hscpp/Feature.h
     ./include/hscpp/FeatureManager.h
     ./include/hscpp/FileParser.h
     ./include/hscpp/Filesystem.h
-    $<$<BOOL:${UNIX}>:./include/hscpp/FileWatcher_unix.h>
-    $<$<BOOL:${WIN32}>:./include/hscpp/FileWatcher_win32.h>
     ./include/hscpp/FsPathHasher.h
     ./include/hscpp/Hotswapper.h
     ./include/hscpp/ICmdShell.h
@@ -62,17 +50,69 @@ add_library(hscpp
     ./include/hscpp/Util.h
 )
 
+list(APPEND COMPILE_DEFINITIONS)
+list(APPEND LINK_LIBRARIES)
+
+if (WIN32)
+    list(APPEND SRC_FILES
+        ./src/CmdShell_win32.cpp
+        ./src/Compiler_win32.cpp
+        ./src/FileWatcher_win32.cpp
+
+        ./include/hscpp/CmdShell_win32.h
+        ./include/hscpp/Compiler_win32.h
+        ./include/hscpp/FileWatcher_win32.h
+    )
+
+    list(APPEND COMPILE_DEFINITIONS
+        HSCPP_PLATFORM_WIN32
+    )
+elseif(APPLE)
+    list(APPEND SRC_FILES
+        ./src/CmdShell_unix.cpp
+        ./src/Compiler_unix.cpp
+        ./src/FileWatcher_apple.cpp
+
+        ./include/hscpp/CmdShell_unix.h
+        ./include/hscpp/Compiler_unix.h
+        ./include/hscpp/FileWatcher_apple.h
+    )
+
+    list(APPEND COMPILE_DEFINITIONS
+        HSCPP_PLATFORM_APPLE
+        HSCPP_PLATFORM_UNIX
+    )
+
+    find_library(CORE_SERVICES CoreServices)
+    list(APPEND LINK_LIBRARIES
+        ${CORE_SERVICES}
+    )
+elseif(UNIX)
+    list(APPEND SRC_FILES
+        ./src/CmdShell_unix.cpp
+        ./src/Compiler_unix.cpp
+        ./src/FileWatcher_unix.cpp
+
+        ./include/hscpp/CmdShell_unix.h
+        ./include/hscpp/Compiler_unix.h
+        ./include/hscpp/FileWatcher_unix.h
+    )
+
+    list(APPEND COMPILE_DEFINITIONS
+        HSCPP_PLATFORM_UNIX
+    )
+
+    list(APPEND LINK_LIBRARIES
+        dl
+        uuid
+    )
+endif()
+
+add_library(hscpp ${SRC_FILES})
+
 target_include_directories(hscpp PUBLIC ./include)
-
-target_compile_definitions(hscpp PUBLIC
-    $<$<BOOL:${WIN32}>:HSCPP_PLATFORM_WIN32>
-    $<$<BOOL:${UNIX}>:HSCPP_PLATFORM_UNIX>
-)
-
-target_link_libraries(hscpp
-    $<$<BOOL:${UNIX}>:dl>
-    $<$<BOOL:${UNIX}>:uuid>
-)
+target_compile_definitions(hscpp PUBLIC ${COMPILE_DEFINITIONS})
+target_link_libraries(hscpp ${LINK_LIBRARIES})
 
 option(HSCPP_BUILD_EXAMPLES "Enable building examples." ON)
 

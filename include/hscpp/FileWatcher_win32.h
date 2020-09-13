@@ -17,12 +17,12 @@ namespace hscpp
     public:
         ~FileWatcher();
 
-        virtual bool AddWatch(const fs::path& directoryPath) override;
-        virtual bool RemoveWatch(const fs::path& directoryPath) override;
-        virtual void ClearAllWatches() override;
+        bool AddWatch(const fs::path& directoryPath) override;
+        bool RemoveWatch(const fs::path& directoryPath) override;
+        void ClearAllWatches() override;
 
-        virtual void SetPollFrequencyMs(int ms) override;
-        virtual void PollChanges(std::vector<Event>& events) override;
+        void SetPollFrequencyMs(int ms) override;
+        void PollChanges(std::vector<Event>& events) override;
 
     private:
         struct DirectoryWatch

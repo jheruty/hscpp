@@ -7,6 +7,7 @@
 #include <functional>
 #include <unordered_set>
 #include <typeindex>
+#include <vector>
 
 #include "hscpp/module/IAllocator.h"
 #include "hscpp/module/ModuleSharedState.h"
