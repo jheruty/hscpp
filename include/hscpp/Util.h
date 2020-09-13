@@ -5,29 +5,25 @@
 
 #include "hscpp/Platform.h"
 
-namespace hscpp
+namespace hscpp::util
 {
-
-    namespace util
-    {
 #ifdef HSCPP_PLATFORM_WIN32
-        
-        std::wstring GetErrorString(TOsError error);
-        std::wstring GetLastErrorString();
+
+    std::wstring GetErrorString(TOsError error);
+    std::wstring GetLastErrorString();
 
 #elif HSCPP_PLATFORM_UNIX
 
-        std::wstring GetErrorString(TOsError error);
-        std::wstring GetLastErrorString();
+    std::wstring GetErrorString(TOsError error);
+    std::wstring GetLastErrorString();
 
 #endif
 
-        bool IsWhitespace(const std::string& str);
-        std::string Trim(const std::string& str);
+    bool IsWhitespace(const std::string& str);
+    std::string Trim(const std::string& str);
 
-        std::string CreateGuid();
+    std::string CreateGuid();
 
-        bool IsHeaderFile(const fs::path& filePath);
-        bool IsSourceFile(const fs::path& filePath);
-    }
+    bool IsHeaderFile(const fs::path& filePath);
+    bool IsSourceFile(const fs::path& filePath);
 }

@@ -33,7 +33,7 @@ namespace hscpp
             FailedSwap,
         };
 
-        Hotswapper(bool bUseDefaults = true);
+        explicit Hotswapper(bool bUseDefaults = true);
 
         AllocationResolver* GetAllocationResolver();
 

@@ -128,7 +128,6 @@ namespace hscpp
                         break;
                     default:
                         assert(false);
-                        break;
                     }
                 }
                 else

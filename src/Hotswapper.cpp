@@ -164,7 +164,7 @@ namespace hscpp
             m_pFileWatcher->PollChanges(m_FileEvents);
         }
 
-        if (m_FileEvents.size() > 0)
+        if (!m_FileEvents.empty())
         {
             HandleRemovedFiles();
 
@@ -566,7 +566,6 @@ namespace hscpp
                 break;
             default:
                 assert(false);
-                break;
             }
         }
 
@@ -595,9 +594,7 @@ namespace hscpp
             {
                 if (util::IsSourceFile(filePath) || util::IsHeaderFile(filePath))
                 {
-                    std::error_code error;
                     fs::path canonicalFilePath = fs::canonical(filePath, error);
-
                     if (error.value() == HSCPP_ERROR_SUCCESS)
                     {
                         sourceFilePaths.insert(filePath);

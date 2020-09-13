@@ -17,7 +17,7 @@ namespace hscpp
             Error,
         };
 
-        virtual ~ICmdShell() {};
+        virtual ~ICmdShell() = default;
 
         virtual bool CreateCmdProcess() = 0;
 

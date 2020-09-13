@@ -4,7 +4,6 @@
 #include <iostream>
 #include <algorithm>
 #include <unordered_map>
-#include <numeric>
 
 #include "hscpp/FileWatcher_apple.h"
 #include "hscpp/Log.h"
@@ -103,7 +102,7 @@ namespace hscpp
         // easier to deal with temporary files that occur during saving, as one can be reasonably
         // confident that these files have been created and removed within a sufficiently long
         // m_PollFrequency period.
-        if (!m_bGatheringEvents && m_PendingEvents.size() > 0)
+        if (!m_bGatheringEvents && !m_PendingEvents.empty())
         {
             // Begin gathering events.
             m_bGatheringEvents = true;
@@ -286,7 +285,9 @@ namespace hscpp
             }
 
             m_RunLoopThread.join();
+
             m_FsStream = nullptr;
+            m_CfRunLoop = nullptr;
         }
 
         return true;
@@ -361,7 +362,6 @@ namespace hscpp
                         break;
                     default:
                         assert(false);
-                        break;
                 }
             }
         });
@@ -384,8 +384,11 @@ namespace hscpp
     void FileWatcher::FsCallback(ConstFSEventStreamRef stream, void *pInfo, size_t nEvents, void *pEventPaths,
             const FSEventStreamEventFlags* pEventFlags, const FSEventStreamEventId* pEventIds)
     {
+        HSCPP_UNUSED_PARAM(stream);
+        HSCPP_UNUSED_PARAM(pEventIds);
+
         // pInfo comes from the info field of FSEventStreamContext.
-        FileWatcher* pThis = reinterpret_cast<FileWatcher*>(pInfo);
+        auto pThis = reinterpret_cast<FileWatcher*>(pInfo);
 
         std::lock_guard lock(pThis->m_Mutex);
 

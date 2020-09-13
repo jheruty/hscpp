@@ -16,7 +16,7 @@ namespace hscpp
     {
     public:
         FileWatcher();
-        ~FileWatcher();
+        ~FileWatcher() override;
 
         bool AddWatch(const fs::path& directoryPath) override;
         bool RemoveWatch(const fs::path& directoryPath) override;
@@ -35,8 +35,8 @@ namespace hscpp
 
         std::mutex m_Mutex;
         std::thread m_RunLoopThread;
-        int m_MainToRunLoopPipe[2];
-        int m_RunLoopToMainPipe[2];
+        int m_MainToRunLoopPipe[2] = {-1, -1};
+        int m_RunLoopToMainPipe[2] = {-1, -1};
 
         std::unordered_set<fs::path, FsPathHasher> m_CanonicalDirectoryPaths;
 

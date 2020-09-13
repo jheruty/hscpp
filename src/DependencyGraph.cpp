@@ -1,13 +1,10 @@
 #include <algorithm>
-#include <assert.h>
 
 #include "hscpp/DependencyGraph.h"
 #include "hscpp/Util.h"
 
 namespace hscpp
 {
-
-
 
     std::vector<hscpp::fs::path> DependencyGraph::ResolveGraph(const fs::path& filePath)
     {
@@ -152,7 +149,8 @@ namespace hscpp
         m_NodeByHandle.clear();
     }
 
-    void DependencyGraph::Collect(int handle, std::unordered_set<int>& collectedHandles, std::function<void(Node*)> cb)
+    void DependencyGraph::Collect(int handle,
+            std::unordered_set<int>& collectedHandles, const std::function<void(Node*)>& cb)
     {
         if (collectedHandles.find(handle) != collectedHandles.end())
         {

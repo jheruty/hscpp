@@ -21,7 +21,7 @@ namespace hscpp
     class IConstructor
     {
     public:
-        virtual ~IConstructor() {};
+        virtual ~IConstructor() = default;
         virtual AllocationInfo Allocate() = 0;
         virtual AllocationInfo AllocateSwap(uint64_t id) = 0;
     };
@@ -34,14 +34,14 @@ namespace hscpp
     class Constructor : public IConstructor
     {
     public:
-        virtual AllocationInfo Allocate() override
+        AllocationInfo Allocate() override
         {
             return Allocate([](uint64_t size) {
                 return ModuleSharedState::s_pAllocator->Hscpp_Allocate(size);
                 });
         }
 
-        virtual AllocationInfo AllocateSwap(uint64_t id) override
+        AllocationInfo AllocateSwap(uint64_t id) override
         {
             return Allocate([id](uint64_t size) {
                 return ModuleSharedState::s_pAllocator->Hscpp_AllocateSwap(id, size);
@@ -49,7 +49,7 @@ namespace hscpp
         }
 
     private:
-        AllocationInfo Allocate(const std::function<AllocationInfo(uint64_t size)> allocatorCb)
+        AllocationInfo Allocate(const std::function<AllocationInfo(uint64_t size)>& allocatorCb)
         {
             if (ModuleSharedState::s_pAllocator == nullptr)
             {
@@ -61,7 +61,7 @@ namespace hscpp
             {
                 uint64_t size = sizeof(typename std::aligned_storage<sizeof(T)>::type);
                 AllocationInfo info = allocatorCb(size);
-                T* pT = new (info.pMemory) T;
+                new (info.pMemory) T;
 
                 return info;
             }

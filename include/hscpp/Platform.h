@@ -45,4 +45,6 @@ typedef int TOsError;
         std::unique_ptr<ICmdShell> CreateCmdShell();
     }
 
+#define HSCPP_UNUSED_PARAM(param) (void)param
+
 }

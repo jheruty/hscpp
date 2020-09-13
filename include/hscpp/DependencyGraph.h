@@ -43,7 +43,7 @@ namespace hscpp
 
         int m_NextHandle = 0;
 
-        void Collect(int handle, std::unordered_set<int>& collectedHandles, std::function<void(Node*)> cb);
+        void Collect(int handle, std::unordered_set<int>& collectedHandles, const std::function<void(Node*)>& cb);
         void CollectDependencies(int handle, std::unordered_set<int>& collectedHandles);
         void CollectDependents(int handle, std::unordered_set<int>& collectedHandles);
 

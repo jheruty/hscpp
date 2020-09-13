@@ -61,7 +61,7 @@ bool hscpp::ModuleManager::PerformRuntimeSwap(const fs::path& moduleFilepath)
         return false;
     }
 
-    typedef ModuleInterface* (*Hsccp_GetModuleInterfaceProc)(void);
+    typedef ModuleInterface* (*Hsccp_GetModuleInterfaceProc)();
     auto getModuleInterfaceProc = reinterpret_cast<Hsccp_GetModuleInterfaceProc>(
         dlsym(pModule, "Hscpp_GetModuleInterface"));
 

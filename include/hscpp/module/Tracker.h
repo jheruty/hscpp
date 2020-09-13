@@ -40,7 +40,7 @@ namespace hscpp
         Tracker(const Tracker& rhs) = delete;
         Tracker& operator=(const Tracker& rhs) = delete;
 
-        Tracker(T* pTrackedObj)
+        explicit Tracker(T* pTrackedObj)
         {
             // Pointer to the instance we are tracking.
             m_pTrackedObj = pTrackedObj;
@@ -61,7 +61,7 @@ namespace hscpp
             }
         }
 
-        virtual uint64_t FreeTrackedObject() override
+        uint64_t FreeTrackedObject() override
         {
             // Destroying the tracked object will also destroy the tracker it owns.
             if (ModuleSharedState::s_pAllocator == nullptr)
@@ -76,7 +76,7 @@ namespace hscpp
             }
         }
 
-        virtual void CallSwapHandler(SwapInfo& info) override
+        void CallSwapHandler(SwapInfo& info) override
         {
             if (SwapHandler != nullptr)
             {
@@ -84,7 +84,7 @@ namespace hscpp
             }
         }
 
-        virtual std::string GetKey() override
+        std::string GetKey() override
         {
             return Key;
         }

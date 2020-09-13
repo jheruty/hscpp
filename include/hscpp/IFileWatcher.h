@@ -25,7 +25,7 @@ namespace hscpp
             fs::path filePath;
         };
 
-        virtual ~IFileWatcher() {};
+        virtual ~IFileWatcher() = default;
 
         virtual bool AddWatch(const fs::path& directoryPath) = 0;
         virtual bool RemoveWatch(const fs::path& directoryPath) = 0;

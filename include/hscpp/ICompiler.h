@@ -21,7 +21,7 @@ namespace hscpp
             std::vector<std::string> linkOptions;
         };
 
-        virtual ~ICompiler() {};
+        virtual ~ICompiler() = default;
 
         virtual bool StartBuild(const Input& info) = 0;
         virtual void Update() = 0;

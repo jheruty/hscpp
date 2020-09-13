@@ -9,7 +9,7 @@ namespace hscpp
 
     struct ISerializedProperty
     {
-        virtual ~ISerializedProperty() {};
+        virtual ~ISerializedProperty() = default;
     };
 
     template <typename T>
