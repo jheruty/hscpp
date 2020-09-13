@@ -582,6 +582,15 @@ namespace hscpp
     {
         for (const auto& [handle, directoryPath] : directoryPathsByHandle)
         {
+            std::error_code error;
+            auto directoryIterator = std::filesystem::directory_iterator(directoryPath, error);
+
+            if (error.value() != HSCPP_ERROR_SUCCESS)
+            {
+                log::Error() << HSCPP_LOG_PREFIX << "Unable to iterate directory " << directoryPath << log::End(".");
+                return;
+            }
+
             for (const auto& filePath : std::filesystem::directory_iterator(directoryPath))
             {
                 if (util::IsSourceFile(filePath) || util::IsHeaderFile(filePath))

@@ -50,11 +50,13 @@ namespace hscpp
 
         std::vector<Event> m_PendingEvents;
 
-        bool UpdateFsEventStream();
-        bool StopCurrentFsEventStream();
+        std::vector<fs::path> GetRootDirectories();
+
+        bool CreateFsEventStream();
+        bool StopFsEventStream();
         bool ExecuteRunLoopThreadEvent(RunLoopThreadEvent event);
-        bool SendDoneToMainThread();
         bool WaitForDoneFromRunThread();
+        bool SendDoneToMainThread();
         void CreateRunLoopThread();
 
         static bool CanonicalPath(const fs::path& path, fs::path& canonicalPath);

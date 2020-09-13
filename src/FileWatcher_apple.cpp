@@ -2,6 +2,9 @@
 #include <CoreFoundation/CFString.h>
 
 #include <iostream>
+#include <algorithm>
+#include <unordered_map>
+#include <numeric>
 
 #include "hscpp/FileWatcher_apple.h"
 #include "hscpp/Log.h"
@@ -35,7 +38,7 @@ namespace hscpp
 
     FileWatcher::~FileWatcher()
     {
-        if (!StopCurrentFsEventStream())
+        if (!StopFsEventStream())
         {
             log::Warning() << HSCPP_LOG_PREFIX
                 << "Failed to stop FsEventStream on FileWatcher destruction." << log::End();
@@ -53,7 +56,7 @@ namespace hscpp
         }
 
         m_CanonicalDirectoryPaths.insert(canonicalPath);
-        return UpdateFsEventStream();
+        return CreateFsEventStream();
     }
 
     bool FileWatcher::RemoveWatch(const fs::path &directoryPath)
@@ -69,7 +72,7 @@ namespace hscpp
         size_t nErased = m_CanonicalDirectoryPaths.erase(canonicalPath);
         if (nErased > 0)
         {
-            return UpdateFsEventStream();
+            return CreateFsEventStream();
         }
 
         return true;
@@ -80,7 +83,7 @@ namespace hscpp
         std::lock_guard lock(m_Mutex);
 
         m_CanonicalDirectoryPaths.clear();
-        UpdateFsEventStream();
+        CreateFsEventStream();
     }
 
     void FileWatcher::SetPollFrequencyMs(int ms)
@@ -126,9 +129,86 @@ namespace hscpp
         m_PendingEvents.clear();
     }
 
-    bool FileWatcher::UpdateFsEventStream()
+    std::vector<fs::path> FileWatcher::GetRootDirectories()
     {
-        if (!StopCurrentFsEventStream())
+        std::vector<fs::path> rootPaths;
+
+        // Determines whether subPath is a subdirectory within basePath. Assumes paths are canonical
+        // and that subPath is longer than basePath.
+        auto IsSubPath = [](const fs::path& basePath, const fs::path& subPath){
+            auto baseIt = basePath.begin();
+            auto subIt = subPath.begin();
+            for (; baseIt != basePath.end(); ++baseIt, ++subIt)
+            {
+                if (*baseIt != *subIt)
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        };
+
+        // Sort paths from shortest to longest.
+        struct SortedPath
+        {
+            int nSegments = 0; // ex. ~/path/to/dir is 4 segments long.
+            fs::path path;
+        };
+
+        std::vector<SortedPath> sortedPaths;
+        for (const auto& canonicalPath : m_CanonicalDirectoryPaths)
+        {
+            SortedPath sortedPath;
+            sortedPath.path = canonicalPath;
+
+            for (const auto& segment : canonicalPath)
+            {
+                sortedPath.nSegments++;
+            }
+
+            sortedPaths.push_back(sortedPath);
+        }
+
+        std::sort(sortedPaths.begin(), sortedPaths.end(), [](const SortedPath& a, const SortedPath& b) {
+           return a.nSegments < b.nSegments;
+        });
+
+        // Find root directories.
+        std::unordered_set<size_t> overlapped;
+        for (size_t i = 0; i < sortedPaths.size(); ++i)
+        {
+            fs::path basePath = sortedPaths.at(i).path;
+            if (overlapped.find(i) == overlapped.end())
+            {
+                // This is not a subdirectory, add it to rootPaths.
+                rootPaths.push_back(sortedPaths.at(i).path);
+
+                // Check if other directories are subdirectories of basePath. Since directories are
+                // sorted by path segment length, one will always be able to find all subdirectories
+                // in a single pass.
+                for (size_t j = i + 1; j < sortedPaths.size(); ++j)
+                {
+                    if (overlapped.find(j) == overlapped.end())
+                    {
+                        // Path was not already marked as a subdirectory; perform check.
+                        fs::path subPath = sortedPaths.at(j).path;
+                        if (IsSubPath(basePath, subPath))
+                        {
+                            // Mark path as a subdirectory.
+                            overlapped.insert(j);
+                        }
+                    }
+                }
+            }
+        }
+
+        return rootPaths;
+    }
+
+    bool FileWatcher::CreateFsEventStream()
+    {
+        if (!StopFsEventStream())
         {
             log::Error() << HSCPP_LOG_PREFIX << "Failed to stop FsEventStream." << log::End();
             return false;
@@ -136,8 +216,12 @@ namespace hscpp
 
         if (!m_CanonicalDirectoryPaths.empty())
         {
+            // FsEventStreams are recursive, so we only need to watch the root paths. The canonical
+            // directory set is used later to determine if a file update came from a watched directory.
+            std::vector<fs::path> rootDirectories = GetRootDirectories();
+
             std::vector<CFStringRef> cfDirectoryPaths;
-            for (const auto& directoryPath : m_CanonicalDirectoryPaths)
+            for (const auto& directoryPath : rootDirectories)
             {
                 CFStringRef cfDirectoryPath = CFStringCreateWithCString(nullptr,
                         directoryPath.u8string().c_str(), kCFStringEncodingUTF8);
@@ -185,7 +269,7 @@ namespace hscpp
         return true;
     }
 
-    bool FileWatcher::StopCurrentFsEventStream()
+    bool FileWatcher::StopFsEventStream()
     {
         if (m_FsStream != nullptr)
         {
@@ -220,19 +304,6 @@ namespace hscpp
         return WaitForDoneFromRunThread();
     }
 
-    bool FileWatcher::SendDoneToMainThread()
-    {
-        char msg[] = {1};
-        ssize_t nBytesSent = write(m_RunLoopToMainPipe[1], msg, sizeof(msg));
-        if (nBytesSent != sizeof(msg))
-        {
-            log::Error() << HSCPP_LOG_PREFIX << "Failed to send done message to main thread." << log::End();
-            return false;
-        }
-
-        return true;
-    }
-
     bool FileWatcher::WaitForDoneFromRunThread()
     {
         char msg[1];
@@ -240,6 +311,19 @@ namespace hscpp
         if (nBytesRead != 1)
         {
             log::Error() << HSCPP_LOG_PREFIX << "Failed to recv data from run thread." << log::End();
+            return false;
+        }
+
+        return true;
+    }
+
+    bool FileWatcher::SendDoneToMainThread()
+    {
+        char msg[] = {1};
+        ssize_t nBytesSent = write(m_RunLoopToMainPipe[1], msg, sizeof(msg));
+        if (nBytesSent != sizeof(msg))
+        {
+            log::Error() << HSCPP_LOG_PREFIX << "Failed to send done message to main thread." << log::End();
             return false;
         }
 
@@ -290,7 +374,7 @@ namespace hscpp
 
         if (error.value() != HSCPP_ERROR_SUCCESS)
         {
-            log::Error() << HSCPP_LOG_PREFIX << "Failed to get canonical path of " << path << log::End(".");
+            log::Warning() << HSCPP_LOG_PREFIX << "Failed to get canonical path of " << path << log::End(".");
             return false;
         }
 
