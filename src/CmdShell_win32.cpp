@@ -109,6 +109,7 @@ namespace hscpp
 
         m_TaskId = taskId;
         m_TaskOutput.clear();
+        m_LeftoverCmdOutput.clear();
     }
 
     CmdShell::TaskState CmdShell::GetTaskState()
@@ -124,6 +125,10 @@ namespace hscpp
         {
             m_TaskState = TaskState::Idle;
             return TaskState::Error;
+        }
+        else if (m_TaskState == TaskState::Idle)
+        {
+            return TaskState::Idle;
         }
 
         // Read as many output lines as possible from the cmd subprocess.
