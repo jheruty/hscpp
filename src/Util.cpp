@@ -73,14 +73,13 @@ namespace hscpp::util
 
     std::wstring GetErrorString(TOsError error)
     {
-        // TODO
-        return L"";
+        std::string errorStr = strerror(errno);
+        return std::wstring(errorStr.begin(), errorStr.end());
     }
 
     std::wstring GetLastErrorString()
     {
-        // TODO
-        return L"";
+        return GetErrorString(errno);
     }
 
 #endif
