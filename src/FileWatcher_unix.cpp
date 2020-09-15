@@ -24,15 +24,15 @@ namespace hscpp
             int flags = fcntl(m_NotifyFd, F_GETFL, 0);
             if (flags == -1)
             {
-                log::Error() << HSCPP_LOG_PREFIX
-                     << "Failed to get flags from directory watch fd." << log::End();
+                log::Error() << HSCPP_LOG_PREFIX << "Failed to get flags from directory watch fd. "
+                    << log::LastOsError() << log::End();
                 return false;
             }
 
             if (fcntl(m_NotifyFd, F_SETFL, flags | O_NONBLOCK) == -1)
             {
-                log::Error() << HSCPP_LOG_PREFIX
-                     << "Failed to set directory watch fd to nonblocking." << log::End();
+                log::Error() << HSCPP_LOG_PREFIX << "Failed to set directory watch fd to nonblocking. "
+                    << log::LastOsError() << log::End();
                 return false;
             }
         }
@@ -138,7 +138,8 @@ namespace hscpp
                 ssize_t nBytes = read(fds[i].fd, m_NotifyBuffer.data(), m_NotifyBuffer.size());
                 if (nBytes <= 0)
                 {
-                    log::Error() << "Failed to read notify fd. " << log::LastOsError() << log::End();
+                    log::Error() << HSCPP_LOG_PREFIX << "Failed to read notify fd. "
+                        << log::LastOsError() << log::End();
                     return;
                 }
 
@@ -187,7 +188,8 @@ namespace hscpp
     {
         if (inotify_rm_watch(m_NotifyFd, wd) == -1)
         {
-            log::Warning() << HSCPP_LOG_PREFIX << "Failed to remove watch from inotify." << log::End();
+            log::Warning() << HSCPP_LOG_PREFIX << "Failed to remove watch from inotify."
+                << log::LastOsError() << log::End();
         }
     }
 

@@ -24,14 +24,14 @@ namespace hscpp
 
         if (pipe(m_MainToRunLoopPipe) == -1)
         {
-            log::Error() << HSCPP_LOG_PREFIX
-                << "Failed to create main thread to RunLoop thread pipe." << log::End();
+            log::Error() << HSCPP_LOG_PREFIX << "Failed to create main thread to RunLoop thread pipe. " <<
+                log::LastOsError() << log::End();
         }
 
         if (pipe(m_RunLoopToMainPipe) == -1)
         {
-            log::Error() << HSCPP_LOG_PREFIX
-                << "Failed to create RunLoop thread to main thread pipe." << log::End();
+            log::Error() << HSCPP_LOG_PREFIX << "Failed to create RunLoop thread to main thread pipe. "
+                << log::LastOsError() << log::End();
         }
     }
 
@@ -152,14 +152,14 @@ namespace hscpp
         struct SortedPath
         {
             int nSegments = 0; // ex. ~/path/to/dir is 4 segments long.
-            fs::path path;
+            fs::path canonicalPath;
         };
 
         std::vector<SortedPath> sortedPaths;
         for (const auto& canonicalPath : m_CanonicalDirectoryPaths)
         {
             SortedPath sortedPath;
-            sortedPath.path = canonicalPath;
+            sortedPath.canonicalPath = canonicalPath;
 
             for (const auto& segment : canonicalPath)
             {
@@ -177,11 +177,11 @@ namespace hscpp
         std::unordered_set<size_t> overlapped;
         for (size_t i = 0; i < sortedPaths.size(); ++i)
         {
-            fs::path basePath = sortedPaths.at(i).path;
+            fs::path basePath = sortedPaths.at(i).canonicalPath;
             if (overlapped.find(i) == overlapped.end())
             {
                 // This is not a subdirectory, add it to rootPaths.
-                rootPaths.push_back(sortedPaths.at(i).path);
+                rootPaths.push_back(sortedPaths.at(i).canonicalPath);
 
                 // Check if other directories are subdirectories of basePath. Since directories are
                 // sorted by path segment length, one will always be able to find all subdirectories
@@ -191,7 +191,7 @@ namespace hscpp
                     if (overlapped.find(j) == overlapped.end())
                     {
                         // Path was not already marked as a subdirectory; perform check.
-                        fs::path subPath = sortedPaths.at(j).path;
+                        fs::path subPath = sortedPaths.at(j).canonicalPath;
                         if (IsSubPath(basePath, subPath))
                         {
                             // Mark path as a subdirectory.
