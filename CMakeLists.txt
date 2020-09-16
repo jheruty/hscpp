@@ -105,7 +105,6 @@ elseif(UNIX)
 endif()
 
 option(HSCPP_BUILD_EXAMPLES "Enable building examples." ON)
-option(HSCPP_CXX_11 "Enable C++11 compatibility." ON)
 
 if(NOT DEFINED CMAKE_CXX_STANDARD)
     # Set C++17 as default build target.
@@ -116,12 +115,10 @@ elseif(CMAKE_CXX_STANDARD LESS 11)
     message(FATAL_ERROR "hotswap-cpp requires C++11.")
 endif()
 
-if (HSCPP_CXX_11)
-    # Enable C++11 compatibility. hotswap-cpp uses std::filesystem, which requires the use of an
-    # alternative std::filesystem library before C++17.
-    set(CMAKE_CXX_STANDARD 11)
-    set(CMAKE_CXX_STANDARD_REQUIRED ON)
-    set(CMAKE_CXX_EXTENSIONS OFF)
+message(STATUS "hscpp CMAKE_CXX_STANDARD set to ${CMAKE_CXX_STANDARD}.")
+
+if (CMAKE_CXX_STANDARD LESS 17)
+    message(STATUS "hscpp CMAKE_CXX_STANDARD < 17, so using ghc filesystem rather than std::filesystem.")
 
     list(APPEND LINK_LIBRARIES ghc_filesystem)
     list(APPEND COMPILE_DEFINITIONS HSCPP_USE_GHC_FILESYSTEM)
