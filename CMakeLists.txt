@@ -3,8 +3,6 @@ cmake_minimum_required(VERSION 3.10.0)
 project(hscpp)
 
 list(APPEND SRC_FILES
-    src/module/StaticVariables_cxx11.cpp
-
     src/DependencyGraph.cpp
     src/FeatureManager.cpp
     src/FileParser.cpp

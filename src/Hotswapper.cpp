@@ -573,9 +573,6 @@ namespace hscpp
         // TODO: Reenable queue once bugs are worked out.
         //m_QueuedSourceFilePaths.insert(uniqueFilePaths.begin(), uniqueFilePaths.end());
 
-        // TODO
-        uniqueFilePaths.insert(GetHscppIncludePath().parent_path() / "src" / "module" / "StaticVariables_cxx11.cpp" );
-
         return std::vector<fs::path>(uniqueFilePaths.begin(), uniqueFilePaths.end());
     }
 
