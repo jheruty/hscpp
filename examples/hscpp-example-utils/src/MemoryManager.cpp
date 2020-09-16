@@ -3,11 +3,11 @@
 #include "hscpp-example-utils/MemoryManager.h"
 #include "hscpp/Hotswapper.h"
 
-uint8_t* MemoryManager::GetMemory(size_t id)
+uint8_t* MemoryManager::GetMemory(uint64_t id)
 {
     if (id < m_Blocks.size())
     {
-        return m_Blocks.at(id).pMemory;
+        return m_Blocks.at(static_cast<size_t>(id)).pMemory;
     }
     else if (id == MEMORY_MANAGER_ID)
     {
@@ -32,11 +32,11 @@ hscpp::AllocationInfo MemoryManager::Hscpp_AllocateSwap(uint64_t previousId, uin
 {
     if (previousId < m_Blocks.size())
     {
-        Block& block = m_Blocks.at(previousId);
+        Block& block = m_Blocks.at(static_cast<size_t>(previousId));
 
         block.bFree = false;
         block.capacity = size;
-        block.pMemory = new uint8_t[size];
+        block.pMemory = new uint8_t[static_cast<size_t>(size)];
 
         hscpp::AllocationInfo info;
         info.id = previousId;
@@ -68,7 +68,7 @@ uint64_t MemoryManager::Hscpp_Free(uint8_t* pMemory)
     return 0;
 }
 
-size_t MemoryManager::TakeFirstFreeBlock(size_t size)
+size_t MemoryManager::TakeFirstFreeBlock(uint64_t size)
 {
     size_t iBlock = -1;
     for (size_t i = 0; i < m_Blocks.size(); ++i)
@@ -89,7 +89,7 @@ size_t MemoryManager::TakeFirstFreeBlock(size_t size)
         Block block;
         block.bFree = false;
         block.capacity = size;
-        block.pMemory = new uint8_t[size];
+        block.pMemory = new uint8_t[static_cast<size_t>(size)];
 
         m_Blocks.push_back(block);
     }

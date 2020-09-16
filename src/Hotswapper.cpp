@@ -106,7 +106,7 @@ namespace hscpp
         AppendDirectoryFiles(m_IncludeDirectoryPathsByHandle, uniqueSourceFilePaths);
 
         Preprocessor::Input preprocessorInput = CreatePreprocessorInput(
-            std::vector(uniqueSourceFilePaths.begin(), uniqueSourceFilePaths.end()));
+            std::vector<fs::path>(uniqueSourceFilePaths.begin(), uniqueSourceFilePaths.end()));
         m_Preprocessor.CreateDependencyGraph(preprocessorInput);
     }
 
@@ -573,24 +573,28 @@ namespace hscpp
         // TODO: Reenable queue once bugs are worked out.
         //m_QueuedSourceFilePaths.insert(uniqueFilePaths.begin(), uniqueFilePaths.end());
 
+        // TODO
+        uniqueFilePaths.insert(GetHscppIncludePath().parent_path() / "src" / "module" / "StaticVariables_cxx11.cpp" );
+
         return std::vector<fs::path>(uniqueFilePaths.begin(), uniqueFilePaths.end());
     }
 
     void Hotswapper::AppendDirectoryFiles(const std::unordered_map<int, fs::path>& directoryPathsByHandle,
         std::unordered_set<fs::path, FsPathHasher>& sourceFilePaths)
     {
-        for (const auto& [handle, directoryPath] : directoryPathsByHandle)
+        for (const auto& handle__directoryPath : directoryPathsByHandle)
         {
             std::error_code error;
-            auto directoryIterator = std::filesystem::directory_iterator(directoryPath, error);
+            auto directoryIterator = fs::directory_iterator(handle__directoryPath.second, error);
 
             if (error.value() != HSCPP_ERROR_SUCCESS)
             {
-                log::Error() << HSCPP_LOG_PREFIX << "Unable to iterate directory " << directoryPath << log::End(".");
+                log::Error() << HSCPP_LOG_PREFIX << "Unable to iterate directory "
+                    << handle__directoryPath.second << log::End(".");
                 return;
             }
 
-            for (const auto& filePath : std::filesystem::directory_iterator(directoryPath))
+            for (const auto& filePath : fs::directory_iterator(handle__directoryPath.second))
             {
                 if (util::IsSourceFile(filePath) || util::IsHeaderFile(filePath))
                 {

@@ -25,9 +25,9 @@ hscpp_require_include("../../hscpp-example-utils/include")
 hscpp_require_source("./PrintVariant.cpp", "./PrintHello.cpp")
 #endif
 
-// Link in a library with hscpp_require_lib. %PROJECT_CONFIGURATION% is set to either Debug
-// or Release, using hscpp::Hotswappers "AddHscppRequireVariable" function.
-hscpp_require_lib("../../../build/examples/hscpp-example-utils/%PROJECT_CONFIGURATION%/hscpp-example-utils.lib")
+// Link in a library with hscpp_require_lib.
+// TODO fix configuration variable.
+hscpp_require_lib("../../../build/examples/hscpp-example-utils/hscpp-example-utils.lib")
 
 // Add preprocessor definitions when this file is compiled. Definitions can be strings or identifiers.
 hscpp_preprocessor_definitions("PREPROCESSOR_PRINTER_DEMO1", PREPROCESSOR_PRINTER_DEMO2);

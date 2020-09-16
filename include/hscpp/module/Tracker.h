@@ -24,6 +24,11 @@ namespace hscpp
             // This will be executed on module load.
             hscpp::Constructors::RegisterConstructor<T>(Key);
         }
+
+        // Unused static may be optimized out. Explicitly call this function to ensure that Register
+        // gets initialized.
+        void ForceInitialization()
+        {}
     };
 
     //============================================================================
@@ -40,8 +45,10 @@ namespace hscpp
         Tracker(const Tracker& rhs) = delete;
         Tracker& operator=(const Tracker& rhs) = delete;
 
-        explicit Tracker(T* pTrackedObj)
+        Tracker(T* pTrackedObj)
         {
+            s_Register.ForceInitialization();
+
             // Pointer to the instance we are tracking.
             m_pTrackedObj = pTrackedObj;
 
@@ -90,9 +97,12 @@ namespace hscpp
         }
 
     private:
-        inline static Register<T, Key> s_Register;
+        static Register<T, Key> s_Register;
         T* m_pTrackedObj = nullptr;
     };
+
+    template <typename T, const char* Key>
+    Register<T, Key> Tracker<T, Key>::s_Register;
 
 }
 
@@ -106,8 +116,8 @@ namespace hscpp
 
 #define HSCPP_TRACK(type, key) \
 friend class hscpp::AllocationResolver; \
-inline static const char hscpp_ClassKey[] = key;\
-hscpp::Tracker<type, hscpp_ClassKey> hscpp_ClassTracker = hscpp::Tracker<type, hscpp_ClassKey>(this);
+static constexpr const char hscpp_ClassKey[] = key;\
+hscpp::Tracker<type, hscpp_ClassKey> hscpp_ClassTracker = { this };
 
 #define Hscpp_SetSwapHandler(...) \
 hscpp_ClassTracker.SwapHandler = __VA_ARGS__;

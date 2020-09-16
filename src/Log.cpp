@@ -9,7 +9,7 @@
 
 #endif
 
-namespace hscpp::log
+namespace hscpp { namespace log
 {
     static Level s_Level = Level::Info;
     static bool s_bLogBuild = true;
@@ -43,13 +43,13 @@ namespace hscpp::log
 
     Stream& Stream::operator<<(const std::string& str)
     {
-        if (!m_bEnabled)
+        if (!m_bEnabled || str.empty())
         {
             return *this;
         }
 
         std::wstring ws(str.size(), L' ');
-        ws.resize(std::mbstowcs(ws.data(), str.c_str(), str.size()));
+        ws.resize(std::mbstowcs(&ws[0], str.c_str(), str.size()));
 
         m_Stream << ws;
         return *this;
@@ -153,5 +153,5 @@ namespace hscpp::log
         s_bLogBuild = false;
     }
 
-}
+}}
 

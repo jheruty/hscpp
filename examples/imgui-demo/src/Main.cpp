@@ -11,6 +11,7 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 
+#include "hscpp/Filesystem.h"
 #include "hscpp/Hotswapper.h"
 #include "hscpp-example-utils/MemoryManager.h"
 #include "hscpp-example-utils/Ref.h"
@@ -74,7 +75,7 @@ int main(int, char**)
 {
     hscpp::Hotswapper swapper;
 
-    auto srcPath = std::filesystem::path(__FILE__).parent_path();
+    auto srcPath = hscpp::fs::path(__FILE__).parent_path();
     auto includePath = srcPath.parent_path() / "include";
     auto exampleUtilsIncludePath = srcPath.parent_path().parent_path() / "hscpp-example-utils" / "include";
     auto imguiIncludePath = srcPath.parent_path().parent_path() / "lib" / "imgui";
@@ -84,17 +85,19 @@ int main(int, char**)
     swapper.AddIncludeDirectory(exampleUtilsIncludePath);
     swapper.AddIncludeDirectory(imguiIncludePath);
 
-#ifdef _DEBUG
-    std::string configuration = "Debug";
-#else
-    std::string configuration = "Release";
-#endif
+//#ifdef _DEBUG
+//    std::string configuration = "Debug";
+//#else
+//    std::string configuration = "Release";
+//#endif
+
+    // TODO fix configuration
 
     // We can link additional libraries.
-    auto imguiLibraryPath = std::filesystem::current_path().parent_path()
-        / "lib" / "imgui" / configuration / "imgui.lib";
-    auto exampleUtilsLibraryPath = std::filesystem::current_path().parent_path()
-        / "hscpp-example-utils" / configuration / "hscpp-example-utils.lib";
+    auto imguiLibraryPath = hscpp::fs::current_path().parent_path()
+        / "lib" / "imgui" / "imgui.lib";
+    auto exampleUtilsLibraryPath = hscpp::fs::current_path().parent_path()
+        / "hscpp-example-utils" / "hscpp-example-utils.lib";
     
     swapper.AddLibrary(imguiLibraryPath);
     swapper.AddLibrary(exampleUtilsLibraryPath);

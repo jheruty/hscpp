@@ -19,7 +19,7 @@ namespace hscpp
     private:
         friend class ModuleInterface;
 
-        inline static void* s_pData = nullptr;
+        static void* s_pData;
     };
 }
 

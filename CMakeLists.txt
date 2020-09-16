@@ -2,11 +2,9 @@ cmake_minimum_required(VERSION 3.10.0)
 
 project(hscpp)
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
-
 list(APPEND SRC_FILES
+    src/module/StaticVariables_cxx11.cpp
+
     src/DependencyGraph.cpp
     src/FeatureManager.cpp
     src/FileParser.cpp
@@ -108,13 +106,36 @@ elseif(UNIX)
     )
 endif()
 
+option(HSCPP_BUILD_EXAMPLES "Enable building examples." ON)
+option(HSCPP_CXX_11 "Enable C++11 compatibility." ON)
+
+if(NOT DEFINED CMAKE_CXX_STANDARD)
+    # Set C++17 as default build target.
+    set(CMAKE_CXX_STANDARD 17)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+    set(CMAKE_CXX_EXTENSIONS OFF)
+elseif(CMAKE_CXX_STANDARD LESS 11)
+    message(FATAL_ERROR "hotswap-cpp requires C++11.")
+endif()
+
+if (HSCPP_CXX_11)
+    # Enable C++11 compatibility. hotswap-cpp uses std::filesystem, which requires the use of an
+    # alternative std::filesystem library before C++17.
+    set(CMAKE_CXX_STANDARD 11)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+    set(CMAKE_CXX_EXTENSIONS OFF)
+
+    list(APPEND LINK_LIBRARIES ghc_filesystem)
+    list(APPEND COMPILE_DEFINITIONS HSCPP_USE_GHC_FILESYSTEM)
+
+    add_subdirectory(lib/filesystem-1.3.4)
+endif()
+
 add_library(hscpp ${SRC_FILES})
 
 target_include_directories(hscpp PUBLIC include)
 target_compile_definitions(hscpp PUBLIC ${COMPILE_DEFINITIONS})
 target_link_libraries(hscpp ${LINK_LIBRARIES})
-
-option(HSCPP_BUILD_EXAMPLES "Enable building examples." ON)
 
 if (HSCPP_BUILD_EXAMPLES)
     add_subdirectory(examples)

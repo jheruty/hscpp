@@ -14,7 +14,7 @@
 
 #endif
 
-namespace hscpp::util
+namespace hscpp { namespace util
 {
 
     const static std::unordered_set<std::string> HEADER_EXTENSIONS = {
@@ -144,4 +144,4 @@ namespace hscpp::util
         return SOURCE_EXTENSIONS.find(extension.string()) != SOURCE_EXTENSIONS.end();
     }
 
-}
+}}

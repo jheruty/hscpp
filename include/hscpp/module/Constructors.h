@@ -121,14 +121,14 @@ namespace hscpp
         {
             std::vector<DuplicateKey> duplicates;
 
-            for (const auto& [key, types] : TypesByKey())
+            for (const auto& key__types : TypesByKey())
             {
-                if (types.size() > 1)
+                if (key__types.second.size() > 1)
                 {
-                    for (const auto& type : types)
+                    for (const auto& type : key__types.second)
                     {
                         DuplicateKey duplicate;
-                        duplicate.key = key;
+                        duplicate.key = key__types.first;
                         duplicate.type = type.name();
 
                         duplicates.push_back(duplicate);

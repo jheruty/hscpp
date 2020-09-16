@@ -97,9 +97,9 @@ namespace hscpp
     {
         std::vector<fs::path> deletedFilePaths;
 
-        for (const auto& [handle, pNode] : m_NodeByHandle)
+        for (const auto& handle__pNode : m_NodeByHandle)
         {
-            fs::path filePath = GetFilepath(handle);
+            fs::path filePath = GetFilepath(handle__pNode.first);
             if (!fs::exists(filePath))
             {
                 deletedFilePaths.push_back(filePath);

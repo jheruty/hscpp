@@ -2,6 +2,7 @@
 #include <thread>
 #include <chrono>
 
+#include "hscpp/Filesystem.h"
 #include "hscpp/Hotswapper.h"
 #include "hscpp-example-utils/MemoryManager.h"
 #include "runtime-require-demo/Printer.h"
@@ -10,7 +11,7 @@ int main()
 {
     hscpp::Hotswapper swapper;
 
-    auto srcPath = std::filesystem::path(__FILE__).parent_path();
+    auto srcPath = hscpp::fs::path(__FILE__).parent_path();
     auto includePath = srcPath.parent_path() / "include";
 
     swapper.AddSourceDirectory(srcPath);

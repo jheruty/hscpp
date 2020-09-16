@@ -5,7 +5,7 @@
 
 #include "hscpp/Platform.h"
 
-namespace hscpp::util
+namespace hscpp { namespace util
 {
 #ifdef HSCPP_PLATFORM_WIN32
 
@@ -26,4 +26,4 @@ namespace hscpp::util
 
     bool IsHeaderFile(const fs::path& filePath);
     bool IsSourceFile(const fs::path& filePath);
-}
+}}

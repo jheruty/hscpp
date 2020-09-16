@@ -2,6 +2,7 @@
 #include <chrono>
 #include <filesystem>
 
+#include "hscpp/Filesystem.h"
 #include "hscpp/Hotswapper.h"
 #include "simple-demo/SimpleDemoData.h"
 #include "simple-demo/Printer.h"
@@ -10,7 +11,7 @@ int main()
 {
     hscpp::Hotswapper swapper;
 
-    auto srcPath = std::filesystem::path(__FILE__).parent_path();
+    auto srcPath = hscpp::fs::path(__FILE__).parent_path();
     auto includePath = srcPath.parent_path() / "include";
 
     // Watch the current directory for changes.

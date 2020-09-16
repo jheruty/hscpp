@@ -8,7 +8,7 @@
 template <typename T>
 struct Ref
 {
-    size_t id = 0;
+    uint64_t id = 0;
     IMemoryManager* pMemoryManager = nullptr;
 
     T* operator->()

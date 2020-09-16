@@ -1,5 +1,6 @@
 #include <thread>
 
+#include "hscpp/Filesystem.h"
 #include "hscpp/Hotswapper.h"
 #include "dependent-compilation-demo/Printer1.h"
 #include "dependent-compilation-demo/Printer2.h"
@@ -8,7 +9,7 @@ int main()
 {
     hscpp::Hotswapper swapper;
 
-    auto srcPath = std::filesystem::path(__FILE__).parent_path();
+    auto srcPath = hscpp::fs::path(__FILE__).parent_path();
     auto includePath = srcPath.parent_path() / "include";
 
     swapper.AddSourceDirectory(srcPath);

@@ -8,7 +8,7 @@
 
 #define HSCPP_LOG_PREFIX __func__ << "[" << __LINE__ << "]: "
 
-namespace hscpp::log
+namespace hscpp { namespace log
 {
     //============================================================================
     // Level
@@ -102,4 +102,4 @@ namespace hscpp::log
 
     void EnableBuildLogging();
     void DisableBuildLogging();
-}
+}}
