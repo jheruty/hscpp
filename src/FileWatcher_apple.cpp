@@ -13,7 +13,7 @@ namespace hscpp
 
     FileWatcher::FileWatcher()
     {
-        m_pFsContext = std::make_unique<FSEventStreamContext>();
+        m_pFsContext = std::unique_ptr<FSEventStreamContext>(new FSEventStreamContext());
         m_pFsContext->version = 0; // 0 is the only valid value.
         m_pFsContext->info = this;
         m_pFsContext->retain = nullptr;
@@ -46,7 +46,7 @@ namespace hscpp
 
     bool FileWatcher::AddWatch(const fs::path &directoryPath)
     {
-        std::lock_guard lock(m_Mutex);
+        std::lock_guard<std::mutex> lock(m_Mutex);
 
         fs::path canonicalPath;
         if (!CanonicalPath(directoryPath, canonicalPath))
@@ -60,7 +60,7 @@ namespace hscpp
 
     bool FileWatcher::RemoveWatch(const fs::path &directoryPath)
     {
-        std::lock_guard lock(m_Mutex);
+        std::lock_guard<std::mutex> lock(m_Mutex);
 
         fs::path canonicalPath;
         if (!CanonicalPath(directoryPath, canonicalPath))
@@ -79,7 +79,7 @@ namespace hscpp
 
     void FileWatcher::ClearAllWatches()
     {
-        std::lock_guard lock(m_Mutex);
+        std::lock_guard<std::mutex> lock(m_Mutex);
 
         m_CanonicalDirectoryPaths.clear();
         CreateFsEventStream();
@@ -87,14 +87,14 @@ namespace hscpp
 
     void FileWatcher::SetPollFrequencyMs(int ms)
     {
-        std::lock_guard lock(m_Mutex);
+        std::lock_guard<std::mutex> lock(m_Mutex);
 
         m_PollFrequency = std::chrono::milliseconds(ms);
     }
 
     void FileWatcher::PollChanges(std::vector<Event> &events)
     {
-        std::lock_guard lock(m_Mutex);
+        std::lock_guard<std::mutex> lock(m_Mutex);
 
         events.clear();
 
@@ -390,7 +390,7 @@ namespace hscpp
         // pInfo comes from the info field of FSEventStreamContext.
         auto pThis = reinterpret_cast<FileWatcher*>(pInfo);
 
-        std::lock_guard lock(pThis->m_Mutex);
+        std::lock_guard<std::mutex> lock(pThis->m_Mutex);
 
         for (size_t i = 0; i < nEvents; ++i)
         {

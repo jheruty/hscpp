@@ -90,7 +90,7 @@ namespace hscpp
 
             GetConstructorKeys().push_back(key);
 
-            GetConstructors().push_back(std::make_unique<Constructor<T>>());
+            GetConstructors().push_back(std::unique_ptr<Constructor<T>>(new Constructor<T>()));
             size_t iConstructor = GetConstructors().size() - 1;
 
             GetConstructorsByKey()[key] = iConstructor;

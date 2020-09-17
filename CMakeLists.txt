@@ -4,6 +4,7 @@ project(hscpp)
 
 list(APPEND SRC_FILES
     src/DependencyGraph.cpp
+    src/Feature.cpp
     src/FeatureManager.cpp
     src/FileParser.cpp
     src/FsPathHasher.cpp

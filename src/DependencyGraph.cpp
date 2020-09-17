@@ -286,7 +286,7 @@ namespace hscpp
 
     hscpp::DependencyGraph::Node* DependencyGraph::CreateNode(int handle)
     {
-        m_NodeByHandle[handle] = std::make_unique<Node>();
+        m_NodeByHandle[handle] = std::unique_ptr<Node>(new Node());
 
         Node* pNode = m_NodeByHandle[handle].get();
         return pNode;

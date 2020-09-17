@@ -25,17 +25,17 @@ namespace hscpp
 
     std::unique_ptr<IFileWatcher> platform::CreateFileWatcher()
     {
-        return std::make_unique<FileWatcher>();
+        return std::unique_ptr<FileWatcher>(new FileWatcher());
     }
 
     std::unique_ptr<ICompiler> platform::CreateCompiler()
     {
-        return std::make_unique<Compiler>();
+        return std::unique_ptr<Compiler>(new Compiler());
     }
 
     std::unique_ptr<ICmdShell> platform::CreateCmdShell()
     {
-        return std::make_unique<CmdShell>();
+        return std::unique_ptr<CmdShell>(new CmdShell());
     }
 
 }

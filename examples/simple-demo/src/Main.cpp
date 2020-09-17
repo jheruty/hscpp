@@ -1,6 +1,5 @@
 #include <thread>
 #include <chrono>
-#include <filesystem>
 
 #include "hscpp/Filesystem.h"
 #include "hscpp/Hotswapper.h"

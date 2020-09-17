@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstddef>
+
 namespace hscpp
 {
 
@@ -15,6 +17,12 @@ namespace hscpp
         // Do not automatically trigger compilation on file changes. User must call the
         // hscpp::Hotswapper's TriggerManualBuild method.
         ManualCompilationOnly,
+    };
+
+    class FeatureHasher
+    {
+    public:
+        size_t operator()(Feature feature) const;
     };
 
 }
