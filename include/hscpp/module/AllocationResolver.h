@@ -56,9 +56,9 @@ namespace hscpp
         {
             // This type has an hscpp_ClassTracker member, and it is assumed it has been registered
             // with HSCPP_TRACK. Allocate it using an hscpp Constructor.
-            std::string key = decltype(T::hscpp_ClassKey)().ToString();
+            const char* pKey = decltype(T::hscpp_ClassKey)().ToString();
 
-            auto constructorIt = ModuleSharedState::s_pConstructorsByKey->find(key);
+            auto constructorIt = ModuleSharedState::s_pConstructorsByKey->find(pKey);
             if (constructorIt != ModuleSharedState::s_pConstructorsByKey->end())
             {
                 return constructorIt->second->Allocate();

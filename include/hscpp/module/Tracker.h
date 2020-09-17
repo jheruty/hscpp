@@ -23,8 +23,8 @@ namespace hscpp
         Register()
         {
             // This will be executed on module load.
-            std::string key = CompileTimeKey().ToString();
-            hscpp::Constructors::RegisterConstructor<T>(key);
+            const char* pKey = CompileTimeKey().ToString();
+            hscpp::Constructors::RegisterConstructor<T>(pKey);
         }
 
         // Unused static may be optimized out. Explicitly call this function to ensure that Register
@@ -55,15 +55,15 @@ namespace hscpp
             m_pTrackedObj = pTrackedObj;
 
             // Register self.
-            std::string key = CompileTimeKey().ToString();
-            (*ModuleSharedState::s_pTrackersByKey)[key].push_back(this);
+            const char* pKey = CompileTimeKey().ToString();
+            (*ModuleSharedState::s_pTrackersByKey)[pKey].push_back(this);
         }
 
         ~Tracker()
         {
             // Unregister self.
-            std::string key = CompileTimeKey().ToString();
-            std::vector<ITracker*>& trackers = (*ModuleSharedState::s_pTrackersByKey)[key];
+            const char* pKey = CompileTimeKey().ToString();
+            std::vector<ITracker*>& trackers = (*ModuleSharedState::s_pTrackersByKey)[pKey];
 
             auto trackerIt = std::find(trackers.begin(), trackers.end(), this);
             if (trackerIt != trackers.end())

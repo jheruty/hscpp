@@ -15,37 +15,17 @@ namespace hscpp { namespace compile_time {
 
     // String stored in integrals; each byte in each uint64_t corresponds to a char.
     // Maximum key length is capped at 128 (16 * sizeof(uint64_t)).
-    template <uint64_t S1, uint64_t S2, uint64_t S3, uint64_t S4, uint64_t S5, uint64_t S6, uint64_t S7, uint64_t S8,
+    template <uint64_t S1, uint64_t S2, uint64_t S3, uint64_t S4,uint64_t S5, uint64_t S6, uint64_t S7, uint64_t S8,
             uint64_t S9, uint64_t S10, uint64_t S11, uint64_t S12, uint64_t S13, uint64_t S14, uint64_t S15, uint64_t S16>
     struct String
     {
-        std::string ToString() const
+        constexpr static std::array<uint64_t, 17> raw = {
+            S1, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, 0
+        };
+
+        const char* ToString() const
         {
-            // Max length is 128, leave room for null terminator.
-            std::array<char, 129> str = {};
-            constexpr std::array<uint64_t, 16> segments = {
-                    S1, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16 };
-
-            size_t iTotalOffset = 0;
-            for (uint64_t segment : segments)
-            {
-                for (int i = 0; i < 8; ++i)
-                {
-                    char c = static_cast<char>((((segment >> (i * 8u)) & 0xffu)));
-                    if (c == 0)
-                    {
-                        return str.data();
-                    }
-                    else
-                    {
-                        str.at(iTotalOffset) = c;
-                    }
-
-                    ++iTotalOffset;
-                }
-            }
-
-            return str.data();
+            return reinterpret_cast<const char*>(raw.data());
         }
     };
 
