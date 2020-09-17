@@ -124,7 +124,7 @@ namespace hscpp
 friend class hscpp::AllocationResolver; \
 \
 /* Cache key length to avoid repeated calls to constexpr method slowing down compilation. */ \
-static constexpr hscpp::compile_time::KeylenCache<hscpp::compile_time::Strlen(key)> hscpp_KeylenCache; \
+static constexpr hscpp::compile_time::KeylenCache<hscpp::compile_time::Strlen(key)> hscpp_KeylenCache = {}; \
 \
 /* Split string into segments that fit into a uint64_t and save it as the key.. */\
 static constexpr hscpp::compile_time::String<                                                          \
@@ -143,7 +143,7 @@ static constexpr hscpp::compile_time::String<                                   
     hscpp::compile_time::StringSegmentToIntegral(key, 12, decltype(hscpp_KeylenCache)::len), \
     hscpp::compile_time::StringSegmentToIntegral(key, 13, decltype(hscpp_KeylenCache)::len), \
     hscpp::compile_time::StringSegmentToIntegral(key, 14, decltype(hscpp_KeylenCache)::len), \
-    hscpp::compile_time::StringSegmentToIntegral(key, 15, decltype(hscpp_KeylenCache)::len)> hscpp_ClassKey; \
+    hscpp::compile_time::StringSegmentToIntegral(key, 15, decltype(hscpp_KeylenCache)::len)> hscpp_ClassKey = {}; \
 \
 /* Create Tracker to track instance of this class. */ \
 hscpp::Tracker<type, decltype(hscpp_ClassKey)> hscpp_ClassTracker = { this };
