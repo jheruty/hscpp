@@ -17,6 +17,7 @@ list(APPEND SRC_FILES
     src/Util.cpp
 
     include/hscpp/module/AllocationResolver.h
+    include/hscpp/module/CompileTimeString.h
     include/hscpp/module/Constructors.h
     include/hscpp/module/GlobalUserData.h
     include/hscpp/module/IAllocator.h
