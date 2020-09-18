@@ -73,7 +73,6 @@ if (WIN32)
 elseif(APPLE)
     list(APPEND SRC_FILES
         src/CmdShell_unix.cpp
-        src/Compiler_unix.cpp
         src/FileWatcher_apple.cpp
 
         include/hscpp/CmdShell_unix.h
@@ -92,11 +91,9 @@ elseif(APPLE)
 elseif(UNIX)
     list(APPEND SRC_FILES
         src/CmdShell_unix.cpp
-        src/Compiler_unix.cpp
         src/FileWatcher_unix.cpp
 
         include/hscpp/CmdShell_unix.h
-        include/hscpp/Compiler_unix.h
         include/hscpp/FileWatcher_unix.h
     )
 

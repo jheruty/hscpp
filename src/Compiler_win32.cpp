@@ -188,7 +188,17 @@ namespace hscpp
         // https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros?view=vs-2019
         // Find the matching compiler version. Versions supported: VS2017 (15.7+), VS2019
         std::string compilerVersion = "16.0";
-        switch (_MSC_VER)
+
+        int mscVersion = -1;
+
+#ifdef _MSC_VER
+        mscVersion = _MSC_VER;
+#else
+        log::Error() << HSCPP_LOG_PREFIX << "_MSC_VER is not defined, cannot use MSVC compiler." << log::End();
+        return;
+#endif
+
+        switch (mscVersion)
         {
         case 1914: // First version of VS2017 with std::filesystem support. TODO support VS2015
         case 1915:
