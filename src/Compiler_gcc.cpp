@@ -1,11 +1,11 @@
-#include "hscpp/Compiler_unix.h"
+#include "hscpp/Compiler_gcc.h"
 #include "hscpp/Platform.h"
 #include "hscpp/Log.h"
 
 namespace hscpp
 {
 
-    Compiler::Compiler()
+    Compiler_gcc::Compiler_gcc()
     {
         m_pCmdShell = platform::CreateCmdShell();
         if (!m_pCmdShell->CreateCmdProcess())
@@ -16,14 +16,14 @@ namespace hscpp
         m_pCmdShell->StartTask("clang --version", 0);
     }
 
-    bool Compiler::StartBuild(const Input& info)
+    bool Compiler_gcc::StartBuild(const Input& info)
     {
 
 
         return false;
     }
 
-    void Compiler::Update()
+    void Compiler_gcc::Update()
     {
         int taskId = 0;
         ICmdShell::TaskState state = m_pCmdShell->Update(taskId);
@@ -34,17 +34,17 @@ namespace hscpp
         }
     }
 
-    bool Compiler::IsCompiling()
+    bool Compiler_gcc::IsCompiling()
     {
         return false;
     }
 
-    bool Compiler::HasCompiledModule()
+    bool Compiler_gcc::HasCompiledModule()
     {
         return false;
     }
 
-    fs::path Compiler::PopModule()
+    fs::path Compiler_gcc::PopModule()
     {
         return fs::path();
     }

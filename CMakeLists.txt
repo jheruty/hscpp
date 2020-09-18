@@ -3,6 +3,9 @@ cmake_minimum_required(VERSION 3.10.0)
 project(hscpp)
 
 list(APPEND SRC_FILES
+    src/Compiler_win32.cpp
+    src/Compiler_clang.cpp
+    src/Compiler_gcc.cpp
     src/DependencyGraph.cpp
     src/Feature.cpp
     src/FeatureManager.cpp
@@ -29,6 +32,9 @@ list(APPEND SRC_FILES
     include/hscpp/module/SwapInfo.h
     include/hscpp/module/Tracker.h
 
+    include/hscpp/Compiler_win32.h
+    include/hscpp/Compiler_clang.h
+    include/hscpp/Compiler_gcc.h
     include/hscpp/Callbacks.h
     include/hscpp/DependencyGraph.h
     include/hscpp/Feature.h
@@ -58,7 +64,6 @@ if (WIN32)
         src/FileWatcher_win32.cpp
 
         include/hscpp/CmdShell_win32.h
-        include/hscpp/Compiler_win32.h
         include/hscpp/FileWatcher_win32.h
     )
 
@@ -72,7 +77,6 @@ elseif(APPLE)
         src/FileWatcher_apple.cpp
 
         include/hscpp/CmdShell_unix.h
-        include/hscpp/Compiler_unix.h
         include/hscpp/FileWatcher_apple.h
     )
 

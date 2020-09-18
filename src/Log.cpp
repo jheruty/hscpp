@@ -3,7 +3,7 @@
 #include "hscpp/Log.h"
 #include "hscpp/Util.h"
 
-#ifdef HSCPP_PLATFORM_WIN32
+#if defined(HSCPP_PLATFORM_WIN32)
 
 #pragma warning(disable:4996) // Disable security warning to allow std::mbstowcs.
 
@@ -128,7 +128,7 @@ namespace hscpp { namespace log
 
     Stream Build()
     {
-#ifdef HSCPP_PLATFORM_WIN32
+#if defined(HSCPP_PLATFORM_WIN32)
         // Direct logs to Visual Studio output.
         return Stream(s_bLogBuild, [](const std::wstringstream& stream) {
             OutputDebugStringW(stream.str().c_str());

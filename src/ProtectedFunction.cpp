@@ -1,6 +1,6 @@
 #include "hscpp/ProtectedFunction.h"
 
-#ifdef HSCPP_PLATFORM_WIN32
+#if defined(HSCPP_PLATFORM_WIN32)
 
 #include <windows.h>
 
@@ -8,7 +8,7 @@
 
 ProtectedFunction::Result ProtectedFunction::Call(const std::function<void()>& cb)
 {
-#ifdef HSCPP_PLATFORM_WIN32
+#if defined(HSCPP_PLATFORM_WIN32)
 
     if (!IsDebuggerPresent())
     {
@@ -27,7 +27,7 @@ ProtectedFunction::Result ProtectedFunction::Call(const std::function<void()>& c
         return Result::Exception;
     }
 
-#elif HSCPP_PLATFORM_UNIX
+#elif defined(HSCPP_PLATFORM_UNIX)
 
     try
     {

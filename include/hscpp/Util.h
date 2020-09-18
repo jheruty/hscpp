@@ -7,12 +7,12 @@
 
 namespace hscpp { namespace util
 {
-#ifdef HSCPP_PLATFORM_WIN32
+#if defined(HSCPP_PLATFORM_WIN32)
 
     std::wstring GetErrorString(TOsError error);
     std::wstring GetLastErrorString();
 
-#elif HSCPP_PLATFORM_UNIX
+#elif defined(HSCPP_PLATFORM_UNIX)
 
     std::wstring GetErrorString(TOsError error);
     std::wstring GetLastErrorString();

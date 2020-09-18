@@ -11,10 +11,10 @@
 namespace hscpp
 {
 
-    class Compiler : public ICompiler
+    class Compiler_win32 : public ICompiler
     {
     public:
-        Compiler();
+        Compiler_win32();
         
         bool StartBuild(const Input& info) override;
         void Update() override;

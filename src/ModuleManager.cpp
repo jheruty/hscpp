@@ -3,11 +3,11 @@
 #include "hscpp/Util.h"
 #include "hscpp/module/ModuleInterface.h"
 
-#ifdef HSCPP_PLATFORM_WIN32
+#if defined(HSCPP_PLATFORM_WIN32)
 
 #include <Windows.h>
 
-#elif HSCPP_PLATFORM_UNIX
+#elif defined(HSCPP_PLATFORM_UNIX)
 
 #include <dlfcn.h>
 
@@ -37,7 +37,7 @@ void hscpp::ModuleManager::SetGlobalUserData(void* pGlobalUserData)
 
 bool hscpp::ModuleManager::PerformRuntimeSwap(const fs::path& moduleFilepath)
 {
-#ifdef HSCPP_PLATFORM_WIN32
+#if defined(HSCPP_PLATFORM_WIN32)
 
     HMODULE hModule = LoadLibraryW(moduleFilepath.wstring().c_str());
     if (hModule == nullptr)
@@ -51,7 +51,7 @@ bool hscpp::ModuleManager::PerformRuntimeSwap(const fs::path& moduleFilepath)
     auto getModuleInterfaceProc = reinterpret_cast<Hsccp_GetModuleInterfaceProc>(
         GetProcAddress(hModule, "Hscpp_GetModuleInterface"));
 
-#elif HSCPP_PLATFORM_UNIX
+#elif defined(HSCPP_PLATFORM_UNIX)
 
     void* pModule = dlopen(moduleFilepath.string().c_str(), 0);
     if (pModule == nullptr)

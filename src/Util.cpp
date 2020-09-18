@@ -4,11 +4,11 @@
 
 #include "hscpp/Util.h"
 
-#ifdef HSCPP_PLATFORM_WIN32
+#if defined(HSCPP_PLATFORM_WIN32)
 
 #include <Windows.h>
 
-#elif HSCPP_PLATFORM_UNIX
+#elif defined(HSCPP_PLATFORM_UNIX)
 
 #include <uuid/uuid.h>
 
@@ -30,7 +30,7 @@ namespace hscpp { namespace util
         ".cxx",
     };
 
-#ifdef HSCPP_PLATFORM_WIN32
+#if defined(HSCPP_PLATFORM_WIN32)
 
     std::wstring GetErrorString(TOsError error)
     {
@@ -69,7 +69,7 @@ namespace hscpp { namespace util
         return GetErrorString(GetLastError());
     }
 
-#elif HSCPP_PLATFORM_UNIX
+#elif defined(HSCPP_PLATFORM_UNIX)
 
     std::wstring GetErrorString(TOsError error)
     {
@@ -107,7 +107,7 @@ namespace hscpp { namespace util
     std::string CreateGuid()
     {
 
-#ifdef HSCPP_PLATFORM_WIN32
+#if defined(HSCPP_PLATFORM_WIN32)
 
         GUID guid;
         CoCreateGuid(&guid);
@@ -119,7 +119,7 @@ namespace hscpp { namespace util
 
         return buf;
 
-#elif HSCPP_PLATFORM_UNIX
+#elif defined(HSCPP_PLATFORM_UNIX)
 
         uuid_t uuid;
         uuid_generate_random(uuid);

@@ -6,10 +6,10 @@
 namespace hscpp
 {
 
-    class Compiler : public ICompiler
+    class Compiler_clang : public ICompiler
     {
     public:
-        Compiler();
+        Compiler_clang();
 
         bool StartBuild(const Input& info) override;
         void Update() override;
