@@ -15,10 +15,12 @@ namespace hscpp { namespace compile_time {
 
     // String stored in integrals; each byte in each uint64_t corresponds to a char.
     // Maximum key length is capped at 128 (16 * sizeof(uint64_t)).
-    template <uint64_t S1, uint64_t S2, uint64_t S3, uint64_t S4,uint64_t S5, uint64_t S6, uint64_t S7, uint64_t S8,
+    template <uint64_t S1, uint64_t S2, uint64_t S3, uint64_t S4, uint64_t S5, uint64_t S6, uint64_t S7, uint64_t S8,
             uint64_t S9, uint64_t S10, uint64_t S11, uint64_t S12, uint64_t S13, uint64_t S14, uint64_t S15, uint64_t S16>
     struct String
     {
+        // Contiguous array can be cast directly to const char*. Add explicit null terminator
+        // for case where String is exactly 128 bytes.
         constexpr static std::array<uint64_t, 17> raw = {
             S1, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16, 0
         };
@@ -28,6 +30,13 @@ namespace hscpp { namespace compile_time {
             return reinterpret_cast<const char*>(raw.data());
         }
     };
+
+    // C++11 quirk; definition must be provided without its value for external linkage to work,
+    // since we take its address during use.
+    // See: https://en.cppreference.com/w/cpp/language/definition#ODR-use
+    template <uint64_t S1, uint64_t S2, uint64_t S3, uint64_t S4,uint64_t S5, uint64_t S6, uint64_t S7, uint64_t S8,
+            uint64_t S9, uint64_t S10, uint64_t S11, uint64_t S12, uint64_t S13, uint64_t S14, uint64_t S15, uint64_t S16>
+    constexpr std::array<uint64_t, 17> String<S1, S2, S3, S4, S5, S6, S7, S8, S9, S10, S11, S12, S13, S14, S15, S16>::raw;
 
     constexpr int Strlen(const char* pStr)
     {

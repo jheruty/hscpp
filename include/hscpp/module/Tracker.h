@@ -123,7 +123,8 @@ namespace hscpp
  * as user may call HSCPP_TRACK in the private area of the class.*/ \
 friend class hscpp::AllocationResolver; \
 \
-/* Cache key length to avoid repeated calls to constexpr method slowing down compilation. */ \
+/* Cache key length to avoid repeated calls to constexpr method slowing down compilation. This also
+ * validates that the key length is <= 128 bytes. */ \
 static constexpr hscpp::compile_time::KeylenCache<hscpp::compile_time::Strlen(key)> hscpp_KeylenCache = {}; \
 \
 /* Split string into segments that fit into a uint64_t and save it as the key.. */\
