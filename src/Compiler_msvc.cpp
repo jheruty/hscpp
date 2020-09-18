@@ -2,7 +2,7 @@
 #include <fstream>
 #include <sstream>
 
-#include "hscpp/Compiler_win32.h"
+#include "hscpp/Compiler_msvc.h"
 #include "hscpp/Log.h"
 #include "hscpp/Util.h"
 
@@ -11,7 +11,7 @@ namespace hscpp
     const static std::string COMMAND_FILENAME = "cmdfile";
     const static std::string MODULE_FILENAME = "module.dll";
 
-    Compiler_win32::Compiler_win32()
+    Compiler_msvc::Compiler_msvc()
     {
         m_pCmdShell = platform::CreateCmdShell();
 
@@ -25,7 +25,7 @@ namespace hscpp
         }
     }
 
-    bool Compiler_win32::StartBuild(const Input& info)
+    bool Compiler_msvc::StartBuild(const Input& info)
     {
         if (!m_Initialized)
         {
@@ -51,7 +51,7 @@ namespace hscpp
         return true;
     }
 
-    void Compiler_win32::Update()
+    void Compiler_msvc::Update()
     {
         int taskId = -1;
         ICmdShell::TaskState taskState = m_pCmdShell->Update(taskId);
@@ -85,17 +85,17 @@ namespace hscpp
         }
     }
 
-    bool Compiler_win32::IsCompiling()
+    bool Compiler_msvc::IsCompiling()
     {
         return !m_CompilingModulePath.empty();
     }
 
-    bool Compiler_win32::HasCompiledModule()
+    bool Compiler_msvc::HasCompiledModule()
     {
         return !m_CompiledModulePath.empty();
     }
 
-    fs::path Compiler_win32::PopModule()
+    fs::path Compiler_msvc::PopModule()
     {
         fs::path modulePath = m_CompiledModulePath;
         m_CompiledModulePath.clear();
@@ -103,7 +103,7 @@ namespace hscpp
         return modulePath;
     }
 
-    bool Compiler_win32::CreateClCommandFile(const Input& info)
+    bool Compiler_msvc::CreateClCommandFile(const Input& info)
     {
         fs::path commandFilePath = info.buildDirectoryPath / COMMAND_FILENAME;
         std::ofstream commandFile(commandFilePath.native().c_str(), std::ios_base::binary);
@@ -183,7 +183,7 @@ namespace hscpp
         return true;
     }
 
-    void Compiler_win32::StartVsPathTask()
+    void Compiler_msvc::StartVsPathTask()
 {
         // https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros?view=vs-2019
         // Find the matching compiler version. Versions supported: VS2017 (15.7+), VS2019
@@ -230,7 +230,7 @@ namespace hscpp
         m_pCmdShell->StartTask(query, static_cast<int>(CompilerTask::GetVsPath));
     }
 
-    bool Compiler_win32::HandleTaskComplete(CompilerTask task)
+    bool Compiler_msvc::HandleTaskComplete(CompilerTask task)
     {
         const std::vector<std::string>& output = m_pCmdShell->PeekTaskOutput();
 
@@ -250,7 +250,7 @@ namespace hscpp
         return false;
     }
 
-    bool Compiler_win32::HandleGetVsPathTaskComplete(const std::vector<std::string>& output)
+    bool Compiler_msvc::HandleGetVsPathTaskComplete(const std::vector<std::string>& output)
     {
         if (output.empty())
         {
@@ -302,7 +302,7 @@ namespace hscpp
         return true;
     }
 
-    bool Compiler_win32::HandleSetVcVarsAllTaskComplete(std::vector<std::string> output)
+    bool Compiler_msvc::HandleSetVcVarsAllTaskComplete(std::vector<std::string> output)
     {
         if (output.empty())
         {
@@ -324,7 +324,7 @@ namespace hscpp
         return false;
     }
 
-    bool Compiler_win32::HandleBuildTaskComplete()
+    bool Compiler_msvc::HandleBuildTaskComplete()
     {
         m_CompiledModulePath = m_CompilingModulePath;
         m_CompilingModulePath.clear();

@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.10.0)
 project(hscpp)
 
 list(APPEND SRC_FILES
-    src/Compiler_win32.cpp
+    src/Compiler_msvc.cpp
     src/Compiler_clang.cpp
     src/Compiler_gcc.cpp
     src/DependencyGraph.cpp
@@ -32,7 +32,7 @@ list(APPEND SRC_FILES
     include/hscpp/module/SwapInfo.h
     include/hscpp/module/Tracker.h
 
-    include/hscpp/Compiler_win32.h
+    include/hscpp/Compiler_msvc.h
     include/hscpp/Compiler_clang.h
     include/hscpp/Compiler_gcc.h
     include/hscpp/Callbacks.h
@@ -60,7 +60,6 @@ list(APPEND LINK_LIBRARIES)
 if (WIN32)
     list(APPEND SRC_FILES
         src/CmdShell_win32.cpp
-        src/Compiler_win32.cpp
         src/FileWatcher_win32.cpp
 
         include/hscpp/CmdShell_win32.h

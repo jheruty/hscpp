@@ -11,10 +11,10 @@
 namespace hscpp
 {
 
-    class Compiler_win32 : public ICompiler
+    class Compiler_msvc : public ICompiler
     {
     public:
-        Compiler_win32();
+        Compiler_msvc();
         
         bool StartBuild(const Input& info) override;
         void Update() override;
@@ -46,7 +46,6 @@ namespace hscpp
         bool HandleGetVsPathTaskComplete(const std::vector<std::string>& output);
         bool HandleSetVcVarsAllTaskComplete(std::vector<std::string> output);
         bool HandleBuildTaskComplete();
-
     };
 
 }
