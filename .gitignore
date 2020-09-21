@@ -10,7 +10,7 @@
 
 **/Release/**
 **/Debug/**
-build*/*
+**/build*/*
 **/out/**
 
 .vscode

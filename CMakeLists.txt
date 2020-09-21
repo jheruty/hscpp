@@ -107,6 +107,7 @@ elseif(UNIX)
 endif()
 
 option(HSCPP_BUILD_EXAMPLES "Enable building examples." ON)
+option(HSCPP_BUILD_TESTS "Enable building tests." ON)
 
 if(NOT DEFINED CMAKE_CXX_STANDARD)
     # Set C++17 as default build target.
@@ -136,4 +137,8 @@ target_link_libraries(hscpp ${LINK_LIBRARIES})
 
 if (HSCPP_BUILD_EXAMPLES)
     add_subdirectory(examples)
+endif()
+
+if (HSCPP_BUILD_TESTS)
+    add_subdirectory(test)
 endif()
