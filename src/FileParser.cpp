@@ -368,9 +368,16 @@ namespace hscpp
             {
                 Advance(); // /
                 Advance(); // *
-                while (!IsAtEnd() && Peek() != '*' && PeekNext() != '/')
+                while (!IsAtEnd())
                 {
-                    Advance();
+                    if (Peek() == '*' && PeekNext() == '/')
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        Advance();
+                    }
                 }
                 Advance(); // *
                 Advance(); // /
