@@ -8,7 +8,7 @@
 namespace hscpp { namespace test
 {
 
-    fs::path test::RootTestDirectory()
+    fs::path RootTestDirectory()
     {
         return fs::path(__FILE__).parent_path() / ".." / "..";
     }
