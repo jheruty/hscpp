@@ -1,7 +1,7 @@
 #pragma once
 
-#define CALL(func, ...)\
-{ /* Create scope for INFO */ \
+#define CALL(func, ...) \
+[&]() { /* Create scope for INFO */ \
     INFO("Calling " << #func << " on line " << __LINE__ << ".");\
-    func(__VA_ARGS__);\
-}\
+    return func(__VA_ARGS__);\
+}() \

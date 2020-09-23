@@ -12,6 +12,7 @@
 **/Debug/**
 **/build*/*
 **/out/**
+test/sandbox/**
 
 .vscode
 .idea

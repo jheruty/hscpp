@@ -2,9 +2,10 @@
 #include "common/Common.h"
 #include "hscpp/FileParser.h"
 
-namespace hscpp { namespace test {
+namespace hscpp { namespace test
+{
 
-    const static fs::path ROOT_PATH = test::RootTestDirectory() / "unit-tests" / "files" / "test-file-parser";
+    const static fs::path ROOT_PATH = RootTestDirectory() / "unit-tests" / "files" / "test-file-parser";
 
     static void ValidateRequire(const FileParser::Require& require,
             FileParser::Require::Type type, const std::vector<fs::path>& paths)
@@ -17,10 +18,10 @@ namespace hscpp { namespace test {
     {
         FileParser parser;
 
-        fs::path filepath = ROOT_PATH / "SimpleFile.cpp";
-        FileParser::ParseInfo info = parser.Parse(filepath);
+        fs::path filePath= ROOT_PATH / "SimpleFile.cpp";
+        FileParser::ParseInfo info = parser.Parse(filePath);
 
-        REQUIRE(info.filePath == filepath);
+        REQUIRE(info.filePath == filePath);
         REQUIRE(info.requires.size() == 3);
         REQUIRE(info.preprocessorDefinitions.size() == 2);
         REQUIRE(info.modules.size() == 2);
@@ -61,10 +62,10 @@ namespace hscpp { namespace test {
     {
         FileParser parser;
 
-        fs::path filepath = ROOT_PATH / "SkipCommentsAndStrings.cpp";
-        FileParser::ParseInfo info = parser.Parse(filepath);
+        fs::path filePath = ROOT_PATH / "SkipCommentsAndStrings.cpp";
+        FileParser::ParseInfo info = parser.Parse(filePath);
 
-        REQUIRE(info.filePath == filepath);
+        REQUIRE(info.filePath == filePath);
         REQUIRE(info.requires.size() == 3);
         REQUIRE(info.preprocessorDefinitions.size() == 1);
         REQUIRE(info.modules.size() == 2);
