@@ -14,6 +14,8 @@
 
 #include <uuid/uuid.h>
 
+#include <cstring>
+
 #endif
 
 namespace hscpp { namespace util
