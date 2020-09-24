@@ -191,8 +191,10 @@ namespace hscpp { namespace util
             }
         }
 
-        canonicalModifiedFilePaths = std::vector(dedupedModifiedFilePaths.begin(), dedupedModifiedFilePaths.end());
-        canonicalRemovedFilePaths = std::vector(dedupedRemovedFilePaths.begin(), dedupedRemovedFilePaths.end());
+        canonicalModifiedFilePaths = std::vector<fs::path>(
+                dedupedModifiedFilePaths.begin(), dedupedModifiedFilePaths.end());
+        canonicalRemovedFilePaths = std::vector<fs::path>(
+                dedupedRemovedFilePaths.begin(), dedupedRemovedFilePaths.end());
     }
 
 }}
