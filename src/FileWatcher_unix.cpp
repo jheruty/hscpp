@@ -167,19 +167,12 @@ namespace hscpp
         Event event;
         event.filePath = directoryPath / fs::u8path(pNotifyEvent->name);
 
-        if (pNotifyEvent->mask & IN_CREATE || pNotifyEvent->mask & IN_MOVED_TO)
+        if (pNotifyEvent->mask & IN_CREATE
+            || pNotifyEvent->mask & IN_MOVED_TO
+            || pNotifyEvent->mask & IN_MODIFY
+            || pNotifyEvent->mask & IN_DELETE
+            || pNotifyEvent->mask & IN_MOVED_FROM)
         {
-            event.type = EventType::Added;
-            m_PendingEvents.push_back(event);
-        }
-        else if (pNotifyEvent->mask & IN_MODIFY)
-        {
-            event.type = EventType::Modified;
-            m_PendingEvents.push_back(event);
-        }
-        else if (pNotifyEvent->mask & IN_DELETE || pNotifyEvent->mask & IN_MOVED_FROM)
-        {
-            event.type = EventType::Removed;
             m_PendingEvents.push_back(event);
         }
     }

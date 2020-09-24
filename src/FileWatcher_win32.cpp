@@ -161,24 +161,6 @@ namespace hscpp
             Event event;
             event.filePath = pWatch->directoryPath / fileName;
 
-            switch (pNotify->Action)
-            {
-            case FILE_ACTION_ADDED:
-            case FILE_ACTION_RENAMED_NEW_NAME:
-                event.type = EventType::Added;
-                break;
-            case FILE_ACTION_REMOVED:
-            case FILE_ACTION_RENAMED_OLD_NAME:
-                event.type = EventType::Removed;
-                break;
-            case FILE_ACTION_MODIFIED:
-                event.type = EventType::Modified;
-                break;
-            default:
-                assert(false);
-                break;
-            }
-
             pWatch->pFileWatcher->PushPendingEvent(event);
 
         } while (pNotify->NextEntryOffset != 0);

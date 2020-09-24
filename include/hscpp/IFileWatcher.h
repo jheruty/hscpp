@@ -10,18 +10,8 @@ namespace hscpp
     class IFileWatcher
     {
     public:
-
-        enum class EventType
-        {
-            None,
-            Added,
-            Removed,
-            Modified,
-        };
-
         struct Event
         {
-            EventType type = EventType::None;
             fs::path filePath;
         };
 

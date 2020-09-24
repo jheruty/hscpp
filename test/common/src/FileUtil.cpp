@@ -1,8 +1,10 @@
 #include <fstream>
 #include <sstream>
+#include <thread>
 
 #include "catch/catch.hpp"
 #include "common/FileUtil.h"
+#include "common/Typedefs.h"
 #include "hscpp/Platform.h"
 
 namespace hscpp { namespace test
@@ -31,6 +33,9 @@ namespace hscpp { namespace test
         std::error_code error;
         fs::copy(assetsPath, sandboxPath, fs::copy_options::overwrite_existing | fs::copy_options::recursive);
         REQUIRE(error.value() == HSCPP_ERROR_SUCCESS);
+
+        // Wait a bit to ensure OS filesystem events settle down.
+        std::this_thread::sleep_for(Milliseconds(50));
 
         return sandboxPath;
     }
@@ -83,7 +88,20 @@ namespace hscpp { namespace test
 
     void RemoveFile(const fs::path& filePath)
     {
-        REQUIRE(fs::remove(filePath));
+        std::error_code error;
+        fs::remove(filePath, error);
+
+        REQUIRE(error.value() == HSCPP_ERROR_SUCCESS);
+    }
+
+    fs::path Canonical(const fs::path &filePath)
+    {
+        std::error_code error;
+        fs::path canonicalPath = fs::canonical(filePath);
+
+        REQUIRE(error.value() == HSCPP_ERROR_SUCCESS);
+
+        return canonicalPath;
     }
 
 }}

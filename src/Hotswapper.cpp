@@ -166,19 +166,22 @@ namespace hscpp
 
         if (!m_FileEvents.empty())
         {
-            HandleRemovedFiles();
-
             if (CreateBuildDirectory())
             {
-                std::vector<fs::path> changedFiles = GetChangedFiles();
+                std::vector<fs::path> canonicalModifiedFiles;
+                std::vector<fs::path> canonicalRemovedFiles;
+                util::SortFileEvents(m_FileEvents, canonicalModifiedFiles, canonicalRemovedFiles);
 
-                Preprocessor::Input preprocessorInput = CreatePreprocessorInput(changedFiles);
-                Preprocessor::Output preprocessorOutput = Preprocess(preprocessorInput);
-
-                ICompiler::Input compilerInput = CreateCompilerInput(preprocessorOutput);
-                if (StartCompile(compilerInput))
+                if (!canonicalModifiedFiles.empty())
                 {
-                    return UpdateResult::StartedCompiling;
+                    Preprocessor::Input preprocessorInput = CreatePreprocessorInput(canonicalModifiedFiles);
+                    Preprocessor::Output preprocessorOutput = Preprocess(preprocessorInput);
+
+                    ICompiler::Input compilerInput = CreateCompilerInput(preprocessorOutput);
+                    if (StartCompile(compilerInput))
+                    {
+                        return UpdateResult::StartedCompiling;
+                    }
                 }
             }
         }
@@ -494,86 +497,6 @@ namespace hscpp
         }
 
         return true;
-    }
-
-    void Hotswapper::HandleRemovedFiles()
-    {
-        // Check if any files were removed.
-        auto removeEventIt = std::find_if(m_FileEvents.begin(), m_FileEvents.end(),
-            [](const IFileWatcher::Event& event) {
-            return event.type == IFileWatcher::EventType::Removed;
-        });
-
-        if (removeEventIt != m_FileEvents.end())
-        {
-            if (util::IsSourceFile(removeEventIt->filePath) || util::IsHeaderFile(removeEventIt->filePath))
-            {
-                // At least one file was removed. Prune files that no longer exist from the tree.
-                // This requires an exhaustive search, since we cannot get the canonical path to
-                // a deleted file.
-                m_Preprocessor.PruneDeletedFilesFromDependencyGraph();
-            }
-        }
-    }
-
-    std::vector<fs::path> Hotswapper::GetChangedFiles()
-    {
-        // When Visual Studio saves, it can create several events for a single file, so use a
-        // set to remove these duplicates. Start with the queued source file paths, from previous
-        // failed compilations.
-        std::unordered_set<fs::path, FsPathHasher> uniqueFilePaths = m_QueuedSourceFilePaths;
-        for (const auto& event : m_FileEvents)
-        {
-            if (event.type == IFileWatcher::EventType::Removed)
-            {
-                // Removed files don't matter, we simply will not attempt to compile them.
-                continue;
-            }
-
-            std::error_code error;
-            if (!fs::is_regular_file(event.filePath, error))
-            {
-                // For example, a directory. Skip silently.
-                continue;
-            }
-
-            fs::path canonicalFilePath = fs::canonical(event.filePath, error);
-
-            if (error.value() == HSCPP_ERROR_FILE_NOT_FOUND)
-            {
-                // While saving a file, temporary copies may be created and then removed. Skip them.
-                continue;
-            }
-            else if (error.value() != HSCPP_ERROR_SUCCESS)
-            {
-                log::Error() << HSCPP_LOG_PREFIX << "Failed to get canonical path of "
-                    << event.filePath << ". " << log::OsError(error) << log::End();
-                continue;
-            }
-
-            if (!util::IsHeaderFile(canonicalFilePath) && !util::IsSourceFile(canonicalFilePath))
-            {
-                log::Info() << HSCPP_LOG_PREFIX << "File " << canonicalFilePath
-                    << " will be skipped; its extension is not being watched." << log::End();
-                continue;
-            }
-
-            switch (event.type)
-            {
-            case IFileWatcher::EventType::Added:
-            case IFileWatcher::EventType::Modified:
-                uniqueFilePaths.insert(canonicalFilePath);
-                break;
-            default:
-                assert(false);
-            }
-        }
-
-        // Add files to queue, in case compilation fails.
-        // TODO: Reenable queue once bugs are worked out.
-        //m_QueuedSourceFilePaths.insert(uniqueFilePaths.begin(), uniqueFilePaths.end());
-
-        return std::vector<fs::path>(uniqueFilePaths.begin(), uniqueFilePaths.end());
     }
 
     void Hotswapper::AppendDirectoryFiles(const std::unordered_map<int, fs::path>& directoryPathsByHandle,

@@ -3,6 +3,8 @@
 #include <unordered_set>
 
 #include "hscpp/Util.h"
+#include "hscpp/Log.h"
+#include "hscpp/FsPathHasher.h"
 
 #if defined(HSCPP_PLATFORM_WIN32)
 
@@ -142,6 +144,53 @@ namespace hscpp { namespace util
     {
         fs::path extension = filePath.extension();
         return SOURCE_EXTENSIONS.find(extension.string()) != SOURCE_EXTENSIONS.end();
+    }
+
+    void SortFileEvents(const std::vector<IFileWatcher::Event>& events,
+                        std::vector<fs::path>& canonicalModifiedFilePaths,
+                        std::vector<fs::path>& canonicalRemovedFilePaths)
+    {
+        canonicalModifiedFilePaths.clear();
+        canonicalRemovedFilePaths.clear();
+
+        // A file may have duplicate events, compress these into a single event.
+        std::unordered_set<fs::path, FsPathHasher> dedupedModifiedFilePaths;
+        std::unordered_set<fs::path, FsPathHasher> dedupedRemovedFilePaths;
+
+        for (const auto& event : events)
+        {
+            // If the file was removed, we cannot get its canonical filename through the relative
+            // filename. However, we can get the canonical path of its parent directory, and use
+            // that to construct the canonical path of the file.
+            std::error_code error;
+            fs::path directoryPath = event.filePath.parent_path();
+            fs::path canonicalDirectoryPath = fs::canonical(directoryPath, error);
+
+            if (error.value() == HSCPP_ERROR_FILE_NOT_FOUND)
+            {
+                // Entire directory was removed. Hscpp does not support this use case.
+                log::Warning() << "Directory " << directoryPath << " was removed; hscpp does not support "
+                    << "removing directories at runtime." << log::End();
+                continue;
+            }
+
+            // Construct the canonical path of the file. Note that this also works for deleted files.
+            fs::path canonicalFilePath = canonicalDirectoryPath / event.filePath.filename();
+
+            if (fs::exists(canonicalFilePath))
+            {
+                // Had a file event and the file exists; it must have been added or modified.
+                dedupedModifiedFilePaths.insert(canonicalFilePath);
+            }
+            else
+            {
+                // Had a file event and the file no longer exists; it must have been deleted.
+                dedupedRemovedFilePaths.insert(canonicalFilePath);
+            }
+        }
+
+        canonicalModifiedFilePaths = std::vector(dedupedModifiedFilePaths.begin(), dedupedModifiedFilePaths.end());
+        canonicalRemovedFilePaths = std::vector(dedupedRemovedFilePaths.begin(), dedupedRemovedFilePaths.end());
     }
 
 }}

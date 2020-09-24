@@ -403,14 +403,12 @@ namespace hscpp
             // FSEventStreams are recursive, but the hscpp API is not. Validate that the change
             // happened within the watched directory, and not one of its subdirectories.
             fs::path filePath = fs::u8path(static_cast<char**>(pEventPaths)[i]);
-            fs::path canonicalFilePath;
 
-            if (!CanonicalPath(filePath, canonicalFilePath))
+            fs::path canonicalDirectoryPath;
+            if (!CanonicalPath(filePath.parent_path(), canonicalDirectoryPath))
             {
                 continue;
             }
-
-            fs::path canonicalDirectoryPath = canonicalFilePath.parent_path();
 
             if (pThis->m_CanonicalDirectoryPaths.find(canonicalDirectoryPath)
                 == pThis->m_CanonicalDirectoryPaths.end())
@@ -422,19 +420,10 @@ namespace hscpp
             Event event;
             event.filePath = filePath; // Match behavior of other platforms and set non-canonical path.
 
-            if (pEventFlags[i] & kFSEventStreamEventFlagItemCreated)
+            if (pEventFlags[i] & kFSEventStreamEventFlagItemCreated
+                || pEventFlags[i] & kFSEventStreamEventFlagItemModified
+                || pEventFlags[i] & kFSEventStreamEventFlagItemRemoved)
             {
-                event.type = EventType::Added;
-                pThis->m_PendingEvents.push_back(event);
-            }
-            else if (pEventFlags[i] & kFSEventStreamEventFlagItemModified)
-            {
-                event.type = EventType::Modified;
-                pThis->m_PendingEvents.push_back(event);
-            }
-            else if (pEventFlags[i] & kFSEventStreamEventFlagItemRemoved)
-            {
-                event.type = EventType::Removed;
                 pThis->m_PendingEvents.push_back(event);
             }
         }
