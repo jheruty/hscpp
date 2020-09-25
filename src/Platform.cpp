@@ -112,4 +112,13 @@ namespace hscpp { namespace platform
 #endif
     }
 
+    void* LoadModule(const fs::path& modulePath)
+    {
+#if defined(HSCPP_PLATFORM_WIN32)
+        return LoadLibraryW(modulePath.wstring().c_str());
+#elif defined(HSCPP_PLATFORM_UNIX)
+        return dlopen(modulePath.string().c_str(), 0);
+#endif
+    }
+
 }}

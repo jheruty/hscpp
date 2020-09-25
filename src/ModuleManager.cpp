@@ -35,46 +35,26 @@ void hscpp::ModuleManager::SetGlobalUserData(void* pGlobalUserData)
     Hscpp_GetModuleInterface()->SetGlobalUserData(m_pGlobalUserData);
 }
 
-bool hscpp::ModuleManager::PerformRuntimeSwap(const fs::path& moduleFilepath)
+bool hscpp::ModuleManager::PerformRuntimeSwap(const fs::path& modulePath)
 {
-#if defined(HSCPP_PLATFORM_WIN32)
-
-    HMODULE hModule = LoadLibraryW(moduleFilepath.wstring().c_str());
-    if (hModule == nullptr)
-    {
-        log::Error() << HSCPP_LOG_PREFIX << "Failed to load module "
-            << moduleFilepath << ". " << log::LastOsError() << log::End();
-        return false;
-    }
-
-    typedef ModuleInterface* (__cdecl* Hsccp_GetModuleInterfaceProc)(void);
-    auto getModuleInterfaceProc = reinterpret_cast<Hsccp_GetModuleInterfaceProc>(
-        GetProcAddress(hModule, "Hscpp_GetModuleInterface"));
-
-#elif defined(HSCPP_PLATFORM_UNIX)
-
-    void* pModule = dlopen(moduleFilepath.string().c_str(), 0);
+    void* pModule = platform::LoadModule(modulePath);
     if (pModule == nullptr)
     {
         log::Error() << HSCPP_LOG_PREFIX << "Failed to load module "
-            << moduleFilepath << ". " << log::LastOsError() << log::End();
+             << modulePath << ". " << log::LastOsError() << log::End();
         return false;
     }
 
-    typedef ModuleInterface* (*Hsccp_GetModuleInterfaceProc)();
-    auto getModuleInterfaceProc = reinterpret_cast<Hsccp_GetModuleInterfaceProc>(
-        dlsym(pModule, "Hscpp_GetModuleInterface"));
-
-#endif
-
-    if (getModuleInterfaceProc == nullptr)
+    auto GetModuleInterface = platform::GetModuleFunction<ModuleInterface*()>(
+            pModule, "Hscpp_GetModuleInterface");
+    if (GetModuleInterface == nullptr)
     {
         log::Error() << HSCPP_LOG_PREFIX << "Failed to load Hscpp_GetModuleInterface procedure. "
             << log::LastOsError() << log::End();
         return false;
     }
 
-    ModuleInterface* pModuleInterface = getModuleInterfaceProc();
+    ModuleInterface* pModuleInterface = GetModuleInterface();
     if (pModuleInterface == nullptr)
     {
         log::Error() << HSCPP_LOG_PREFIX << "Failed to get pointer to module interface." << log::End();

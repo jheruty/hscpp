@@ -21,7 +21,7 @@ namespace hscpp
         void SetAllocator(IAllocator* pAllocator);
         void SetGlobalUserData(void* pGlobalUserData);
 
-        bool PerformRuntimeSwap(const fs::path& moduleFilepath);
+        bool PerformRuntimeSwap(const fs::path& modulePath);
 
     private:
         bool m_bSwapping = false;

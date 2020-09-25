@@ -13,6 +13,7 @@
 **/build*/*
 **/out/**
 test/sandbox/**
+test/test-module-builds/**
 
 .vscode
 .idea

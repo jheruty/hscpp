@@ -1,6 +1,7 @@
 #pragma once
 
 #include <memory>
+#include <functional>
 
 #include "hscpp/IFileWatcher.h"
 #include "hscpp/ICompiler.h"
@@ -44,6 +45,22 @@ typedef int TOsError;
 
         std::vector<std::string> GetDefaultCompileOptions();
         std::vector<std::string> GetDefaultPreprocessorDefinitions();
+
+        void* LoadModule(const fs::path& modulePath);
+
+        template <typename TSignature>
+        std::function<TSignature> GetModuleFunction(void* pModule, const std::string& name)
+        {
+#if defined(HSCPP_PLATFORM_WIN32)
+            return std::function<TSignature>(
+                    reinterpret_cast<TSignature*>(
+                            GetProcAddress(static_cast<HMODULE>(pModule), name.c_str())));
+#else
+            return std::function<TSignature>(
+                    reinterpret_cast<TSignature*>(
+                            dlsym(pModule, name.c_str())));
+#endif
+        }
     }
 
 #define HSCPP_UNUSED_PARAM(param) (void)param

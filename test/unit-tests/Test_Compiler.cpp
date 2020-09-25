@@ -3,16 +3,32 @@
 
 #include "hscpp/Platform.h"
 #include "hscpp/ICompiler.h"
+#include "hscpp/Util.h"
+#include "hscpp/Log.h"
 
 namespace hscpp { namespace test
 {
 
     const static fs::path ROOT_PATH = RootTestDirectory() / "unit-tests" / "files" / "test-compiler";
-    const static fs::path BUILD_DIRECTORY_NAME = "build";
+    const static fs::path BUILD_DIRECTORY_PATH = RootTestDirectory() / "test-module-builds";
+
+    static bool bCreatedBuildDirectory = false;
 
     static fs::path CreateBuildDirectory(const fs::path& sandboxPath)
     {
-        fs::path buildDirectoryPath = sandboxPath / BUILD_DIRECTORY_NAME;
+        // Modules will be loaded by the program, so they cannot be deleted while it is running. Get
+        // around this by creating a separate build directory, which houses directories with unique
+        // names for each module build.
+        if (!bCreatedBuildDirectory)
+        {
+            REQUIRE_NOTHROW(fs::remove_all(BUILD_DIRECTORY_PATH));
+            REQUIRE(fs::create_directory(BUILD_DIRECTORY_PATH));
+
+            bCreatedBuildDirectory = true;
+        }
+
+        std::string buildFolderName = "build-" + util::CreateGuid();
+        fs::path buildDirectoryPath = BUILD_DIRECTORY_PATH / buildFolderName;
         REQUIRE(fs::create_directory(buildDirectoryPath));
 
         return buildDirectoryPath;
@@ -84,6 +100,16 @@ namespace hscpp { namespace test
 
         fs::path modulePath = CALL(CompileUpdateLoop, pCompiler.get());
 
+        void* pModule = platform::LoadModule(modulePath);
+        REQUIRE(pModule != nullptr);
+
+        auto SetValueTo12 = platform::GetModuleFunction<void(int&)>(pModule, "SetValueTo12");
+        REQUIRE(SetValueTo12 != nullptr);
+
+        int val = 0;
+        SetValueTo12(val);
+
+        REQUIRE(val == 12);
     }
 
 }}
