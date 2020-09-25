@@ -111,7 +111,7 @@ namespace hscpp
     bool Compiler_msvc::CreateClCommandFile(const Input& info)
     {
         fs::path commandFilePath = info.buildDirectoryPath / COMMAND_FILENAME;
-        std::ofstream commandFile(commandFilePath.wstring().c_str(), std::ios_base::binary);
+        std::ofstream commandFile(commandFilePath.native().c_str(), std::ios_base::binary);
         std::stringstream command;
 
         if (!commandFile.is_open())

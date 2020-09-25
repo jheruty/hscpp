@@ -127,6 +127,9 @@ if (CMAKE_CXX_STANDARD LESS 17)
     list(APPEND COMPILE_DEFINITIONS HSCPP_USE_GHC_FILESYSTEM)
 
     add_subdirectory(lib/filesystem-1.3.4)
+
+    # Use standard conforming .native() calls on Win32 (wstring instead of UTF-8).
+    target_compile_definitions(ghc_filesystem INTERFACE GHC_WIN_WSTRING_STRING_TYPE)
 endif()
 
 add_library(hscpp ${SRC_FILES})
