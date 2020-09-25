@@ -15,6 +15,7 @@
 #elif defined(HSCPP_PLATFORM_UNIX)
 
 #include <errno.h>
+#include <dlfcn.h>
 
 #endif
 

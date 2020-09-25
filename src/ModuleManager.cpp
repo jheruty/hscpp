@@ -3,16 +3,6 @@
 #include "hscpp/Util.h"
 #include "hscpp/module/ModuleInterface.h"
 
-#if defined(HSCPP_PLATFORM_WIN32)
-
-#include <Windows.h>
-
-#elif defined(HSCPP_PLATFORM_UNIX)
-
-#include <dlfcn.h>
-
-#endif
-
 hscpp::ModuleManager::ModuleManager()
 {
     Hscpp_GetModuleInterface()->SetIsSwapping(&m_bSwapping);
