@@ -15,7 +15,9 @@ namespace hscpp
     {
     public:
         Compiler_msvc();
-        
+
+        bool IsInitialized() override;
+
         bool StartBuild(const Input& info) override;
         void Update() override;
 
@@ -32,7 +34,7 @@ namespace hscpp
             Build,
         };
 
-        bool m_Initialized = false;
+        bool m_bInitialized = false;
         std::unique_ptr<ICmdShell> m_pCmdShell;
 
         size_t m_iCompileOutput = 0;

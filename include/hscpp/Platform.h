@@ -41,6 +41,9 @@ typedef int TOsError;
         std::unique_ptr<IFileWatcher> CreateFileWatcher();
         std::unique_ptr<ICompiler> CreateCompiler();
         std::unique_ptr<ICmdShell> CreateCmdShell();
+
+        std::vector<std::string> GetDefaultCompileOptions();
+        std::vector<std::string> GetDefaultPreprocessorDefinitions();
     }
 
 #define HSCPP_UNUSED_PARAM(param) (void)param

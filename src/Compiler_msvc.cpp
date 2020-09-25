@@ -25,9 +25,14 @@ namespace hscpp
         }
     }
 
+    bool Compiler_msvc::IsInitialized()
+    {
+        return m_bInitialized;
+    }
+
     bool Compiler_msvc::StartBuild(const Input& info)
     {
-        if (!m_Initialized)
+        if (!m_bInitialized)
         {
             log::Info() << HSCPP_LOG_PREFIX << "Compiler is still initializing, skipping compilation." << log::End();
             return false;
@@ -315,7 +320,7 @@ namespace hscpp
             if (rIt->find("[vcvarsall.bat] Environment initialized") != std::string::npos)
             {
                 // Environmental variables set, we can now use 'cl' to compile.
-                m_Initialized = true;
+                m_bInitialized = true;
                 return true;
             }
         }

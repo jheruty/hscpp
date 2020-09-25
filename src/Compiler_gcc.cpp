@@ -16,6 +16,11 @@ namespace hscpp
         m_pCmdShell->StartTask("clang --version", 0);
     }
 
+    bool Compiler_gcc::IsInitialized()
+    {
+        return false;
+    }
+
     bool Compiler_gcc::StartBuild(const Input& info)
     {
 

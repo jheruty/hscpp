@@ -11,6 +11,8 @@ namespace hscpp
     public:
         Compiler_gcc();
 
+        bool IsInitialized() override;
+
         bool StartBuild(const Input& info) override;
         void Update() override;
 

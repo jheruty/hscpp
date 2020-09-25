@@ -39,7 +39,7 @@ namespace hscpp { namespace test
             {
                 std::vector<std::string> output = pCmdShell->PeekTaskOutput();
                 RemoveBlankLines(output);
-                
+
                 REQUIRE(output.size() == 1);
                 REQUIRE(output.at(0) == "hello");
 

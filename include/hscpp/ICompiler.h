@@ -23,6 +23,8 @@ namespace hscpp
 
         virtual ~ICompiler() = default;
 
+        virtual bool IsInitialized() = 0;
+
         virtual bool StartBuild(const Input& info) = 0;
         virtual void Update() = 0;
 

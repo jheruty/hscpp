@@ -14,34 +14,6 @@ namespace hscpp
 
     const static std::string HSCPP_TEMP_DIRECTORY_NAME = "HSCPP_7c9279ff-25af-488c-a634-b6aa68f47a65";
 
-    const static std::vector<std::string> DEFAULT_COMPILE_OPTIONS = {
-        "/nologo", // Suppress cl startup banner.
-        "/std:c++17", // Use C++17 standard.
-        "/Z7", // Add full debugging information.
-        "/FC", // Print full filepath in diagnostic messages.
-        "/MP", // Build with multiple processes.
-        "/EHsc", // Full support for standard C++ exception handling.
-#ifdef _DEBUG
-        // Debug flags.
-        "/MDd", // Use multithreaded debug DLL version of run-time library.
-        "/LDd", // Create debug DLL. 
-#else
-        // Release flags.
-        "/MD", // Use multithreaded release DLL version of run-time library.
-        "/Zo", // Enable enhanced debugging for optimized code.
-        "/LD", // Create release DLL.
-#endif
-    };
-
-    const static std::vector<std::string> DEFAULT_PREPROCESSOR_DEFINITIONS = {
-#ifdef _DEBUG
-        "_DEBUG",
-#endif
-#ifdef _WIN32
-        "_WIN32",
-#endif
-    };
-
     Hotswapper::Hotswapper(bool bUseDefaults /* = true */)
     {
         m_pFileWatcher = platform::CreateFileWatcher();
@@ -49,12 +21,12 @@ namespace hscpp
 
         if (bUseDefaults)
         {
-            for (const auto& option : DEFAULT_COMPILE_OPTIONS)
+            for (const auto& option : platform::GetDefaultCompileOptions())
             {
                 Add(option, m_NextCompileOptionHandle, m_CompileOptionsByHandle);
             }
 
-            for (const auto& definition : DEFAULT_PREPROCESSOR_DEFINITIONS)
+            for (const auto& definition : platform::GetDefaultPreprocessorDefinitions())
             {
                 Add(definition, m_NextPreprocessorDefinitionHandle, m_PreprocessorDefinitionsByHandle);
             }

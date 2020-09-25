@@ -25,15 +25,15 @@
 #include "hscpp/Compiler_clang.h"
 #include "hscpp/Compiler_gcc.h"
 
-namespace hscpp
+namespace hscpp { namespace platform
 {
 
-    std::unique_ptr<IFileWatcher> platform::CreateFileWatcher()
+    std::unique_ptr<IFileWatcher> CreateFileWatcher()
     {
         return std::unique_ptr<IFileWatcher>(new FileWatcher());
     }
 
-    std::unique_ptr<ICompiler> platform::CreateCompiler()
+    std::unique_ptr<ICompiler> CreateCompiler()
     {
 #if defined(__clang__)
         // Use clang.
@@ -50,9 +50,66 @@ namespace hscpp
         return std::unique_ptr<ICompiler>(new Compiler_clang());
     }
 
-    std::unique_ptr<ICmdShell> platform::CreateCmdShell()
+    std::unique_ptr<ICmdShell> CreateCmdShell()
     {
         return std::unique_ptr<ICmdShell>(new CmdShell());
     }
 
-}
+    static std::vector<std::string> GetDefaultCompileOptions_msvc()
+    {
+        return {
+            "/nologo", // Suppress cl startup banner.
+            "/std:c++17", // Use C++17 standard.
+            "/Z7", // Add full debugging information.
+            "/FC", // Print full filepath in diagnostic messages.
+            "/MP", // Build with multiple processes.
+            "/EHsc", // Full support for standard C++ exception handling.
+#if defined(_DEBUG)
+            // Debug flags.
+            "/MDd", // Use multithreaded debug DLL version of run-time library.
+            "/LDd", // Create debug DLL.
+#else
+            // Release flags.
+            "/MD", // Use multithreaded release DLL version of run-time library.
+            "/Zo", // Enable enhanced debugging for optimized code.
+            "/LD", // Create release DLL.
+#endif
+        };
+    }
+
+    std::vector<std::string> GetDefaultCompileOptions()
+    {
+#if defined(__clang__)
+        // Using clang.
+        return {};
+#elif defined(__GNUC__) || defined(__GNUG__)
+        // Using GCC.
+        return {};
+#elif defined(_MSC_VER)
+        // Using MSVC.
+        return GetDefaultCompileOptions_msvc();
+#endif
+    }
+
+    static std::vector<std::string> GetDefaultPreprocessorDefinitions_win32()
+    {
+        return {
+#ifdef _DEBUG
+            "_DEBUG",
+#endif
+#ifdef _WIN32
+            "_WIN32",
+#endif
+        };
+    }
+
+    std::vector<std::string> GetDefaultPreprocessorDefinitions()
+    {
+#if defined(HSCPP_PLATFORM_WIN32)
+        return GetDefaultPreprocessorDefinitions_win32();
+#else
+        return {};
+#endif
+    }
+
+}}
