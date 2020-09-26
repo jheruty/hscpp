@@ -64,7 +64,7 @@ namespace hscpp { namespace platform
             "/FC", // Print full filepath in diagnostic messages.
             "/MP", // Build with multiple processes.
             "/EHsc", // Full support for standard C++ exception handling.
-#if defined(_DEBUG)
+#if defined(HSCPP_DEBUG)
             // Debug flags.
             "/MDd", // Use multithreaded debug DLL version of run-time library.
             "/LDd", // Create debug DLL.
@@ -77,14 +77,30 @@ namespace hscpp { namespace platform
         };
     }
 
+    static std::vector<std::string> GetDefaultCompileOptions_gcclike()
+    {
+        return {
+            "-std=c++17", // Use C++17 standard.
+            "-shared", // Compile a shared library.
+
+#if defined(HSCPP_DEBUG)
+            "-g", // Add debug info.
+#endif
+
+#if defined(HSCPP_PLATFORM_APPLE)
+            "-l c++" // Link native C++ standard library.
+#endif
+        };
+    }
+
     std::vector<std::string> GetDefaultCompileOptions()
     {
 #if defined(__clang__)
         // Using clang.
-        return {};
+        return GetDefaultCompileOptions_gcclike();
 #elif defined(__GNUC__) || defined(__GNUG__)
         // Using GCC.
-        return {};
+        return GetDefaultCompileOptions_gcclike();
 #elif defined(_MSC_VER)
         // Using MSVC.
         return GetDefaultCompileOptions_msvc();

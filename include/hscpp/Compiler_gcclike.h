@@ -1,8 +1,8 @@
 #pragma once
 
-#include <vector>
-#include <string>
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "hscpp/Platform.h"
 #include "hscpp/ICompiler.h"
@@ -11,10 +11,18 @@
 namespace hscpp
 {
 
-    class Compiler_msvc : public ICompiler
+    // Compilers may have GCC-like interfaces (ex. clang). To avoid creating a separate compiler
+    // for each, GCC-like compilers can inherit from this class.
+    class Compiler_gcclike : public ICompiler
     {
     public:
-        Compiler_msvc();
+        enum class Type
+        {
+            GCC,
+            Clang,
+        };
+
+        explicit Compiler_gcclike(Type type);
 
         bool IsInitialized() override;
 
@@ -29,24 +37,25 @@ namespace hscpp
     private:
         enum class CompilerTask
         {
-            GetVsPath,
-            SetVcVarsAll,
+            GetVersion,
             Build,
         };
 
         bool m_bInitialized = false;
+
+        Type m_CompilerType;
         std::unique_ptr<ICmdShell> m_pCmdShell;
 
         size_t m_iCompileOutput = 0;
         fs::path m_CompilingModulePath;
         fs::path m_CompiledModulePath;
 
+        std::string m_ExecutableName;
+
         bool CreateCommandFile(const Input& input);
 
-        void StartVsPathTask();
         bool HandleTaskComplete(CompilerTask task);
-        bool HandleGetVsPathTaskComplete(const std::vector<std::string>& output);
-        bool HandleSetVcVarsAllTaskComplete(std::vector<std::string> output);
+        bool HandleGetVersionTaskComplete(const std::vector<std::string>& output);
         bool HandleBuildTaskComplete();
     };
 

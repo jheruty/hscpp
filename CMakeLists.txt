@@ -6,6 +6,7 @@ list(APPEND SRC_FILES
     src/Compiler_msvc.cpp
     src/Compiler_clang.cpp
     src/Compiler_gcc.cpp
+    src/Compiler_gcclike.cpp
     src/DependencyGraph.cpp
     src/Feature.cpp
     src/FeatureManager.cpp
@@ -35,6 +36,7 @@ list(APPEND SRC_FILES
     include/hscpp/Compiler_msvc.h
     include/hscpp/Compiler_clang.h
     include/hscpp/Compiler_gcc.h
+    include/hscpp/Compiler_gcclike.h
     include/hscpp/Callbacks.h
     include/hscpp/DependencyGraph.h
     include/hscpp/Feature.h
@@ -54,7 +56,10 @@ list(APPEND SRC_FILES
     include/hscpp/Util.h
 )
 
-list(APPEND COMPILE_DEFINITIONS)
+list(APPEND COMPILE_DEFINITIONS
+    $<$<CONFIG:Debug>:HSCPP_DEBUG>
+)
+
 list(APPEND LINK_LIBRARIES)
 
 if (WIN32)

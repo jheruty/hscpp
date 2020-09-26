@@ -1,28 +1,14 @@
 #pragma once
 
-#include "hscpp/ICompiler.h"
-#include "hscpp/ICmdShell.h"
+#include "hscpp/Compiler_gcclike.h"
 
 namespace hscpp
 {
 
-    class Compiler_gcc : public ICompiler
+    class Compiler_gcc : public Compiler_gcclike
     {
     public:
         Compiler_gcc();
-
-        bool IsInitialized() override;
-
-        bool StartBuild(const Input& info) override;
-        void Update() override;
-
-        bool IsCompiling() override;
-
-        bool HasCompiledModule() override;
-        fs::path PopModule() override;
-
-    private:
-        std::unique_ptr<ICmdShell> m_pCmdShell;
     };
 
 }

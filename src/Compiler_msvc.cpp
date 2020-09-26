@@ -30,7 +30,7 @@ namespace hscpp
         return m_bInitialized;
     }
 
-    bool Compiler_msvc::StartBuild(const Input& info)
+    bool Compiler_msvc::StartBuild(const Input& input)
     {
         if (!m_bInitialized)
         {
@@ -41,7 +41,7 @@ namespace hscpp
         // The command shell uses ANSI, and cl doesn't appear to support reading filenames from UTF-8.
         // To get around this, write filenames to a separate file that cl can read from. This allows
         // us to compile files whose names contain Unicode characters.
-        if (!CreateClCommandFile(info))
+        if (!CreateCommandFile(input))
         {
             return false;
         }
@@ -50,7 +50,7 @@ namespace hscpp
         m_iCompileOutput = 0;
         m_CompiledModulePath.clear();
 
-        std::string cmd = "cl @\"" + info.buildDirectoryPath.string() + "\\" + COMMAND_FILENAME + "\"";
+        std::string cmd = "cl @\"" + input.buildDirectoryPath.string() + "\\" + COMMAND_FILENAME + "\"";
         m_pCmdShell->StartTask(cmd, static_cast<int>(CompilerTask::Build));
 
         return true;
@@ -108,9 +108,9 @@ namespace hscpp
         return modulePath;
     }
 
-    bool Compiler_msvc::CreateClCommandFile(const Input& info)
+    bool Compiler_msvc::CreateCommandFile(const Input& input)
     {
-        fs::path commandFilePath = info.buildDirectoryPath / COMMAND_FILENAME;
+        fs::path commandFilePath = input.buildDirectoryPath / COMMAND_FILENAME;
         std::ofstream commandFile(commandFilePath.native().c_str(), std::ios_base::binary);
         std::stringstream command;
 
@@ -121,7 +121,7 @@ namespace hscpp
             return false;
         }
 
-        // Add the UTF-8 BOM. This is required for cl to read the file correctly.
+        // Add the UTF-8 BOM.
         commandFile << static_cast<uint8_t>(0xEF);
         commandFile << static_cast<uint8_t>(0xBB);
         commandFile << static_cast<uint8_t>(0xBF);
@@ -136,44 +136,44 @@ namespace hscpp
             return false;
         }
 
-        for (const auto& option : info.compileOptions)
+        for (const auto& option : input.compileOptions)
         {
             command << option << std::endl;
         }
 
         // Output dll name.
-        m_CompilingModulePath = info.buildDirectoryPath / MODULE_FILENAME;
+        m_CompilingModulePath = input.buildDirectoryPath / MODULE_FILENAME;
         command << "/Fe" << "\"" << m_CompilingModulePath.u8string() << "\"" << std::endl;
 
         // Object file output directory. Trailing slash is required.
-        command << "/Fo" << "\"" << info.buildDirectoryPath.u8string() << "\"\\" << std::endl;
+        command << "/Fo" << "\"" << input.buildDirectoryPath.u8string() << "\"\\" << std::endl;
 
-        for (const auto& includeDirectory : info.includeDirectoryPaths)
+        for (const auto& includeDirectory : input.includeDirectoryPaths)
         {
             command << "/I " << "\"" << includeDirectory.u8string() << "\"" << std::endl;
         }
 
-        for (const auto& file : info.sourceFilePaths)
+        for (const auto& file : input.sourceFilePaths)
         {
             command << "\"" << file.u8string() << "\"" << std::endl;
         }
 
-        for (const auto& library : info.libraryPaths)
+        for (const auto& library : input.libraryPaths)
         {
             command << "\"" << library.u8string() << "\"" << std::endl;
         }
 
-        for (const auto& preprocessorDefinition : info.preprocessorDefinitions)
+        for (const auto& preprocessorDefinition : input.preprocessorDefinitions)
         {
             command << "/D" << "\"" << preprocessorDefinition << "\"" << std::endl;
         }
 
-        if (!info.linkOptions.empty())
+        if (!input.linkOptions.empty())
         {
             command << "/link " << std::endl;
         }
 
-        for (const auto& option : info.linkOptions)
+        for (const auto& option : input.linkOptions)
         {
             command << option << std::endl;
         }
