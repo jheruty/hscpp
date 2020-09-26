@@ -2,6 +2,7 @@ add_executable(unit-tests
     Main.cpp
     Test_CmdShell.cpp
     Test_Compiler.cpp
+    Test_DependencyGraph.cpp
     Test_FeatureManager.cpp
     Test_FileParser.cpp
     Test_FileWatcher.cpp
