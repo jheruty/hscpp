@@ -37,10 +37,10 @@ namespace hscpp
         // only happen if &Derived::hscpp_ClassTracker is unambiguous (i.e. T does not have a
         // hscpp_ClassTracker member).
         template<typename U>
-        static NoType& Test(Check<int Fallback::*, &U::hscpp_ClassTracker>*) {};
+        static NoType& Test(Check<int Fallback::*, &U::hscpp_ClassTracker>*);
 
         template<typename U>
-        static YesType& Test(...) {};
+        static YesType& Test(...);
 
     public:
         enum { no = (sizeof(Test<Derived>(0)) == sizeof(NoType)) };

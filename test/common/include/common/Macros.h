@@ -5,3 +5,4 @@
     INFO("Calling " << #func << " on line " << __LINE__ << ".");\
     return func(__VA_ARGS__);\
 }() \
+
