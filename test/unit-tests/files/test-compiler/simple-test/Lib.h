@@ -4,7 +4,7 @@
 
 #else
 
-#define HSCPP_API
+#define HSCPP_API __attribute__ ((visibility ("default")))
 
 #endif
 

@@ -135,7 +135,7 @@ namespace hscpp { namespace platform
 #if defined(HSCPP_PLATFORM_WIN32)
         return LoadLibraryW(modulePath.wstring().c_str());
 #elif defined(HSCPP_PLATFORM_UNIX)
-        return dlopen(modulePath.string().c_str(), 0);
+        return dlopen(modulePath.string().c_str(), RTLD_NOW);
 #endif
     }
 

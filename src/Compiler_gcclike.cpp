@@ -131,24 +131,10 @@ namespace hscpp
     bool Compiler_gcclike::CreateCommandFile(const ICompiler::Input &input)
     {
         fs::path commandFilePath = input.buildDirectoryPath / COMMAND_FILENAME;
-        std::ofstream commandFile(commandFilePath.native().c_str(), std::ios_base::binary);
+        std::ofstream commandFile(commandFilePath.native().c_str());
         std::stringstream command;
 
-        if (!commandFile.is_open())
-        {
-            log::Error() << HSCPP_LOG_PREFIX << "Failed to create command file "
-                         << commandFilePath << log::End(".");
-            return false;
-        }
-
-        // Add the UTF-8 BOM.
-        commandFile << static_cast<uint8_t>(0xEF);
-        commandFile << static_cast<uint8_t>(0xBB);
-        commandFile << static_cast<uint8_t>(0xBF);
-        commandFile.close();
-
         // Reopen file and write command.
-        commandFile.open(commandFilePath.native().c_str(), std::ios::app);
         if (!commandFile.is_open())
         {
             log::Error() << HSCPP_LOG_PREFIX << "Failed to open command file "
