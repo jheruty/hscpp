@@ -2,9 +2,8 @@
 
 namespace hscpp
 {
-    // Templated to allow static variables in header.
-    template <int T = 0>
-    class GlobalUserDataImpl
+
+    class GlobalUserData
     {
     public:
         static bool IsNull()
@@ -23,13 +22,6 @@ namespace hscpp
 
         static void* s_pData;
     };
-
-    template <int T>
-    void* GlobalUserDataImpl<T>::s_pData = nullptr;
-
-    // Typedef for easier usage; in the future, C++17 inline statics makes the templating of this
-    // class unnecessary.
-    typedef GlobalUserDataImpl<> GlobalUserData;
 
 }
 

@@ -381,7 +381,7 @@ namespace hscpp
         compilerInput.linkOptions = AsVector(m_LinkOptionsByHandle);
 
         // TODO
-        compilerInput.sourceFilePaths.push_back(fs::path(__FILE__).parent_path() / "module" / "ModuleInterface.cpp");
+        compilerInput.sourceFilePaths.push_back(fs::path(__FILE__).parent_path() / "module" / "Module.cpp");
 
         return compilerInput;
     }
