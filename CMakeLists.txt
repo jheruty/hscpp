@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.10.0)
 project(hscpp)
 
 list(APPEND SRC_FILES
+    src/module/ModuleInterface.cpp
+
     src/Compiler_msvc.cpp
     src/Compiler_clang.cpp
     src/Compiler_gcc.cpp

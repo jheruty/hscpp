@@ -380,6 +380,9 @@ namespace hscpp
         compilerInput.compileOptions = AsVector(m_CompileOptionsByHandle);
         compilerInput.linkOptions = AsVector(m_LinkOptionsByHandle);
 
+        // TODO
+        compilerInput.sourceFilePaths.push_back(fs::path(__FILE__).parent_path() / "module" / "ModuleInterface.cpp");
+
         return compilerInput;
     }
 

@@ -60,6 +60,8 @@ bool hscpp::ModuleManager::PerformRuntimeSwap(const fs::path& modulePath)
 
     WarnDuplicateKeys(pModuleInterface);
 
+    log::Build() << HSCPP_LOG_PREFIX << "Successfully performed runtime swap." << log::End();
+
     return true;
 }
 

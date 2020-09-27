@@ -140,9 +140,5 @@ namespace hscpp
 
 extern "C"
 {
-    HSCPP_API inline hscpp::ModuleInterface* Hscpp_GetModuleInterface()
-    {
-        static hscpp::ModuleInterface moduleInterface;
-        return &moduleInterface;
-    }
+    HSCPP_API hscpp::ModuleInterface* Hscpp_GetModuleInterface();
 }
