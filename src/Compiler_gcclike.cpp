@@ -28,7 +28,7 @@ namespace hscpp
                 m_ExecutableName = "clang";
                 break;
             case Type::GCC:
-                m_ExecutableName = "gcc";
+                m_ExecutableName = "g++";
                 break;
             default:
                 assert(false);
