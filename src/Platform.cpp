@@ -82,6 +82,8 @@ namespace hscpp { namespace platform
         return {
             "-std=c++17", // Use C++17 standard.
             "-shared", // Compile a shared library.
+            "-fPIC", // Use position-independent code.
+            "-fvisibility=hidden", // Hide code not explicitly made visible.
 
 #if defined(HSCPP_DEBUG)
             "-g", // Add debug info.
