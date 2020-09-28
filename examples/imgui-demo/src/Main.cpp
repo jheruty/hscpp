@@ -26,7 +26,9 @@ static bool SetupGlfw(GLFWwindow*& pWindow)
     }
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 
     pWindow = glfwCreateWindow(1280, 720, "ImGui Demo", nullptr, nullptr);
     if (pWindow == nullptr)
@@ -63,7 +65,7 @@ static bool SetupImGui(GLFWwindow* pWindow, ImGuiContext*& pImGuiContext)
         return false;
     }
 
-    if (!ImGui_ImplOpenGL3_Init("#version 130"))
+    if (!ImGui_ImplOpenGL3_Init("#version 150"))
     {
         return false;
     }
