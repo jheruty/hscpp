@@ -22,8 +22,7 @@
 // Compiler code is cross-platform. For example, one may wish to run the clang compiler on Windows.
 // By default hscpp will choose the compiler that was used to compile this file.
 #include "hscpp/Compiler_msvc.h"
-#include "hscpp/Compiler_clang.h"
-#include "hscpp/Compiler_gcc.h"
+#include "hscpp/Compiler_gcclike.h"
 
 namespace hscpp { namespace platform
 {
@@ -37,17 +36,17 @@ namespace hscpp { namespace platform
     {
 #if defined(__clang__)
         // Use clang.
-        return std::unique_ptr<ICompiler>(new Compiler_clang());
+        return std::unique_ptr<ICompiler>(new Compiler_gcclike("clang++"));
 #elif defined(__GNUC__) || defined(__GNUG__)
         // Use GCC.
-        return std::unique_ptr<ICompiler>(new Compiler_gcc());
+        return std::unique_ptr<ICompiler>(new Compiler_gcclike("g++"));
 #elif defined(_MSC_VER)
         // Use MSVC.
         return std::unique_ptr<ICompiler>(new Compiler_msvc());
 #endif
         // Unknown compiler, default to clang.
         log::Warning() << "Unknown compiler, defaulting to clang." << log::End();
-        return std::unique_ptr<ICompiler>(new Compiler_clang());
+        return std::unique_ptr<ICompiler>(new Compiler_gcclike("clang++"));
     }
 
     std::unique_ptr<ICmdShell> CreateCmdShell()
@@ -89,9 +88,9 @@ namespace hscpp { namespace platform
             "-g", // Add debug info.
 #endif
 
-#if defined(HSCPP_PLATFORM_APPLE)
-            "-l c++" // Link native C++ standard library.
-#endif
+//#if defined(HSCPP_PLATFORM_APPLE)
+//            "-l c++" // Link native C++ standard library.
+//#endif
         };
     }
 

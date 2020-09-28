@@ -1,3 +1,5 @@
+#include <libgen.h>
+
 #include <cassert>
 #include <locale>
 #include <fstream>
@@ -19,20 +21,9 @@ namespace hscpp
     const static std::string MODULE_FILENAME = "module.so";
 #endif
 
-    Compiler_gcclike::Compiler_gcclike(Compiler_gcclike::Type type)
-        : m_CompilerType(type)
+    Compiler_gcclike::Compiler_gcclike(const std::string& executable)
     {
-        switch (type)
-        {
-            case Type::Clang:
-                m_ExecutableName = "clang";
-                break;
-            case Type::GCC:
-                m_ExecutableName = "g++";
-                break;
-            default:
-                assert(false);
-        }
+        m_Executable = executable;
 
         m_pCmdShell = platform::CreateCmdShell();
         if (!m_pCmdShell->CreateCmdProcess())
@@ -40,7 +31,7 @@ namespace hscpp
             log::Error() << HSCPP_LOG_PREFIX << "Failed to create command process." << log::End();
         }
 
-        std::string versionCmd = m_ExecutableName + " --version";
+        std::string versionCmd = m_Executable + " --version";
         m_pCmdShell->StartTask(versionCmd, static_cast<int>(CompilerTask::GetVersion));
     }
 
@@ -68,8 +59,8 @@ namespace hscpp
         m_iCompileOutput = 0;
         m_CompiledModulePath.clear();
 
-        std::string cmd = m_ExecutableName + " @\"" + input.buildDirectoryPath.string()
-                + "/" + COMMAND_FILENAME + "\"";
+        std::string cmd = m_Executable + " @\"" + input.buildDirectoryPath.string()
+                          + "/" + COMMAND_FILENAME + "\"";
 
         m_pCmdShell->StartTask(cmd, static_cast<int>(CompilerTask::Build));
 
@@ -177,7 +168,7 @@ namespace hscpp
         }
 
         // Print effective command line.
-        log::Build() << m_ExecutableName << " " << command.str() << log::End();
+        log::Build() << m_Executable << " " << command.str() << log::End();
 
         // Write command file.
         commandFile << command.str();
@@ -207,23 +198,17 @@ namespace hscpp
     {
         if (output.empty())
         {
-            log::Error() << HSCPP_LOG_PREFIX << "Failed to get " << m_ExecutableName << " version." << log::End();
+            log::Error() << HSCPP_LOG_PREFIX << "Failed to get " << m_Executable << " version." << log::End();
             return false;
         }
 
-        // Expect to find m_ExecutableName (in lowercase) somewhere in the first line of the version string.
-        std::string version;
-        for (const auto& c : output.at(0))
+        log::Info() << log::End();
+        log::Info() << HSCPP_LOG_PREFIX << "Found compiler version:" << log::End();
+        for (const auto& line : output)
         {
-            version += std::tolower(c);
+            log::Info() << "    " << line << log::End();
         }
-
-        if (version.find(m_ExecutableName) == std::string::npos)
-        {
-            log::Error() << HSCPP_LOG_PREFIX << "Looking for compiler " << m_ExecutableName
-                 << " but found non-matching version '" << output.at(0) << log::End("'.");
-            return false;
-        }
+        log::Info() << log::End();
 
         m_bInitialized = true;
 

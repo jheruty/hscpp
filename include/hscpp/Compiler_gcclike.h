@@ -16,13 +16,7 @@ namespace hscpp
     class Compiler_gcclike : public ICompiler
     {
     public:
-        enum class Type
-        {
-            GCC,
-            Clang,
-        };
-
-        explicit Compiler_gcclike(Type type);
+        explicit Compiler_gcclike(const std::string& executable);
 
         bool IsInitialized() override;
 
@@ -43,14 +37,13 @@ namespace hscpp
 
         bool m_bInitialized = false;
 
-        Type m_CompilerType;
         std::unique_ptr<ICmdShell> m_pCmdShell;
 
         size_t m_iCompileOutput = 0;
         fs::path m_CompilingModulePath;
         fs::path m_CompiledModulePath;
 
-        std::string m_ExecutableName;
+        std::string m_Executable;
 
         bool CreateCommandFile(const Input& input);
 

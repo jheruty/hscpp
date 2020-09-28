@@ -6,8 +6,6 @@ list(APPEND SRC_FILES
     src/module/Module.cpp
 
     src/Compiler_msvc.cpp
-    src/Compiler_clang.cpp
-    src/Compiler_gcc.cpp
     src/Compiler_gcclike.cpp
     src/DependencyGraph.cpp
     src/Feature.cpp
@@ -36,8 +34,6 @@ list(APPEND SRC_FILES
     include/hscpp/module/Tracker.h
 
     include/hscpp/Compiler_msvc.h
-    include/hscpp/Compiler_clang.h
-    include/hscpp/Compiler_gcc.h
     include/hscpp/Compiler_gcclike.h
     include/hscpp/Callbacks.h
     include/hscpp/DependencyGraph.h
