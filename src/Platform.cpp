@@ -45,11 +45,32 @@ namespace hscpp { namespace platform
         return std::unique_ptr<ICompiler>(new Compiler_msvc());
 #endif
         // Unknown compiler, default to clang.
-        log::Warning() << "Unknown compiler, defaulting to clang." << log::End();
+        log::Warning() << HSCPP_LOG_PREFIX << "Unknown compiler, defaulting to clang." << log::End();
         return std::unique_ptr<ICompiler>(new Compiler_gcclike("clang++"));
     }
 
-    std::unique_ptr<ICmdShell> CreateCmdShell()
+    std::unique_ptr<ICompiler> CreateCompiler(const std::string &executable)
+    {
+        if (executable.empty())
+        {
+            return CreateCompiler();
+        }
+
+#if defined(__clang__) || defined(__GNUC__) || defined(__GNUG__)
+        // Use gcc-like compiler.
+        return std::unique_ptr<ICompiler>(new Compiler_gcclike(executable));
+#elif defined(_MSC_VER)
+        // Use MSVC. The executable will be discovered dynamically in the Compiler.
+        log::Warning() << HSCPP_LOG_PREFIX << "MSVC compiler executable path cannot be set manually." << log::End();
+        return std::unique_ptr<ICompiler>(new Compiler_msvc());
+#endif
+
+        // Unknown compiler, use default...
+        return CreateCompiler();
+    }
+
+
+        std::unique_ptr<ICmdShell> CreateCmdShell()
     {
         return std::unique_ptr<ICmdShell>(new CmdShell());
     }

@@ -42,6 +42,7 @@ typedef int TOsError;
     {
         std::unique_ptr<IFileWatcher> CreateFileWatcher();
         std::unique_ptr<ICompiler> CreateCompiler();
+        std::unique_ptr<ICompiler> CreateCompiler(const std::string& executable);
         std::unique_ptr<ICmdShell> CreateCmdShell();
 
         std::vector<std::string> GetDefaultCompileOptions();

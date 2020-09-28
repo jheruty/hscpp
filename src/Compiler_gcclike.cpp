@@ -198,7 +198,8 @@ namespace hscpp
     {
         if (output.empty())
         {
-            log::Error() << HSCPP_LOG_PREFIX << "Failed to get " << m_Executable << " version." << log::End();
+            log::Error() << HSCPP_LOG_PREFIX << "Failed to get version for compiler '"
+                << m_Executable << log::End("'.");
             return false;
         }
 
