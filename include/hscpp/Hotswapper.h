@@ -24,16 +24,34 @@ namespace hscpp
     class Hotswapper
     {
     public:
+        struct Config
+        {
+            // Hscpp will attempt to set sensible defaults for:
+            //  - Compile options (ex. hiding symbols by default).
+            //  - Preprocessor definitions (ex. _WIN32).
+            //  - Include directories (ex. adding hscpp include/hscpp/module include directory).
+            //  - Force compiled sources (ex. force compilation of src/module/Module.cpp).
+            // This behavior can be disabled by setting these configuration booleans to false.
+            bool bDefaultCompileOptions = true;
+            bool bDefaultPreprocessorDefinitions = true;
+            bool bDefaultIncludeDirectories = true;
+            bool bDefaultForceCompiledSourceFiles = true;
+
+            // Equivalent to CMAKE_CXX_STANDARD.
+            int cppVersion = HSCPP_CXX_STANDARD;
+        };
+
         enum class UpdateResult
         {
-            Nothing,
+            Idle,
             Compiling,
             StartedCompiling,
             PerformedSwap,
             FailedSwap,
         };
 
-        explicit Hotswapper(bool bUseDefaults = true);
+        Hotswapper();
+        explicit Hotswapper(const Config& config);
 
         AllocationResolver* GetAllocationResolver();
 
@@ -67,6 +85,11 @@ namespace hscpp
         void EnumerateSourceDirectories(const std::function<void(int handle, const fs::path& directoryPath)>& cb);
         void ClearSourceDirectories();
 
+        int AddForceCompiledSourceFile(const fs::path& filePath);
+        bool RemoveForceCompiledSourceFile(int handle);
+        void EnumerateForceCompiledSourceFiles(const std::function<void(int handle, const fs::path& directoryPath)>& cb);
+        void ClearForceCompiledSourceFiles();
+
         int AddLibrary(const fs::path& libraryPath);
         bool RemoveLibrary(int handle);
         void EnumerateLibraries(const std::function<void(int handle, const fs::path& libraryPath)>& cb);
@@ -94,6 +117,7 @@ namespace hscpp
 
         int m_NextIncludeDirectoryHandle = 0;
         int m_NextSourceDirectoryHandle = 0;
+        int m_NextForceCompiledSourceFileHandle = 0;
         int m_NextLibraryHandle = 0;
         int m_NextPreprocessorDefinitionHandle = 0;
         int m_NextCompileOptionHandle = 0;
@@ -102,6 +126,7 @@ namespace hscpp
         fs::path m_BuildDirectoryPath;
         std::unordered_map<int, fs::path> m_IncludeDirectoryPathsByHandle;
         std::unordered_map<int, fs::path> m_SourceDirectoryPathsByHandle;
+        std::unordered_map<int, fs::path> m_ForceCompiledSourceFilePathsByHandle;
         std::unordered_map<int, fs::path> m_LibraryPathsByHandle;
         std::unordered_map<int, std::string> m_PreprocessorDefinitionsByHandle;
         std::unordered_map<int, std::string> m_CompileOptionsByHandle;
@@ -131,6 +156,7 @@ namespace hscpp
         bool PerformRuntimeSwap();
 
         fs::path GetHscppIncludePath();
+        fs::path GetHscppModuleSourcePath();
 
         bool CreateHscppTempDirectory();
         bool CreateBuildDirectory();

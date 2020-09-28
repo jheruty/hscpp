@@ -14,26 +14,44 @@ namespace hscpp
 
     const static std::string HSCPP_TEMP_DIRECTORY_NAME = "HSCPP_7c9279ff-25af-488c-a634-b6aa68f47a65";
 
-    Hotswapper::Hotswapper(bool bUseDefaults /* = true */)
+    Hotswapper::Hotswapper()
+        : Hotswapper(Config())
+    {}
+
+    Hotswapper::Hotswapper(const Config& config /* = Config() */)
     {
         m_pFileWatcher = platform::CreateFileWatcher();
         m_pCompiler = platform::CreateCompiler();
 
-        if (bUseDefaults)
+        if (config.bDefaultCompileOptions)
         {
-            for (const auto& option : platform::GetDefaultCompileOptions())
+            for (const auto &option : platform::GetDefaultCompileOptions(config.cppVersion))
             {
                 Add(option, m_NextCompileOptionHandle, m_CompileOptionsByHandle);
             }
+        }
 
+        if (config.bDefaultPreprocessorDefinitions)
+        {
             for (const auto& definition : platform::GetDefaultPreprocessorDefinitions())
             {
                 Add(definition, m_NextPreprocessorDefinitionHandle, m_PreprocessorDefinitionsByHandle);
             }
+        }
 
+        if (config.bDefaultIncludeDirectories)
+        {
             // Add hotswap-cpp include directory as a default include directory, since parts of the
             // library will need to be compiled into each new module.
             Add(GetHscppIncludePath(), m_NextIncludeDirectoryHandle, m_IncludeDirectoryPathsByHandle);
+        }
+
+        if (config.bDefaultForceCompiledSourceFiles)
+        {
+            // Add Module.cpp as a default force-compiled source, it contains things like statics
+            // needed by each compiled module.
+            Add(GetHscppModuleSourcePath(),
+                m_NextForceCompiledSourceFileHandle, m_ForceCompiledSourceFilePathsByHandle);
         }
 
         m_Preprocessor.SetFeatureManager(&m_FeatureManager);
@@ -158,7 +176,7 @@ namespace hscpp
             }
         }
 
-        return UpdateResult::Nothing;
+        return UpdateResult::Idle;
     }
 
     bool Hotswapper::IsCompiling()
@@ -254,6 +272,27 @@ namespace hscpp
         m_SourceDirectoryPathsByHandle.clear();
     }
 
+    int Hotswapper::AddForceCompiledSourceFile(const fs::path& filePath)
+    {
+        return Add(filePath, m_NextForceCompiledSourceFileHandle, m_ForceCompiledSourceFilePathsByHandle);
+    }
+
+    bool Hotswapper::RemoveForceCompiledSourceFile(int handle)
+    {
+        return Remove(handle, m_ForceCompiledSourceFilePathsByHandle);
+    }
+
+    void Hotswapper::EnumerateForceCompiledSourceFiles(
+            const std::function<void(int handle, const fs::path& directoryPath)>& cb)
+    {
+        Enumerate(cb, m_ForceCompiledSourceFilePathsByHandle);
+    }
+
+    void Hotswapper::ClearForceCompiledSourceFiles()
+    {
+        m_ForceCompiledSourceFilePathsByHandle.clear();
+    }
+
     int Hotswapper::AddLibrary(const fs::path& libraryPath)
     {
         return Add(libraryPath, m_NextLibraryHandle, m_LibraryPathsByHandle);
@@ -334,6 +373,8 @@ namespace hscpp
         m_LinkOptionsByHandle.clear();
     }
 
+    //============================================================================
+
     void Hotswapper::SetHscppRequireVariable(const std::string& name, const std::string& val)
     {
         m_HscppRequireVariables[name] = val;
@@ -380,8 +421,10 @@ namespace hscpp
         compilerInput.compileOptions = AsVector(m_CompileOptionsByHandle);
         compilerInput.linkOptions = AsVector(m_LinkOptionsByHandle);
 
-        // TODO
-        compilerInput.sourceFilePaths.push_back(fs::path(__FILE__).parent_path() / "module" / "Module.cpp");
+        for (const auto& handle__filePath : m_ForceCompiledSourceFilePathsByHandle)
+        {
+            compilerInput.sourceFilePaths.push_back(handle__filePath.second);
+        }
 
         return compilerInput;
     }
@@ -421,7 +464,10 @@ namespace hscpp
         return bResult;
     }
 
-    //============================================================================
+    fs::path Hotswapper::GetHscppModuleSourcePath()
+    {
+        return fs::path(__FILE__).parent_path() / "module" / "Module.cpp";
+    }
 
     bool Hotswapper::CreateHscppTempDirectory()
     {
