@@ -168,7 +168,7 @@ namespace hscpp
 
         for (const auto& library : input.libraryPaths)
         {
-            command << "-l " << "\"" << library.u8string() << "\"" << std::endl;
+            command << "\"" << library.u8string() << "\"" << std::endl;
         }
 
         for (const auto& file : input.sourceFilePaths)
