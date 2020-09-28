@@ -73,40 +73,25 @@ namespace hscpp
         }
 
         // Read as many output lines as possible from the cmd subprocess.
-        bool bDoneReading = false;
-        do
+        ReadResult result = ReadFromShell();
+        while (result == ReadResult::SuccessfulRead)
         {
-            std::string line;
-            ReadResult result = ReadOutputLine(line);
+            result = ReadFromShell();
+        }
 
-            if (result == ReadResult::Error)
-            {
-                m_TaskState = TaskState::Idle;
-                return TaskState::Error;
-            }
-            else if (result == ReadResult::Done)
-            {
-                m_TaskState = TaskState::Idle;
-                return TaskState::Done;
-            }
-            else if (result == ReadResult::Success)
-            {
-                if (line.empty())
-                {
-                    bDoneReading = true;
-                }
-                else
-                {
-                    // Remove trailing /n.
-                    if (!line.empty() && line.at(line.size() - 1) == '\n')
-                    {
-                        line.pop_back();
-                    }
+        // Fill out m_TaskOutput.
+        FillOutput();
 
-                    m_TaskOutput.push_back(line);
-                }
-            }
-        } while (!bDoneReading);
+        if (result == ReadResult::Error)
+        {
+            m_TaskState = TaskState::Idle;
+            return TaskState::Error;
+        }
+        else if (result == ReadResult::Done)
+        {
+            m_TaskState = TaskState::Idle;
+            return TaskState::Done;
+        }
 
         return m_TaskState;
     }
@@ -116,58 +101,68 @@ namespace hscpp
         return m_TaskOutput;
     }
 
-    CmdShell::ReadResult CmdShell::ReadOutputLine(std::string &output)
+    CmdShell::ReadResult CmdShell::ReadFromShell()
     {
         // Only read from file if our leftover buffer does not contain a newline yet.
-        size_t iNewline = m_LeftoverCmdOutput.find("\n");
-        if (iNewline == std::string::npos)
+        const int nFds = 1;
+
+        struct pollfd fds[nFds];
+        fds->fd = m_FileFd;
+        fds->events = POLLIN;
+
+        int ret = poll(fds, nFds, 0);
+        if (ret > 0)
         {
-            const int nFds = 1;
-
-            struct pollfd fds[nFds];
-            fds->fd = m_FileFd;
-            fds->events = POLLIN;
-
-            int ret = poll(fds, nFds, 0);
-            if (ret > 0)
+            for (int i = 0; i < nFds; ++i)
             {
-                for (int i = 0; i < nFds; ++i)
+                if (fds[i].events & POLLIN)
                 {
-                    if (fds[i].events & POLLIN)
-                    {
-                        ssize_t nBytesRead = read(fds[i].fd, m_ReadBuffer.data(), m_ReadBuffer.size());
+                    ssize_t nBytesRead = read(fds[i].fd, m_ReadBuffer.data(), m_ReadBuffer.size());
 
-                        if (nBytesRead > 0)
+                    if (nBytesRead > 0)
+                    {
+                        m_LeftoverCmdOutput += std::string(m_ReadBuffer.data(), nBytesRead);
+                        return ReadResult::SuccessfulRead;
+                    }
+                    else if (nBytesRead == 0)
+                    {
+                        // read returns 0, signaling EOF and that command is done executing.
+                        CloseFile();
+
+                        // If output does not end with a newline, append one manually, so that
+                        // FillOutput chunks output correctly.
+                        if (!m_LeftoverCmdOutput.empty()
+                            && m_LeftoverCmdOutput.at(m_LeftoverCmdOutput.size() - 1) != '\n')
                         {
-                            m_LeftoverCmdOutput += std::string(m_ReadBuffer.data(), nBytesRead);
+                            m_LeftoverCmdOutput += "\n";
                         }
-                        else if (nBytesRead == 0)
-                        {
-                            // read returns 0, signaling EOF and that command is done executing.
-                            CloseFile();
-                            return ReadResult::Done;
-                        }
-                        else if (nBytesRead == -1)
-                        {
-                            log::Error() << HSCPP_LOG_PREFIX << "Failed to read file fd. "
-                                         << log::LastOsError() << log::End();
-                            return ReadResult::Error;
-                        }
+
+                        return ReadResult::Done;
+                    }
+                    else if (nBytesRead == -1)
+                    {
+                        log::Error() << HSCPP_LOG_PREFIX << "Failed to read file fd. "
+                                     << log::LastOsError() << log::End();
+                        return ReadResult::Error;
                     }
                 }
             }
         }
 
-        // Get string up to next newline.
-        iNewline = m_LeftoverCmdOutput.find("\n");
-        if (iNewline != std::string::npos)
-        {
-            output = m_LeftoverCmdOutput.substr(0, iNewline + 1);
-            m_LeftoverCmdOutput = m_LeftoverCmdOutput.substr(iNewline + 1);
-        }
+        return ReadResult::NoData;
+    }
 
-        // Success, note that no data may have been available, in which case output is empty.
-        return ReadResult::Success;
+    void CmdShell::FillOutput()
+    {
+        // Get string up to next newline; do not include newline in output.
+        size_t iNewline = m_LeftoverCmdOutput.find("\n");
+        while (iNewline != std::string::npos)
+        {
+            m_TaskOutput.push_back(m_LeftoverCmdOutput.substr(0, iNewline));
+            m_LeftoverCmdOutput = m_LeftoverCmdOutput.substr(iNewline + 1);
+
+            iNewline = m_LeftoverCmdOutput.find("\n");
+        }
     }
 
     void CmdShell::CloseFile()

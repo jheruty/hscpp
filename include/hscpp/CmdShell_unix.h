@@ -22,7 +22,8 @@ namespace hscpp
     private:
         enum class ReadResult
         {
-            Success,
+            SuccessfulRead,
+            NoData,
             Error,
             Done,
         };
@@ -37,7 +38,8 @@ namespace hscpp
         FILE* m_pFile = nullptr;
         int m_FileFd = -1;
 
-        ReadResult ReadOutputLine(std::string& output);
+        ReadResult ReadFromShell();
+        void FillOutput();
 
         void CloseFile();
     };
