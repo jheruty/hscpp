@@ -12,11 +12,11 @@
 namespace hscpp { namespace test
 {
 
-    const static fs::path ROOT_PATH = RootTestDirectory() / "unit-tests" / "files" / "test-file-watcher";
+    const static fs::path TEST_FILES_PATH = util::GetHscppTestPath() / "unit-tests" / "files" / "test-file-watcher";
 
     TEST_CASE("FileWatcher can monitor simple directory for changes.", "[FileWatcher]")
     {
-        fs::path assetsPath = ROOT_PATH / "simple-test";
+        fs::path assetsPath = TEST_FILES_PATH / "simple-test";
         fs::path sandboxPath = CALL(InitializeSandbox, assetsPath);
         fs::path testFilePath = sandboxPath / "src" / "Test.cpp";
         fs::path newFilePath = sandboxPath / "src" / "NewFile.cpp";

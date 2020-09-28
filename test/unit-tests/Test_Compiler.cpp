@@ -9,8 +9,8 @@
 namespace hscpp { namespace test
 {
 
-    const static fs::path ROOT_PATH = RootTestDirectory() / "unit-tests" / "files" / "test-compiler";
-    const static fs::path BUILD_DIRECTORY_PATH = RootTestDirectory() / "test-module-builds";
+    const static fs::path TEST_FILES_PATH = util::GetHscppTestPath() / "unit-tests" / "files" / "test-compiler";
+    const static fs::path BUILD_DIRECTORY_PATH = util::GetHscppTestPath() / "test-module-builds";
 
     static bool bCreatedBuildDirectory = false;
 
@@ -77,7 +77,7 @@ namespace hscpp { namespace test
 
     TEST_CASE("Compiler can compile a basic library.", "[Compiler]")
     {
-        fs::path assetsPath = ROOT_PATH / "simple-test";
+        fs::path assetsPath = TEST_FILES_PATH / "simple-test";
         fs::path sandboxPath = CALL(InitializeSandbox, assetsPath);
 
         fs::path includeDirectoryPath = sandboxPath;

@@ -5,19 +5,16 @@
 #include "catch/catch.hpp"
 #include "common/FileUtil.h"
 #include "common/Typedefs.h"
+
 #include "hscpp/Platform.h"
+#include "hscpp/Util.h"
 
 namespace hscpp { namespace test
 {
 
-    fs::path RootTestDirectory()
-    {
-        return fs::path(__FILE__).parent_path() / ".." / "..";
-    }
-
     fs::path CreateSandboxDirectory()
     {
-        fs::path rootDirectoryPath = RootTestDirectory();
+        fs::path rootDirectoryPath = util::GetHscppTestPath();
         fs::path sandboxPath = rootDirectoryPath / "sandbox";
 
         REQUIRE_NOTHROW(fs::remove_all(sandboxPath));

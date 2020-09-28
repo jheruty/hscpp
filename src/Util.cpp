@@ -148,6 +148,26 @@ namespace hscpp { namespace util
         return SOURCE_EXTENSIONS.find(extension.string()) != SOURCE_EXTENSIONS.end();
     }
 
+    fs::path GetHscppIncludePath()
+    {
+        return fs::path(HSCPP_ROOT_PATH) / "include";
+    }
+
+    fs::path GetHscppSourcePath()
+    {
+        return fs::path(HSCPP_ROOT_PATH) / "src";
+    }
+
+    fs::path GetHscppExamplesPath()
+    {
+        return fs::path(HSCPP_ROOT_PATH) / "examples";
+    }
+
+    fs::path GetHscppTestPath()
+    {
+        return fs::path(HSCPP_ROOT_PATH) / "test";
+    }
+
     void SortFileEvents(const std::vector<IFileWatcher::Event>& events,
                         std::vector<fs::path>& canonicalModifiedFilePaths,
                         std::vector<fs::path>& canonicalRemovedFilePaths)

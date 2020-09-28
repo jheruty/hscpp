@@ -1,11 +1,14 @@
 #include "catch/catch.hpp"
 #include "common/Common.h"
+
 #include "hscpp/FileParser.h"
+#include "hscpp/Util.h"
+
 
 namespace hscpp { namespace test
 {
 
-    const static fs::path ROOT_PATH = RootTestDirectory() / "unit-tests" / "files" / "test-file-parser";
+    const static fs::path TEST_FILES_PATH = util::GetHscppTestPath() / "unit-tests" / "files" / "test-file-parser";
 
     static void ValidateRequire(const FileParser::Require& require,
             FileParser::Require::Type type, const std::vector<fs::path>& paths)
@@ -18,7 +21,7 @@ namespace hscpp { namespace test
     {
         FileParser parser;
 
-        fs::path filePath= ROOT_PATH / "SimpleFile.cpp";
+        fs::path filePath= TEST_FILES_PATH / "SimpleFile.cpp";
         FileParser::ParseInfo info = parser.Parse(filePath);
 
         REQUIRE(info.filePath == filePath);
@@ -62,7 +65,7 @@ namespace hscpp { namespace test
     {
         FileParser parser;
 
-        fs::path filePath = ROOT_PATH / "SkipCommentsAndStrings.cpp";
+        fs::path filePath = TEST_FILES_PATH / "SkipCommentsAndStrings.cpp";
         FileParser::ParseInfo info = parser.Parse(filePath);
 
         REQUIRE(info.filePath == filePath);

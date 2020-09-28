@@ -27,6 +27,11 @@ namespace hscpp { namespace util
     bool IsHeaderFile(const fs::path& filePath);
     bool IsSourceFile(const fs::path& filePath);
 
+    fs::path GetHscppIncludePath();
+    fs::path GetHscppSourcePath();
+    fs::path GetHscppExamplesPath();
+    fs::path GetHscppTestPath();
+
     void SortFileEvents(const std::vector<IFileWatcher::Event>& events,
                         std::vector<fs::path>& canonicalModifiedFilePaths,
                         std::vector<fs::path>& canonicalRemovedFilePaths);

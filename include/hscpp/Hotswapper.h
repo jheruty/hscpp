@@ -155,9 +155,6 @@ namespace hscpp
 
         bool PerformRuntimeSwap();
 
-        fs::path GetHscppIncludePath();
-        fs::path GetHscppModuleSourcePath();
-
         bool CreateHscppTempDirectory();
         bool CreateBuildDirectory();
 
@@ -176,14 +173,6 @@ namespace hscpp
         template <typename T>
         std::vector<T> AsVector(std::unordered_map<int, T>& map);
     };
-
-    // Inline this function, so that __FILE__ is within the include directory.
-    inline fs::path Hotswapper::GetHscppIncludePath()
-    {
-        // __FILE__ returns "<path>/include/hscpp/Hotswapper.h". We want "<path>/include".
-        fs::path currentPath = __FILE__;
-        return currentPath.parent_path().parent_path();
-    }
 
     template <typename T>
     int Hotswapper::Add(const T& value, int& handle, std::unordered_map<int, T>& map)

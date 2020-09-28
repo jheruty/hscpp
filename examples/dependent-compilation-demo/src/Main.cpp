@@ -2,15 +2,18 @@
 
 #include "hscpp/Filesystem.h"
 #include "hscpp/Hotswapper.h"
+#include "hscpp/Util.h"
 #include "dependent-compilation-demo/Printer1.h"
 #include "dependent-compilation-demo/Printer2.h"
+
+const static hscpp::fs::path DEMO_PATH = hscpp::util::GetHscppExamplesPath() / "dependent-compilation-demo";
 
 int main()
 {
     hscpp::Hotswapper swapper;
 
-    auto srcPath = hscpp::fs::path(__FILE__).parent_path();
-    auto includePath = srcPath.parent_path() / "include";
+    auto srcPath = DEMO_PATH / "src";
+    auto includePath = DEMO_PATH / "include";
 
     swapper.AddSourceDirectory(srcPath);
     swapper.AddIncludeDirectory(includePath);

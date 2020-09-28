@@ -9,7 +9,6 @@
 namespace hscpp { namespace test
 {
 
-    fs::path RootTestDirectory();
     fs::path CreateSandboxDirectory();
 
     fs::path InitializeSandbox(const fs::path& assetsPath);

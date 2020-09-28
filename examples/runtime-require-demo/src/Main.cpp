@@ -4,15 +4,18 @@
 
 #include "hscpp/Filesystem.h"
 #include "hscpp/Hotswapper.h"
+#include "hscpp/Util.h"
 #include "hscpp-example-utils/MemoryManager.h"
 #include "runtime-require-demo/Printer.h"
+
+const static hscpp::fs::path DEMO_PATH = hscpp::util::GetHscppExamplesPath() / "runtime-require-demo";
 
 int main()
 {
     hscpp::Hotswapper swapper;
 
-    auto srcPath = hscpp::fs::path(__FILE__).parent_path();
-    auto includePath = srcPath.parent_path() / "include";
+    auto srcPath = DEMO_PATH / "src";
+    auto includePath = DEMO_PATH / "include";
 
     swapper.AddSourceDirectory(srcPath);
     swapper.AddIncludeDirectory(includePath);

@@ -3,11 +3,12 @@
 
 #include "hscpp/ICmdShell.h"
 #include "hscpp/Platform.h"
+#include "hscpp/Util.h"
 
 namespace hscpp { namespace test
 {
 
-    const static fs::path ROOT_PATH = RootTestDirectory() / "unit-tests" / "files" / "test-cmd-shell";
+    const static fs::path TEST_FILES_PATH = util::GetHscppTestPath() / "unit-tests" / "files" / "test-cmd-shell";
 
     static void RemoveBlankLines(std::vector<std::string>& vec)
     {
@@ -56,7 +57,7 @@ namespace hscpp { namespace test
 
     TEST_CASE("CmdShell can cat file in test directory that doesn't end with a newline.")
     {
-        fs::path assetsPath = ROOT_PATH / "cat-test";
+        fs::path assetsPath = TEST_FILES_PATH / "cat-test";
         fs::path catFilePath = assetsPath / "CatFile.txt";
         fs::path sandboxPath = CALL(InitializeSandbox, assetsPath);
 

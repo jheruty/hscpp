@@ -43,15 +43,15 @@ namespace hscpp
         {
             // Add hotswap-cpp include directory as a default include directory, since parts of the
             // library will need to be compiled into each new module.
-            Add(GetHscppIncludePath(), m_NextIncludeDirectoryHandle, m_IncludeDirectoryPathsByHandle);
+            Add(util::GetHscppIncludePath(), m_NextIncludeDirectoryHandle, m_IncludeDirectoryPathsByHandle);
         }
 
         if (config.bDefaultForceCompiledSourceFiles)
         {
             // Add Module.cpp as a default force-compiled source, it contains things like statics
             // needed by each compiled module.
-            Add(GetHscppModuleSourcePath(),
-                m_NextForceCompiledSourceFileHandle, m_ForceCompiledSourceFilePathsByHandle);
+            fs::path moduleFilePath = util::GetHscppSourcePath() / "module" / "Module.cpp";
+            Add(moduleFilePath,m_NextForceCompiledSourceFileHandle, m_ForceCompiledSourceFilePathsByHandle);
         }
 
         m_Preprocessor.SetFeatureManager(&m_FeatureManager);
@@ -462,11 +462,6 @@ namespace hscpp
         }
 
         return bResult;
-    }
-
-    fs::path Hotswapper::GetHscppModuleSourcePath()
-    {
-        return fs::path(__FILE__).parent_path() / "module" / "Module.cpp";
     }
 
     bool Hotswapper::CreateHscppTempDirectory()

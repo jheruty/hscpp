@@ -13,10 +13,13 @@
 
 #include "hscpp/Filesystem.h"
 #include "hscpp/Hotswapper.h"
+#include "hscpp/Util.h"
 #include "hscpp-example-utils/MemoryManager.h"
 #include "hscpp-example-utils/Ref.h"
 #include "imgui-demo/Widget.h"
 #include "imgui-demo/Globals.h"
+
+const static hscpp::fs::path DEMO_PATH = hscpp::util::GetHscppExamplesPath() / "imgui-demo";
 
 static bool SetupGlfw(GLFWwindow*& pWindow)
 {
@@ -77,10 +80,10 @@ int main(int, char**)
 {
     hscpp::Hotswapper swapper;
 
-    auto srcPath = hscpp::fs::path(__FILE__).parent_path();
-    auto includePath = srcPath.parent_path() / "include";
-    auto exampleUtilsIncludePath = srcPath.parent_path().parent_path() / "hscpp-example-utils" / "include";
-    auto imguiIncludePath = srcPath.parent_path().parent_path() / "lib" / "imgui";
+    auto srcPath = DEMO_PATH / "src";
+    auto includePath = DEMO_PATH / "include";
+    auto exampleUtilsIncludePath = hscpp::util::GetHscppExamplesPath() / "hscpp-example-utils" / "include";
+    auto imguiIncludePath = hscpp::util::GetHscppExamplesPath()  / "lib" / "imgui";
 
     swapper.AddSourceDirectory(srcPath);
     swapper.AddIncludeDirectory(includePath);
