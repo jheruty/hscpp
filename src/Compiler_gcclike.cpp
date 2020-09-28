@@ -1,5 +1,3 @@
-#include <libgen.h>
-
 #include <cassert>
 #include <locale>
 #include <fstream>
