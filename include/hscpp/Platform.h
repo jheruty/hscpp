@@ -45,7 +45,7 @@ typedef int TOsError;
         std::unique_ptr<ICompiler> CreateCompiler(const std::string& executable);
         std::unique_ptr<ICmdShell> CreateCmdShell();
 
-        std::vector<std::string> GetDefaultCompileOptions();
+        std::vector<std::string> GetDefaultCompileOptions(int cppStandard = HSCPP_CXX_STANDARD);
         std::vector<std::string> GetDefaultPreprocessorDefinitions();
 
         void* LoadModule(const fs::path& modulePath);

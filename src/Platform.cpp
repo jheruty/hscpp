@@ -75,11 +75,11 @@ namespace hscpp { namespace platform
         return std::unique_ptr<ICmdShell>(new CmdShell());
     }
 
-    static std::vector<std::string> GetDefaultCompileOptions_msvc()
+    static std::vector<std::string> GetDefaultCompileOptions_msvc(int cppStandard)
     {
         return {
             "/nologo", // Suppress cl startup banner.
-            "/std:c++17", // Use C++17 standard.
+            "/std:c++" + std::to_string(cppStandard), // C++ standard (ex. C++17).
             "/Z7", // Add full debugging information.
             "/FC", // Print full filepath in diagnostic messages.
             "/MP", // Build with multiple processes.
@@ -97,10 +97,10 @@ namespace hscpp { namespace platform
         };
     }
 
-    static std::vector<std::string> GetDefaultCompileOptions_gcclike()
+    static std::vector<std::string> GetDefaultCompileOptions_gcclike(int cppStandard)
     {
         return {
-            "-std=c++17", // Use C++17 standard.
+            "-std=c++" + std::to_string(cppStandard), // C++ standard (ex. C++17).
             "-shared", // Compile a shared library.
             "-fPIC", // Use position-independent code.
             "-fvisibility=hidden", // Hide code not explicitly made visible.
@@ -115,17 +115,17 @@ namespace hscpp { namespace platform
         };
     }
 
-    std::vector<std::string> GetDefaultCompileOptions()
+    std::vector<std::string> GetDefaultCompileOptions(int cppStandard /*= HSCPP_CXX_STANDARD*/)
     {
 #if defined(__clang__)
         // Using clang.
-        return GetDefaultCompileOptions_gcclike();
+        return GetDefaultCompileOptions_gcclike(cppStandard);
 #elif defined(__GNUC__) || defined(__GNUG__)
         // Using GCC.
-        return GetDefaultCompileOptions_gcclike();
+        return GetDefaultCompileOptions_gcclike(cppStandard);
 #elif defined(_MSC_VER)
         // Using MSVC.
-        return GetDefaultCompileOptions_msvc();
+        return GetDefaultCompileOptions_msvc(cppStandard);
 #endif
     }
 

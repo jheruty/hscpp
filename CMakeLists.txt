@@ -135,6 +135,10 @@ if (CMAKE_CXX_STANDARD LESS 17)
     target_compile_definitions(ghc_filesystem INTERFACE GHC_WIN_WSTRING_STRING_TYPE)
 endif()
 
+list(APPEND COMPILE_DEFINITIONS
+    HSCPP_CXX_STANDARD=${CMAKE_CXX_STANDARD}
+)
+
 add_library(hscpp ${SRC_FILES})
 
 target_include_directories(hscpp PUBLIC include)
