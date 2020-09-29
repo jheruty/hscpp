@@ -6,7 +6,6 @@ list(APPEND SRC_FILES
     src/module/Module.cpp
 
     src/Compiler.cpp
-    src/Compiler_gcclike.cpp
     src/CompilerCmdLine_gcc.cpp
     src/CompilerCmdLine_msvc.cpp
     src/CompilerInitializeTask_gcc.cpp
@@ -40,7 +39,6 @@ list(APPEND SRC_FILES
 
     include/hscpp/Callbacks.h
     include/hscpp/Compiler.h
-    include/hscpp/Compiler_gcclike.h
     include/hscpp/CompilerCmdLine_gcc.h
     include/hscpp/CompilerCmdLine_msvc.h
     include/hscpp/CompilerInitializeTask_gcc.h

@@ -21,7 +21,6 @@
 
 // Compiler code is cross-platform. For example, one may wish to run the clang compiler on Windows.
 // By default hscpp will choose the compiler that was used to compile this file.
-#include "hscpp/Compiler_gcclike.h"
 #include "hscpp/Compiler.h"
 #include "hscpp/CompilerInitializeTask_msvc.h"
 #include "hscpp/CompilerInitializeTask_gcc.h"
