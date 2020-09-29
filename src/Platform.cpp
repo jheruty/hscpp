@@ -53,20 +53,20 @@ namespace hscpp { namespace platform
 
 #if defined(__clang__)
         // Using clang on Windows, use clang-cl.
-        pInitializeTask = std::unique_ptr<ICmdShellTask>(new CompilerInitializeTask_gcc());
-        pCompilerCmdLine = std::unique_ptr<ICompilerCmdLine>(new CompilerCmdLine_msvc());
+        pInitializeTask = std::unique_ptr<ICmdShellTask>(new CompilerInitializeTask_gcc(config));
+        pCompilerCmdLine = std::unique_ptr<ICompilerCmdLine>(new CompilerCmdLine_msvc(config));
 #elif defined(_MSC_VER)
         // Using msvc on Windows.
         pInitializeTask = std::unique_ptr<ICmdShellTask>(new CompilerInitializeTask_msvc());
-        pCompilerCmdLine = std::unique_ptr<ICompilerCmdLine>(new CompilerCmdLine_msvc());
+        pCompilerCmdLine = std::unique_ptr<ICompilerCmdLine>(new CompilerCmdLine_msvc(config));
 #endif
 
 #elif defined(HSCPP_PLATFORM_UNIX)
 
 #if defined(__clang__) || defined(__GNUC__) || defined(__GNUG__)
         // Using clang or g++ on UNIX.
-        pInitializeTask = std::unique_ptr<ICmdShellTask>(new CompilerInitializeTask_gcc());
-        pCompilerCmdLine = std::unique_ptr<ICompilerCmdLine>(new CompilerCmdLine_gcc());
+        pInitializeTask = std::unique_ptr<ICmdShellTask>(new CompilerInitializeTask_gcc(config));
+        pCompilerCmdLine = std::unique_ptr<ICompilerCmdLine>(new CompilerCmdLine_gcc(config));
 #endif
 
 #endif
@@ -74,8 +74,8 @@ namespace hscpp { namespace platform
         if (pInitializeTask == nullptr || pCompilerCmdLine == nullptr)
         {
             log::Error() << HSCPP_LOG_PREFIX << "Could not deduce compiler, defaulting to gcc." << log::End();
-            pInitializeTask = std::unique_ptr<ICmdShellTask>(new CompilerInitializeTask_gcc());
-            pCompilerCmdLine = std::unique_ptr<ICompilerCmdLine>(new CompilerCmdLine_gcc());
+            pInitializeTask = std::unique_ptr<ICmdShellTask>(new CompilerInitializeTask_gcc(config));
+            pCompilerCmdLine = std::unique_ptr<ICompilerCmdLine>(new CompilerCmdLine_gcc(config));
         }
 
         return std::unique_ptr<ICompiler>(
@@ -117,7 +117,7 @@ namespace hscpp { namespace platform
         };
     }
 
-    static std::vector<std::string> GetDefaultCompileOptions_gcclike(int cppStandard)
+    static std::vector<std::string> GetDefaultCompileOptions_gcc(int cppStandard)
     {
         return {
             "-std=c++" + std::to_string(cppStandard), // C++ standard (ex. C++17).
@@ -133,16 +133,24 @@ namespace hscpp { namespace platform
 
     std::vector<std::string> GetDefaultCompileOptions(int cppStandard /*= HSCPP_CXX_STANDARD*/)
     {
-#if defined(__clang__)
-        // Using clang.
-        return GetDefaultCompileOptions_gcclike(cppStandard);
-#elif defined(__GNUC__) || defined(__GNUG__)
-        // Using GCC.
-        return GetDefaultCompileOptions_gcclike(cppStandard);
-#elif defined(_MSC_VER)
-        // Using MSVC.
+#if defined(HSCPP_PLATFORM_WIN32)
+
+#if defined(__clang__) || defined(_MSC_VER)
+        // On Windows, clang also uses msvc options with clang-cl.
         return GetDefaultCompileOptions_msvc(cppStandard);
 #endif
+
+#elif defined(HSCPP_PLATFORM_UNIX)
+
+        #if defined(__clang__) || defined(__GNUC__) || defined(__GNUG__)
+        // Using clang or g++ on UNIX.
+        return GetDefaultCompileOptions_gcc(cppStandard);
+#endif
+
+#endif
+
+        log::Error() << HSCPP_LOG_PREFIX << "Failed to deduce compile options. Defaulting to GCC." << log::End();
+        return GetDefaultCompileOptions_gcc(cppStandard);
     }
 
     //============================================================================

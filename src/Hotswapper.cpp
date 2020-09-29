@@ -18,6 +18,10 @@ namespace hscpp
         : Hotswapper(Config(), nullptr, nullptr)
     {}
 
+    Hotswapper::Hotswapper(const Config& config)
+        : Hotswapper(config, nullptr, nullptr)
+    {}
+
     Hotswapper::Hotswapper(const Config& config,
                            std::unique_ptr<IFileWatcher> pFileWatcher,
                            std::unique_ptr<ICompiler> pCompiler)
@@ -37,7 +41,7 @@ namespace hscpp
         }
         else
         {
-            m_pCompiler = platform::CreateCompiler();
+            m_pCompiler = platform::CreateCompiler(config.compiler);
         }
 
         for (const auto& option : config.compiler.defaultCompileOptions)

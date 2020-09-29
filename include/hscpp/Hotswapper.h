@@ -35,9 +35,10 @@ namespace hscpp
         };
 
         Hotswapper();
-        explicit Hotswapper(const Config& config,
-                            std::unique_ptr<IFileWatcher> pFileWatcher,
-                            std::unique_ptr<ICompiler> pCompiler);
+        explicit Hotswapper(const Config& config);
+        Hotswapper(const Config& config,
+                   std::unique_ptr<IFileWatcher> pFileWatcher,
+                   std::unique_ptr<ICompiler> pCompiler);
 
         AllocationResolver* GetAllocationResolver();
 

@@ -7,6 +7,10 @@
 namespace hscpp
 {
 
+    CompilerCmdLine_msvc::CompilerCmdLine_msvc(const CompilerConfig& config)
+        : m_Config(config)
+    {}
+
     bool CompilerCmdLine_msvc::GenerateCommandFile(const fs::path &commandFilePath,
                                                    const fs::path& moduleFilePath,
                                                    const ICompiler::Input &input)
@@ -77,9 +81,8 @@ namespace hscpp
             command << option << std::endl;
         }
 
-        // Print effective command line. The /MP flag causes the VS logo to print multiple times,
-        // so the default compile options use /nologo to suppress it.
-        log::Build() << "cl " << command.str() << log::End();
+        // Print effective command line.
+        log::Build() << m_Config.executable.u8string() << command.str() << log::End();
 
         // Write command file.
         commandFile << command.str();

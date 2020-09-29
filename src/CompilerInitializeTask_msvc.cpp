@@ -31,7 +31,7 @@ namespace hscpp
             case ICmdShell::TaskState::Done:
                 return HandleTaskComplete(static_cast<CompilerTask>(taskId));
             case ICmdShell::TaskState::Error:
-                log::Error() << HSCPP_LOG_PREFIX << "Compiler shell task '"
+                log::Error() << HSCPP_LOG_PREFIX << "CmdShell task '"
                              << taskId << "' resulted in error." << log::End();
                 return ICmdShellTask::TaskState::Failure;
             default:
@@ -95,8 +95,7 @@ namespace hscpp
         m_pCmdShell->StartTask(query, static_cast<int>(CompilerTask::GetVsPath));
     }
 
-    ICmdShellTask::TaskState CompilerInitializeTask_msvc::HandleTaskComplete(
-            CompilerInitializeTask_msvc::CompilerTask task)
+    ICmdShellTask::TaskState CompilerInitializeTask_msvc::HandleTaskComplete(CompilerTask task)
     {
         const std::vector<std::string>& output = m_pCmdShell->PeekTaskOutput();
 
