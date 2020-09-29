@@ -21,8 +21,12 @@
 
 // Compiler code is cross-platform. For example, one may wish to run the clang compiler on Windows.
 // By default hscpp will choose the compiler that was used to compile this file.
-#include "hscpp/Compiler_msvc.h"
 #include "hscpp/Compiler_gcclike.h"
+#include "hscpp/Compiler.h"
+#include "hscpp/CompilerInitializeTask_msvc.h"
+#include "hscpp/CompilerInitializeTask_gcc.h"
+#include "hscpp/CompilerCmdLine_msvc.h"
+#include "hscpp/CompilerCmdLine_gcc.h"
 
 namespace hscpp { namespace platform
 {
@@ -42,14 +46,18 @@ namespace hscpp { namespace platform
         return std::unique_ptr<ICompiler>(new Compiler_gcclike("g++"));
 #elif defined(_MSC_VER)
         // Use MSVC.
-        return std::unique_ptr<ICompiler>(new Compiler_msvc());
-#endif
+        auto pInitializeTask = std::unique_ptr<ICmdShellTask>(new CompilerInitializeTask_msvc());
+        auto pCompilerCmdLine = std::unique_ptr<ICompilerCmdLine>(new CompilerCmdLine_msvc());
+        return std::unique_ptr<ICompiler>(
+                new Compiler("cl", "", std::move(pInitializeTask), std::move(pCompilerCmdLine)));
+#else
         // Unknown compiler, default to clang.
         log::Warning() << HSCPP_LOG_PREFIX << "Unknown compiler, defaulting to clang." << log::End();
         return std::unique_ptr<ICompiler>(new Compiler_gcclike("clang++"));
+#endif
     }
 
-    std::unique_ptr<ICompiler> CreateCompiler(const std::string &executable)
+    std::unique_ptr<ICompiler> CreateCompiler(const std::string& executable)
     {
         if (executable.empty())
         {
@@ -61,8 +69,9 @@ namespace hscpp { namespace platform
         return std::unique_ptr<ICompiler>(new Compiler_gcclike(executable));
 #elif defined(_MSC_VER)
         // Use MSVC. The executable will be discovered dynamically in the Compiler.
-        log::Warning() << HSCPP_LOG_PREFIX << "MSVC compiler executable path cannot be set manually." << log::End();
-        return std::unique_ptr<ICompiler>(new Compiler_msvc());
+        auto pInitializeTask = std::unique_ptr<ICmdShellTask>(new CompilerInitializeTask_msvc());
+        auto pCompilerCmdLine = std::unique_ptr<ICompilerCmdLine>(new CompilerCmdLine_msvc());
+        return std::unique_ptr<ICompiler>(new Compiler(executable, "", std::move(pInitializeTask), std::move(pCompilerCmdLine)));
 #endif
 
         // Unknown compiler, use default...
@@ -108,10 +117,6 @@ namespace hscpp { namespace platform
 #if defined(HSCPP_DEBUG)
             "-g", // Add debug info.
 #endif
-
-//#if defined(HSCPP_PLATFORM_APPLE)
-//            "-l c++" // Link native C++ standard library.
-//#endif
         };
     }
 

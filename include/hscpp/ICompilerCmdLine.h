@@ -1,0 +1,14 @@
+#pragma once
+
+#include "hscpp/ICompiler.h"
+
+namespace hscpp
+{
+    class ICompilerCmdLine
+    {
+    public:
+        virtual bool GenerateCommandFile(const fs::path& commandFilePath,
+                                         const fs::path& moduleFilePath,
+                                         const ICompiler::Input& input) = 0;
+    };
+}

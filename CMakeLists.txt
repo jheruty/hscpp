@@ -5,8 +5,12 @@ project(hscpp)
 list(APPEND SRC_FILES
     src/module/Module.cpp
 
-    src/Compiler_msvc.cpp
+    src/Compiler.cpp
     src/Compiler_gcclike.cpp
+    src/CompilerCmdLine_gcc.cpp
+    src/CompilerCmdLine_msvc.cpp
+    src/CompilerInitializeTask_gcc.cpp
+    src/CompilerInitializeTask_msvc.cpp
     src/DependencyGraph.cpp
     src/Feature.cpp
     src/FeatureManager.cpp
@@ -33,9 +37,13 @@ list(APPEND SRC_FILES
     include/hscpp/module/SwapInfo.h
     include/hscpp/module/Tracker.h
 
-    include/hscpp/Compiler_msvc.h
-    include/hscpp/Compiler_gcclike.h
     include/hscpp/Callbacks.h
+    include/hscpp/Compiler.h
+    include/hscpp/Compiler_gcclike.h
+    include/hscpp/CompilerCmdLine_gcc.h
+    include/hscpp/CompilerCmdLine_msvc.h
+    include/hscpp/CompilerInitializeTask_gcc.h
+    include/hscpp/CompilerInitializeTask_msvc.h
     include/hscpp/DependencyGraph.h
     include/hscpp/Feature.h
     include/hscpp/FeatureManager.h
@@ -44,7 +52,10 @@ list(APPEND SRC_FILES
     include/hscpp/FsPathHasher.h
     include/hscpp/Hotswapper.h
     include/hscpp/ICmdShell.h
+    include/hscpp/ICmdShellTask.h
+    include/hscpp/ICmdShellTask.h
     include/hscpp/ICompiler.h
+    include/hscpp/ICompilerCmdLine.h
     include/hscpp/IFileWatcher.h
     include/hscpp/Log.h
     include/hscpp/ModuleManager.h
