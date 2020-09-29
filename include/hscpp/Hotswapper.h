@@ -17,6 +17,7 @@
 #include "hscpp/Callbacks.h"
 #include "hscpp/FeatureManager.h"
 #include "hscpp/FsPathHasher.h"
+#include "hscpp/Config.h"
 
 namespace hscpp
 {
@@ -24,23 +25,6 @@ namespace hscpp
     class Hotswapper
     {
     public:
-        struct Config
-        {
-            // Hscpp will attempt to set sensible defaults for:
-            //  - Compile options (ex. hiding symbols by default).
-            //  - Preprocessor definitions (ex. _WIN32).
-            //  - Include directories (ex. adding hscpp include/hscpp/module include directory).
-            //  - Force compiled sources (ex. force compilation of src/module/Module.cpp).
-            // This behavior can be disabled by setting these configuration booleans to false.
-            bool bDefaultCompileOptions = true;
-            bool bDefaultPreprocessorDefinitions = true;
-            bool bDefaultIncludeDirectories = true;
-            bool bDefaultForceCompiledSourceFiles = true;
-
-            // Equivalent to CMAKE_CXX_STANDARD.
-            int cppVersion = HSCPP_CXX_STANDARD;
-        };
-
         enum class UpdateResult
         {
             Idle,
@@ -51,7 +35,9 @@ namespace hscpp
         };
 
         Hotswapper();
-        explicit Hotswapper(const Config& config);
+        explicit Hotswapper(const Config& config,
+                            std::unique_ptr<IFileWatcher> pFileWatcher,
+                            std::unique_ptr<ICompiler> pCompiler);
 
         AllocationResolver* GetAllocationResolver();
 

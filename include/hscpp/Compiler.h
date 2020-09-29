@@ -12,8 +12,7 @@ namespace hscpp
     class Compiler : public ICompiler
     {
     public:
-        Compiler(const fs::path& executablePath,
-                 const fs::path& startupScriptPath,
+        Compiler(const CompilerConfig& config,
                  std::unique_ptr<ICmdShellTask> pInitializeTask,
                  std::unique_ptr<ICompilerCmdLine> pCompilerCmdLine);
 
@@ -43,8 +42,7 @@ namespace hscpp
         std::unique_ptr<ICmdShellTask> m_pInitializeTask;
         std::unique_ptr<ICompilerCmdLine> m_pCompilerCmdLine;
 
-        fs::path m_ExecutablePath;
-        fs::path m_StartupScriptPath;
+        CompilerConfig m_Config;
 
         void UpdateInitialization();
 

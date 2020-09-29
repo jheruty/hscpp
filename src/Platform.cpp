@@ -31,58 +31,69 @@
 namespace hscpp { namespace platform
 {
 
+    //============================================================================
+    // FileWatcher
+    //============================================================================
+
     std::unique_ptr<IFileWatcher> CreateFileWatcher()
     {
         return std::unique_ptr<IFileWatcher>(new FileWatcher());
     }
 
-    std::unique_ptr<ICompiler> CreateCompiler()
-    {
-#if defined(__clang__)
-        // Use clang.
-        return std::unique_ptr<ICompiler>(new Compiler_gcclike("clang++"));
-#elif defined(__GNUC__) || defined(__GNUG__)
-        // Use GCC.
-        return std::unique_ptr<ICompiler>(new Compiler_gcclike("g++"));
-#elif defined(_MSC_VER)
-        // Use MSVC.
-        auto pInitializeTask = std::unique_ptr<ICmdShellTask>(new CompilerInitializeTask_msvc());
-        auto pCompilerCmdLine = std::unique_ptr<ICompilerCmdLine>(new CompilerCmdLine_msvc());
-        return std::unique_ptr<ICompiler>(
-                new Compiler("cl", "", std::move(pInitializeTask), std::move(pCompilerCmdLine)));
-#else
-        // Unknown compiler, default to clang.
-        log::Warning() << HSCPP_LOG_PREFIX << "Unknown compiler, defaulting to clang." << log::End();
-        return std::unique_ptr<ICompiler>(new Compiler_gcclike("clang++"));
-#endif
-    }
+    //============================================================================
+    // Compiler
+    //============================================================================
 
-    std::unique_ptr<ICompiler> CreateCompiler(const std::string& executable)
+    std::unique_ptr<ICompiler> CreateCompiler(const CompilerConfig& config /* = CompilerConfig() */)
     {
-        if (executable.empty())
-        {
-            return CreateCompiler();
-        }
+        std::unique_ptr<ICmdShellTask> pInitializeTask;
+        std::unique_ptr<ICompilerCmdLine> pCompilerCmdLine;
+
+#if defined(HSCPP_PLATFORM_WIN32)
+
+#if defined(__clang__)
+        // Using clang on Windows, use clang-cl.
+        pInitializeTask = std::unique_ptr<ICmdShellTask>(new CompilerInitializeTask_gcc());
+        pCompilerCmdLine = std::unique_ptr<ICompilerCmdLine>(new CompilerCmdLine_msvc());
+#elif defined(_MSC_VER)
+        // Using msvc on Windows.
+        pInitializeTask = std::unique_ptr<ICmdShellTask>(new CompilerInitializeTask_msvc());
+        pCompilerCmdLine = std::unique_ptr<ICompilerCmdLine>(new CompilerCmdLine_msvc());
+#endif
+
+#elif defined(HSCPP_PLATFORM_UNIX)
 
 #if defined(__clang__) || defined(__GNUC__) || defined(__GNUG__)
-        // Use gcc-like compiler.
-        return std::unique_ptr<ICompiler>(new Compiler_gcclike(executable));
-#elif defined(_MSC_VER)
-        // Use MSVC. The executable will be discovered dynamically in the Compiler.
-        auto pInitializeTask = std::unique_ptr<ICmdShellTask>(new CompilerInitializeTask_msvc());
-        auto pCompilerCmdLine = std::unique_ptr<ICompilerCmdLine>(new CompilerCmdLine_msvc());
-        return std::unique_ptr<ICompiler>(new Compiler(executable, "", std::move(pInitializeTask), std::move(pCompilerCmdLine)));
+        // Using clang or g++ on UNIX.
+        pInitializeTask = std::unique_ptr<ICmdShellTask>(new CompilerInitializeTask_gcc());
+        pCompilerCmdLine = std::unique_ptr<ICompilerCmdLine>(new CompilerCmdLine_gcc());
 #endif
 
-        // Unknown compiler, use default...
-        return CreateCompiler();
+#endif
+
+        if (pInitializeTask == nullptr || pCompilerCmdLine == nullptr)
+        {
+            log::Error() << HSCPP_LOG_PREFIX << "Could not deduce compiler, defaulting to gcc." << log::End();
+            pInitializeTask = std::unique_ptr<ICmdShellTask>(new CompilerInitializeTask_gcc());
+            pCompilerCmdLine = std::unique_ptr<ICompilerCmdLine>(new CompilerCmdLine_gcc());
+        }
+
+        return std::unique_ptr<ICompiler>(
+                new Compiler(config, std::move(pInitializeTask), std::move(pCompilerCmdLine)));
     }
 
+    //============================================================================
+    // CmdShell
+    //============================================================================
 
-        std::unique_ptr<ICmdShell> CreateCmdShell()
+    std::unique_ptr<ICmdShell> CreateCmdShell()
     {
         return std::unique_ptr<ICmdShell>(new CmdShell());
     }
+
+    //============================================================================
+    // Compile Options
+    //============================================================================
 
     static std::vector<std::string> GetDefaultCompileOptions_msvc(int cppStandard)
     {
@@ -134,6 +145,10 @@ namespace hscpp { namespace platform
 #endif
     }
 
+    //============================================================================
+    // Preprocessor Definitions
+    //============================================================================
+
     static std::vector<std::string> GetDefaultPreprocessorDefinitions_win32()
     {
         return {
@@ -154,6 +169,43 @@ namespace hscpp { namespace platform
         return {};
 #endif
     }
+
+    //============================================================================
+    // Compiler Executable
+    //============================================================================
+
+    fs::path GetDefaultCompilerExecutable()
+    {
+#if defined(HSCPP_PLATFORM_WIN32)
+
+#if defined(__clang__)
+        // Using clang on Windows, use clang-cl.
+        return fs::path("clang-cl");
+#elif defined(_MSC_VER)
+        // Using msvc on Windows.
+        return fs::path("cl");
+#endif
+
+#elif defined(HSCPP_PLATFORM_UNIX)
+
+#if defined(__clang__)
+        // Using clang on UNIX.
+        return fs::path("clang++");
+#elif defined(__GNUC__) || defined(__GNUG__)
+        // Using g++ on UNIX.
+        return fs::path("g++");
+#endif
+
+#endif
+        log::Error() << HSCPP_LOG_PREFIX
+            << "Unable to deduce compiler executable. Defaulting to clang++." << log::End();
+
+        return fs::path("clang++");
+    }
+
+    //============================================================================
+    // Load Module
+    //============================================================================
 
     void* LoadModule(const fs::path& modulePath)
     {

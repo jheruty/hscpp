@@ -15,43 +15,49 @@ namespace hscpp
     const static std::string HSCPP_TEMP_DIRECTORY_NAME = "HSCPP_7c9279ff-25af-488c-a634-b6aa68f47a65";
 
     Hotswapper::Hotswapper()
-        : Hotswapper(Config())
+        : Hotswapper(Config(), nullptr, nullptr)
     {}
 
-    Hotswapper::Hotswapper(const Config& config /* = Config() */)
+    Hotswapper::Hotswapper(const Config& config,
+                           std::unique_ptr<IFileWatcher> pFileWatcher,
+                           std::unique_ptr<ICompiler> pCompiler)
     {
-        m_pFileWatcher = platform::CreateFileWatcher();
-        m_pCompiler = platform::CreateCompiler();
-
-        if (config.bDefaultCompileOptions)
+        if (pFileWatcher != nullptr)
         {
-            for (const auto &option : platform::GetDefaultCompileOptions(config.cppVersion))
-            {
-                Add(option, m_NextCompileOptionHandle, m_CompileOptionsByHandle);
-            }
+            m_pFileWatcher = std::move(pFileWatcher);
+        }
+        else
+        {
+            m_pFileWatcher = platform::CreateFileWatcher();
         }
 
-        if (config.bDefaultPreprocessorDefinitions)
+        if (pCompiler != nullptr)
         {
-            for (const auto& definition : platform::GetDefaultPreprocessorDefinitions())
-            {
-                Add(definition, m_NextPreprocessorDefinitionHandle, m_PreprocessorDefinitionsByHandle);
-            }
+            m_pCompiler = std::move(pCompiler);
+        }
+        else
+        {
+            m_pCompiler = platform::CreateCompiler();
         }
 
-        if (config.bDefaultIncludeDirectories)
+        for (const auto& option : config.compiler.defaultCompileOptions)
         {
-            // Add hotswap-cpp include directory as a default include directory, since parts of the
-            // library will need to be compiled into each new module.
-            Add(util::GetHscppIncludePath(), m_NextIncludeDirectoryHandle, m_IncludeDirectoryPathsByHandle);
+            Add(option, m_NextCompileOptionHandle, m_CompileOptionsByHandle);
         }
 
-        if (config.bDefaultForceCompiledSourceFiles)
+        for (const auto& definition : config.compiler.defaultPreprocessorDefinitions)
         {
-            // Add Module.cpp as a default force-compiled source, it contains things like statics
-            // needed by each compiled module.
-            fs::path moduleFilePath = util::GetHscppSourcePath() / "module" / "Module.cpp";
-            Add(moduleFilePath,m_NextForceCompiledSourceFileHandle, m_ForceCompiledSourceFilePathsByHandle);
+            Add(definition, m_NextPreprocessorDefinitionHandle, m_PreprocessorDefinitionsByHandle);
+        }
+
+        for (const auto& includeDirectory : config.compiler.defaultIncludeDirectories)
+        {
+            Add(includeDirectory, m_NextIncludeDirectoryHandle, m_IncludeDirectoryPathsByHandle);
+        }
+
+        for (const auto& sourceFilePath : config.compiler.defaultForceCompiledSourceFiles)
+        {
+            Add(sourceFilePath, m_NextForceCompiledSourceFileHandle, m_ForceCompiledSourceFilePathsByHandle);
         }
 
         m_Preprocessor.SetFeatureManager(&m_FeatureManager);

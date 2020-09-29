@@ -7,6 +7,7 @@
 #include "hscpp/ICompiler.h"
 #include "hscpp/ICmdShell.h"
 #include "hscpp/Filesystem.h"
+#include "hscpp/Config.h"
 
 #if defined(HSCPP_PLATFORM_WIN32)
 
@@ -41,12 +42,13 @@ typedef int TOsError;
     namespace platform
     {
         std::unique_ptr<IFileWatcher> CreateFileWatcher();
-        std::unique_ptr<ICompiler> CreateCompiler();
-        std::unique_ptr<ICompiler> CreateCompiler(const std::string& executable);
+        std::unique_ptr<ICompiler> CreateCompiler(const CompilerConfig& config = CompilerConfig());
         std::unique_ptr<ICmdShell> CreateCmdShell();
 
         std::vector<std::string> GetDefaultCompileOptions(int cppStandard = HSCPP_CXX_STANDARD);
         std::vector<std::string> GetDefaultPreprocessorDefinitions();
+
+        fs::path GetDefaultCompilerExecutable();
 
         void* LoadModule(const fs::path& modulePath);
 

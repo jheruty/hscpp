@@ -11,6 +11,7 @@ list(APPEND SRC_FILES
     src/CompilerCmdLine_msvc.cpp
     src/CompilerInitializeTask_gcc.cpp
     src/CompilerInitializeTask_msvc.cpp
+    src/Config.cpp
     src/DependencyGraph.cpp
     src/Feature.cpp
     src/FeatureManager.cpp
@@ -65,6 +66,8 @@ list(APPEND SRC_FILES
     include/hscpp/Util.h
 )
 
+list(APPEND COMPILE_OPTIONS)
+
 list(APPEND COMPILE_DEFINITIONS
     $<$<CONFIG:Debug>:HSCPP_DEBUG>
     HSCPP_ROOT_PATH="${CMAKE_CURRENT_SOURCE_DIR}"
@@ -80,6 +83,13 @@ if (WIN32)
         include/hscpp/CmdShell_win32.h
         include/hscpp/FileWatcher_win32.h
     )
+
+    if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+        list(APPEND COMPILE_OPTIONS
+            /EHa # Use standard exception handling (needs to be explicit for clang-cl).
+        )
+    endif()
+
 
     list(APPEND COMPILE_DEFINITIONS
         HSCPP_PLATFORM_WIN32
@@ -154,6 +164,7 @@ list(APPEND COMPILE_DEFINITIONS
 add_library(hscpp ${SRC_FILES})
 
 target_include_directories(hscpp PUBLIC include)
+target_compile_options(hscpp PUBLIC ${COMPILE_OPTIONS})
 target_compile_definitions(hscpp PUBLIC ${COMPILE_DEFINITIONS})
 target_link_libraries(hscpp ${LINK_LIBRARIES})
 
