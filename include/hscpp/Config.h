@@ -16,11 +16,6 @@ namespace hscpp
 
         fs::path executable;
         fs::path startupScript;
-
-        std::vector<std::string> defaultCompileOptions;
-        std::vector<std::string> defaultPreprocessorDefinitions;
-        std::vector<fs::path> defaultIncludeDirectories;
-        std::vector<fs::path> defaultForceCompiledSourceFiles;
     };
 
     struct FileWatcherConfig
@@ -30,7 +25,22 @@ namespace hscpp
 
     struct Config
     {
+        enum class Flag : uint64_t
+        {
+            None = 0,
+            NoDefaultCompileOptions = (1 << 0),
+            NoDefaultPreprocessorDefinitions = (1 << 1),
+            NoDefaultIncludeDirectories = (1 << 2),
+            NoDefaultForceCompiledSourceFiles = (1 << 3),
+        };
+
         CompilerConfig compiler;
         FileWatcherConfig fileWatcher;
+
+        Flag flags = Flag::None;
     };
+
+    Config::Flag operator|(Config::Flag lhs, Config::Flag rhs);
+    Config::Flag operator|=(Config::Flag& lhs, Config::Flag rhs);
+    bool operator&(Config::Flag lhs, Config::Flag rhs);
 }

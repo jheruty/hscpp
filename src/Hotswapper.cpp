@@ -44,24 +44,33 @@ namespace hscpp
             m_pCompiler = platform::CreateCompiler(config.compiler);
         }
 
-        for (const auto& option : config.compiler.defaultCompileOptions)
+        if (!(config.flags & Config::Flag::NoDefaultCompileOptions))
         {
-            Add(option, m_NextCompileOptionHandle, m_CompileOptionsByHandle);
+            for (const auto &option : platform::GetDefaultCompileOptions())
+            {
+                Add(option, m_NextCompileOptionHandle, m_CompileOptionsByHandle);
+            }
         }
 
-        for (const auto& definition : config.compiler.defaultPreprocessorDefinitions)
+        if (!(config.flags & Config::Flag::NoDefaultPreprocessorDefinitions))
         {
-            Add(definition, m_NextPreprocessorDefinitionHandle, m_PreprocessorDefinitionsByHandle);
+            for (const auto &definition : platform::GetDefaultPreprocessorDefinitions())
+            {
+                Add(definition, m_NextPreprocessorDefinitionHandle, m_PreprocessorDefinitionsByHandle);
+            }
         }
 
-        for (const auto& includeDirectory : config.compiler.defaultIncludeDirectories)
+        if (!(config.flags & Config::Flag::NoDefaultIncludeDirectories))
         {
-            Add(includeDirectory, m_NextIncludeDirectoryHandle, m_IncludeDirectoryPathsByHandle);
+            // Add hotswap-cpp include directory as a default include directory, since parts of the
+            // library will need to be compiled into each new module.
+            Add(util::GetHscppIncludePath(), m_NextIncludeDirectoryHandle, m_IncludeDirectoryPathsByHandle);
         }
 
-        for (const auto& sourceFilePath : config.compiler.defaultForceCompiledSourceFiles)
+        if (!(config.flags & Config::Flag::NoDefaultForceCompiledSourceFiles))
         {
-            Add(sourceFilePath, m_NextForceCompiledSourceFileHandle, m_ForceCompiledSourceFilePathsByHandle);
+            fs::path moduleFilePath = util::GetHscppSourcePath() / "module" / "Module.cpp";
+            Add(moduleFilePath, m_NextForceCompiledSourceFileHandle, m_ForceCompiledSourceFilePathsByHandle);
         }
 
         m_Preprocessor.SetFeatureManager(&m_FeatureManager);
