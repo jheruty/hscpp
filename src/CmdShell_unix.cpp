@@ -1,9 +1,11 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <poll.h>
+#include <sys/types.h>
+#include <signal.h>
 
 #include <cstdio>
-#include <assert.h>
+#include <cassert>
 
 #include "hscpp/CmdShell_unix.h"
 #include "hscpp/Log.h"
@@ -11,46 +13,83 @@
 namespace hscpp
 {
 
+    // Unique key we can use to verify a task is done running.
+    const static std::string TASK_COMPLETION_KEY = "\"__hscpp_task_complete(fbdd766e-fa9e-4b12-9304-c9e7af59f44c)__\"";
+
+    CmdShell::~CmdShell()
+    {
+        if (m_ShellPid != -1)
+        {
+            if (kill(m_ShellPid, SIGKILL) == -1)
+            {
+                log::Warning() << HSCPP_LOG_PREFIX << "Failed to terminate CmdShell process. "
+                               << log::LastOsError() << log::End();
+            }
+        }
+    }
+
     bool CmdShell::CreateCmdProcess()
     {
-        // popen will be called on the start of a new task.
+        if (pipe(m_ReadPipe) == -1)
+        {
+            log::Error() << HSCPP_LOG_PREFIX << "Failed to create read pipe." << log::End();
+            return false;
+        }
+
+        if (pipe(m_WritePipe) == -1)
+        {
+            log::Error() << HSCPP_LOG_PREFIX << "Failed to create read pipe." << log::End();
+            return false;
+        }
+
+        m_ShellPid = fork();
+        if (m_ShellPid == -1)
+        {
+            log::Error() << HSCPP_LOG_PREFIX << "Failed to fork subprocess." << log::End();
+            return false;
+        }
+
+        if (m_ShellPid == 0)
+        {
+            // This is the child process. Link up the read/write pipes with stdin/stdout.
+            dup2(m_WritePipe[0], STDIN_FILENO);
+            dup2(m_ReadPipe[1], STDOUT_FILENO);
+            dup2(m_ReadPipe[1], STDERR_FILENO);
+
+            execl("/bin/sh", "sh", nullptr);
+
+            // Should never get here.
+            exit(1);
+        }
+
+        close(m_WritePipe[0]);
+        close(m_ReadPipe[1]);
+
         return true;
     }
 
     void CmdShell::StartTask(const std::string& command, int taskId)
     {
+        bool bSuccess = true;
+
+        bSuccess &= SendCommand(command);
+
+        // Single quote to avoid interpolation.
+        // Prefix with newline to ensure it ends up on its own line.
+        bSuccess &= SendCommand("echo '\n" + TASK_COMPLETION_KEY + "'");
+
+        if (!bSuccess)
+        {
+            m_TaskState = TaskState::Error;
+        }
+        else
+        {
+            m_TaskState = TaskState::Running;
+        }
+
         m_TaskId = taskId;
         m_TaskOutput.clear();
         m_LeftoverCmdOutput.clear();
-
-        // Stop any running command.
-        if (m_pFile != nullptr)
-        {
-            CloseFile();
-        }
-
-        // Start the command.
-        m_pFile = popen(command.c_str(), "r");
-        if (m_pFile == nullptr)
-        {
-            log::Error() << HSCPP_LOG_PREFIX << "Failed to call popen with command '"
-                << command << "'. " << log::LastOsError() << log::End();
-
-            m_TaskState = TaskState::Error;
-            return;
-        }
-
-        // Get FILE* fd.
-        m_FileFd = fileno(m_pFile);
-        if (m_FileFd == -1)
-        {
-            log::Error() << "Failed to get popen fd. " << log::LastOsError() << log::End();
-
-            m_TaskState = TaskState::Error;
-            return;
-        }
-
-        m_TaskState = TaskState::Running;
     }
 
     ICmdShell::TaskState CmdShell::GetTaskState()
@@ -73,22 +112,50 @@ namespace hscpp
         }
 
         // Read as many output lines as possible from the cmd subprocess.
-        ReadResult result = ReadFromShell();
-        while (result == ReadResult::SuccessfulRead)
+        bool bDoneReading = false;
+        do
         {
-            result = ReadFromShell();
+            std::string line;
+            if (!ReadOutputLine(line))
+            {
+                m_TaskState = TaskState::Idle;
+                return TaskState::Error;
+            }
+
+            if (line.empty())
+            {
+                bDoneReading = true;
+            }
+            else
+            {
+                // Remove trailing /n.
+                if (line.size() >= 1
+                    && line.at(line.size() - 1) == '\n')
+                {
+                    line.pop_back();
+                }
+
+                m_TaskOutput.push_back(line);
+            }
+        } while (!bDoneReading);
+
+        // Check if the completion key is in the output. If so, our second 'echo' command has run,
+        // so we know the task is complete.
+        int iCompletionKey = -1;
+        for (size_t i = 0; i < m_TaskOutput.size(); ++i)
+        {
+            if (m_TaskOutput.at(i).find(TASK_COMPLETION_KEY) != std::string::npos)
+            {
+                iCompletionKey = static_cast<int>(i);
+                break;
+            }
         }
 
-        // Fill out m_TaskOutput.
-        FillOutput();
+        if (iCompletionKey != -1)
+        {
+            // Remove completion key from task output.
+            m_TaskOutput.resize(iCompletionKey);
 
-        if (result == ReadResult::Error)
-        {
-            m_TaskState = TaskState::Idle;
-            return TaskState::Error;
-        }
-        else if (result == ReadResult::Done)
-        {
             m_TaskState = TaskState::Idle;
             return TaskState::Done;
         }
@@ -101,80 +168,78 @@ namespace hscpp
         return m_TaskOutput;
     }
 
-    CmdShell::ReadResult CmdShell::ReadFromShell()
+    bool CmdShell::SendCommand(const std::string& command)
     {
-        // Only read from file if our leftover buffer does not contain a newline yet.
-        const int nFds = 1;
+        // Terminate command with newline to simulate pressing 'Enter'.
+        std::string newlineCommand = command + "\n";
 
-        struct pollfd fds[nFds];
-        fds->fd = m_FileFd;
-        fds->events = POLLIN;
-
-        int ret = poll(fds, nFds, 0);
-        if (ret > 0)
+        if (m_ShellPid == -1)
         {
-            for (int i = 0; i < nFds; ++i)
+            log::Error() << HSCPP_LOG_PREFIX << "CmdShell process is not running." << log::End();
+            return false;
+        }
+
+        int offset = 0;
+        ssize_t nBytesToWrite = static_cast<ssize_t>(newlineCommand.size());
+        const char* pStr = newlineCommand.c_str();
+
+        while (nBytesToWrite > 0)
+        {
+            ssize_t nBytesWritten = write(m_WritePipe[1], pStr + offset, nBytesToWrite);
+            if (nBytesWritten == -1)
             {
-                if (fds[i].events & POLLIN)
+                log::Error() << HSCPP_LOG_PREFIX << "Failed to write to CmdShell process. "
+                             << log::LastOsError() << log::End();
+                return false;
+            }
+
+            offset += nBytesWritten;
+            nBytesToWrite -= nBytesWritten;
+        }
+
+        return true;
+    }
+
+    bool CmdShell::ReadOutputLine(std::string& output)
+    {
+        // Only read from process if our leftover buffer does not contain a newline yet.
+        size_t iNewline = m_LeftoverCmdOutput.find("\n");
+        if (iNewline == std::string::npos)
+        {
+            const int nFds = 1;
+
+            struct pollfd fds[nFds];
+            fds->fd = m_ReadPipe[0];
+            fds->events = POLLIN;
+
+            int ret = poll(fds, nFds, 0);
+            if (ret > 0)
+            {
+                for (int i = 0; i < nFds; ++i)
                 {
                     ssize_t nBytesRead = read(fds[i].fd, m_ReadBuffer.data(), m_ReadBuffer.size());
-
-                    if (nBytesRead > 0)
+                    if (nBytesRead == -1)
                     {
-                        m_LeftoverCmdOutput += std::string(m_ReadBuffer.data(), nBytesRead);
-                        return ReadResult::SuccessfulRead;
-                    }
-                    else if (nBytesRead == 0)
-                    {
-                        // read returns 0, signaling EOF and that command is done executing.
-                        CloseFile();
-
-                        // If output does not end with a newline, append one manually, so that
-                        // FillOutput chunks output correctly.
-                        if (!m_LeftoverCmdOutput.empty()
-                            && m_LeftoverCmdOutput.at(m_LeftoverCmdOutput.size() - 1) != '\n')
-                        {
-                            m_LeftoverCmdOutput += "\n";
-                        }
-
-                        return ReadResult::Done;
-                    }
-                    else if (nBytesRead == -1)
-                    {
-                        log::Error() << HSCPP_LOG_PREFIX << "Failed to read file fd. "
+                        log::Error() << HSCPP_LOG_PREFIX << "Failed to read from CmdShell process. "
                                      << log::LastOsError() << log::End();
-                        return ReadResult::Error;
+                        return false;
                     }
+
+                    m_LeftoverCmdOutput += std::string(m_ReadBuffer.data(), nBytesRead);
                 }
             }
         }
 
-        return ReadResult::NoData;
-    }
-
-    void CmdShell::FillOutput()
-    {
-        // Get string up to next newline; do not include newline in output.
-        size_t iNewline = m_LeftoverCmdOutput.find("\n");
-        while (iNewline != std::string::npos)
+        // Get string up to next newline.
+        iNewline = m_LeftoverCmdOutput.find("\n");
+        if (iNewline != std::string::npos)
         {
-            m_TaskOutput.push_back(m_LeftoverCmdOutput.substr(0, iNewline));
+            output = m_LeftoverCmdOutput.substr(0, iNewline + 1);
             m_LeftoverCmdOutput = m_LeftoverCmdOutput.substr(iNewline + 1);
-
-            iNewline = m_LeftoverCmdOutput.find("\n");
-        }
-    }
-
-    void CmdShell::CloseFile()
-    {
-        if (pclose(m_pFile) == -1)
-        {
-            log::Warning() << HSCPP_LOG_PREFIX << "Failed to call pclose. "
-                << log::LastOsError() << log::End();
         }
 
-        m_pFile = nullptr;
-        m_FileFd = -1;
+        // Success, note that no data may have been available, in which case output is empty.
+        return true;
     }
 
 }

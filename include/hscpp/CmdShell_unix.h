@@ -10,6 +10,8 @@ namespace hscpp
     class CmdShell : public ICmdShell
     {
     public:
+        ~CmdShell();
+
         bool CreateCmdProcess() override;
 
         void StartTask(const std::string& command, int taskId) override;
@@ -20,13 +22,9 @@ namespace hscpp
         const std::vector<std::string>& PeekTaskOutput() override;
 
     private:
-        enum class ReadResult
-        {
-            SuccessfulRead,
-            NoData,
-            Error,
-            Done,
-        };
+        int m_ShellPid = -1;
+        int m_ReadPipe[2] = { -1, -1 };
+        int m_WritePipe[2] = { -1, -1 };
 
         std::array<char, 512> m_ReadBuffer = { 0 };
         std::string m_LeftoverCmdOutput;
@@ -35,13 +33,8 @@ namespace hscpp
         int m_TaskId = -1;
         std::vector<std::string> m_TaskOutput;
 
-        FILE* m_pFile = nullptr;
-        int m_FileFd = -1;
-
-        ReadResult ReadFromShell();
-        void FillOutput();
-
-        void CloseFile();
+        bool SendCommand(const std::string& command);
+        bool ReadOutputLine(std::string& output);
     };
 
 }

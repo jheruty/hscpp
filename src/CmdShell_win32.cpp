@@ -96,7 +96,9 @@ namespace hscpp
         bool bSuccess = true;
 
         bSuccess &= SendCommand(command);
-        bSuccess &= SendCommand("echo " + TASK_COMPLETION_KEY);
+
+        // Prefix with newline to ensure it ends up on its own line.
+        bSuccess &= SendCommand("echo \"\n" + TASK_COMPLETION_KEY + "\"");
 
         if (!bSuccess)
         {
@@ -232,7 +234,7 @@ namespace hscpp
             return false;
         }
 
-        // Only read from file if our leftover buffer does not contain a newline yet.
+        // Only read from process if our leftover buffer does not contain a newline yet.
         size_t iNewline = m_LeftoverCmdOutput.find("\n");
         if (iNewline == std::string::npos)
         {

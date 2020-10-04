@@ -25,27 +25,15 @@ namespace hscpp { namespace test
         }
     }
 
-    TEST_CASE("CmdShell can perform a basic echo.", "[CmdShell]")
+    static void WaitForCmdDone(ICmdShell* pCmdShell, int expectedTaskId)
     {
-        std::unique_ptr<ICmdShell> pCmdShell = platform::CreateCmdShell();
-
-        REQUIRE(pCmdShell->CreateCmdProcess());
-
-        int taskId = 0;
-        pCmdShell->StartTask("echo hello", taskId);
-
         auto cb = [&](Milliseconds timeElapsed){
+            int taskId = 0;
             ICmdShell::TaskState taskState = pCmdShell->Update(taskId);
-            REQUIRE(taskId == 0);
+            REQUIRE(taskId == expectedTaskId);
 
             if (taskState == ICmdShell::TaskState::Done)
             {
-                std::vector<std::string> output = pCmdShell->PeekTaskOutput();
-                RemoveBlankLines(output);
-
-                REQUIRE(output.size() == 1);
-                REQUIRE(output.at(0) == "hello");
-
                 return UpdateLoop::Done;
             }
 
@@ -55,6 +43,23 @@ namespace hscpp { namespace test
         CALL(StartUpdateLoop, Milliseconds(5000), Milliseconds(10), cb);
     }
 
+    TEST_CASE("CmdShell can perform a basic echo.", "[CmdShell]")
+    {
+        std::unique_ptr<ICmdShell> pCmdShell = platform::CreateCmdShell();
+        REQUIRE(pCmdShell->CreateCmdProcess());
+
+        int taskId = 0;
+        pCmdShell->StartTask("echo hello", taskId);
+
+        CALL(WaitForCmdDone, pCmdShell.get(), taskId);
+
+        std::vector<std::string> output = pCmdShell->PeekTaskOutput();
+        RemoveBlankLines(output);
+
+        REQUIRE(output.size() == 1);
+        REQUIRE(output.at(0) == "hello");
+    }
+
     TEST_CASE("CmdShell can cat file in test directory that doesn't end with a newline.")
     {
         fs::path assetsPath = TEST_FILES_PATH / "cat-test";
@@ -62,7 +67,6 @@ namespace hscpp { namespace test
         fs::path sandboxPath = CALL(InitializeSandbox, assetsPath);
 
         std::unique_ptr<ICmdShell> pCmdShell = platform::CreateCmdShell();
-
         REQUIRE(pCmdShell->CreateCmdProcess());
 
         std::string catExecutable;
@@ -76,25 +80,51 @@ namespace hscpp { namespace test
         int taskId = 0;
         pCmdShell->StartTask(cmd, taskId);
 
-        auto cb = [&](Milliseconds timeElapsed){
-            ICmdShell::TaskState taskState = pCmdShell->Update(taskId);
-            REQUIRE(taskId == 0);
+        CALL(WaitForCmdDone, pCmdShell.get(), taskId);
 
-            if (taskState == ICmdShell::TaskState::Done)
-            {
-                std::vector<std::string> output = pCmdShell->PeekTaskOutput();
-                RemoveBlankLines(output);
+        std::vector<std::string> output = pCmdShell->PeekTaskOutput();
+        RemoveBlankLines(output);
 
-                REQUIRE(output.size() == 1);
-                REQUIRE(output.at(0) == "Hello, CmdShell!");
+        REQUIRE(output.size() == 1);
+        REQUIRE(output.at(0) == "Hello, CmdShell!");
+    }
 
-                return UpdateLoop::Done;
-            }
+    TEST_CASE("CmdShell variables are persistent.")
+    {
+        std::unique_ptr<ICmdShell> pCmdShell = platform::CreateCmdShell();
+        REQUIRE(pCmdShell->CreateCmdProcess());
 
-            return UpdateLoop::Running;
-        };
+        // Validate that echoing variable is empty.
+        int taskId = 28;
+        pCmdShell->StartTask("echo $HSCPP_VAR", taskId);
 
-        CALL(StartUpdateLoop, Milliseconds(5000), Milliseconds(10), cb);
+        CALL(WaitForCmdDone, pCmdShell.get(), taskId);
+
+        std::vector<std::string> output = pCmdShell->PeekTaskOutput();
+        RemoveBlankLines(output);
+
+        REQUIRE(output.empty());
+
+        // Set variable.
+        pCmdShell->StartTask("HSCPP_VAR=HscppVar", taskId);
+
+        CALL(WaitForCmdDone, pCmdShell.get(), taskId);
+
+        output = pCmdShell->PeekTaskOutput();
+        RemoveBlankLines(output);
+
+        REQUIRE(output.empty());
+
+        // Validate that variable is set.
+        pCmdShell->StartTask("echo $HSCPP_VAR", taskId);
+
+        CALL(WaitForCmdDone, pCmdShell.get(), taskId);
+
+        output = pCmdShell->PeekTaskOutput();
+        RemoveBlankLines(output);
+
+        REQUIRE(output.size() == 1);
+        REQUIRE(output.at(0) == "HscppVar");
     }
 
 }}
