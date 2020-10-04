@@ -96,9 +96,7 @@ namespace hscpp
         bool bSuccess = true;
 
         bSuccess &= SendCommand(command);
-
-        // Prefix with newline to ensure it ends up on its own line.
-        bSuccess &= SendCommand("echo \"\n" + TASK_COMPLETION_KEY + "\"");
+        bSuccess &= SendCommand("echo \"" + TASK_COMPLETION_KEY + "\"");
 
         if (!bSuccess)
         {
