@@ -34,7 +34,7 @@ int main()
 #ifdef _DEBUG
     swapper.SetHscppRequireVariable("PROJECT_CONFIGURATION", "Debug");
 #else
-    swapper.SetHscppRequireVariable("PROJECT_CONFIGURATION", "Release");
+    swapper.SetVar("PROJECT_CONFIGURATION", "Release");
 #endif
 
     swapper.AddPreprocessorDefinition("PREPROCESSOR_DEMO");

@@ -30,6 +30,17 @@ namespace hscpp
         return info;
     }
 
+    std::vector<FileParser::ParseInfo> FileParser::Parse(const std::vector<fs::path>& filePaths)
+    {
+        std::vector<ParseInfo> infos;
+        for (const auto& filePath : filePaths)
+        {
+            infos.push_back(Parse(filePath));
+        }
+
+        return infos;
+    }
+
     void FileParser::Parse(ParseInfo& info)
     {
         // Barebones lexer/parser. There are very few things we need to match, so a complex parser

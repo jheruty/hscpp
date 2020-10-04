@@ -20,9 +20,9 @@ list(APPEND SRC_FILES
     src/Log.cpp
     src/ModuleManager.cpp
     src/Platform.cpp
-    src/Preprocessor.cpp
     src/ProtectedFunction.cpp
     src/Util.cpp
+    src/VarManager.cpp
 
     include/hscpp/module/AllocationResolver.h
     include/hscpp/module/CompileTimeString.h
@@ -59,9 +59,9 @@ list(APPEND SRC_FILES
     include/hscpp/Log.h
     include/hscpp/ModuleManager.h
     include/hscpp/Platform.h
-    include/hscpp/Preprocessor.h
     include/hscpp/ProtectedFunction.h
     include/hscpp/Util.h
+    include/hscpp/VarManager.h
 )
 
 list(APPEND COMPILE_OPTIONS)

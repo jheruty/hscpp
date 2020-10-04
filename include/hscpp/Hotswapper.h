@@ -7,7 +7,6 @@
 
 #include "hscpp/Platform.h"
 #include "hscpp/IFileWatcher.h"
-#include "hscpp/Preprocessor.h"
 #include "hscpp/ICompiler.h"
 #include "hscpp/ModuleManager.h"
 #include "hscpp/module/AllocationResolver.h"
@@ -18,6 +17,8 @@
 #include "hscpp/FeatureManager.h"
 #include "hscpp/FsPathHasher.h"
 #include "hscpp/Config.h"
+#include "hscpp/VarManager.h"
+#include "hscpp/DependencyGraph.h"
 
 namespace hscpp
 {
@@ -97,7 +98,8 @@ namespace hscpp
         void EnumerateLinkOptions(const std::function<void(int handle, const std::string& option)>& cb);
         void ClearLinkOptions();
 
-        void SetHscppRequireVariable(const std::string& name, const std::string& val);
+        void SetVar(const std::string& name, const std::string& val);
+        bool RemoveVar(const std::string& name);
 
     private:
         fs::path m_HscppTempDirectoryPath;
@@ -121,24 +123,26 @@ namespace hscpp
 
         std::unordered_set<fs::path, FsPathHasher> m_QueuedSourceFilePaths;
 
-        std::unordered_map<std::string, std::string> m_HscppRequireVariables;
-
         std::unique_ptr<IFileWatcher> m_pFileWatcher;
         std::vector<IFileWatcher::Event> m_FileEvents;
 
-        Preprocessor m_Preprocessor;
         std::unique_ptr<ICompiler> m_pCompiler;
         ModuleManager m_ModuleManager;
         FeatureManager m_FeatureManager;
+        DependencyGraph m_DependencyGraph;
+        VarManager m_VarManager;
+        FileParser m_FileParser;
 
         AllocationResolver m_AllocationResolver;
         Callbacks m_Callbacks;
 
-        Preprocessor::Input CreatePreprocessorInput(const std::vector<fs::path>& sourceFilePaths);
-        Preprocessor::Output Preprocess(Preprocessor::Input& preprocessorInput);
-
-        ICompiler::Input CreateCompilerInput(const Preprocessor::Output& preprocessorOutput);
         bool StartCompile(ICompiler::Input& compilerInput);
+
+        //
+        ICompiler::Input CreateCompilerInput(const std::vector<fs::path>& sourceFilePaths);
+        void Preprocess(ICompiler::Input& input);
+        void Deduplicate(ICompiler::Input& input);
+        //
 
         bool PerformRuntimeSwap();
 

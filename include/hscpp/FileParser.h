@@ -34,6 +34,7 @@ namespace hscpp
         };
 
         ParseInfo Parse(const fs::path& filePath);
+        std::vector<ParseInfo> Parse(const std::vector<fs::path>& filePaths);
 
     private:
         fs::path m_FilePath;

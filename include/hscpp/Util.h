@@ -2,6 +2,8 @@
 
 #include <string>
 #include <vector>
+#include <algorithm>
+#include <unordered_set>
 
 #include "hscpp/Platform.h"
 
@@ -35,5 +37,20 @@ namespace hscpp { namespace util
     void SortFileEvents(const std::vector<IFileWatcher::Event>& events,
                         std::vector<fs::path>& canonicalModifiedFilePaths,
                         std::vector<fs::path>& canonicalRemovedFilePaths);
+
+    template <typename T, typename THasher=std::hash<T>>
+    void Deduplicate(std::vector<T>& input)
+    {
+        std::unordered_set<T, THasher> seen;
+        input.erase(std::remove_if(input.begin(), input.end(), [&seen](const T& val){
+            if (seen.find(val) != seen.end())
+            {
+                return true;
+            }
+
+            seen.insert(val);
+            return false;
+        }), input.end());
+    }
 
 }}
