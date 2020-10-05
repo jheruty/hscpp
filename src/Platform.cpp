@@ -251,7 +251,7 @@ namespace hscpp { namespace platform
     void WriteDebugString(const std::wstring& str)
     {
 #if defined(HSCPP_PLATFORM_WIN32)
-        OutputDebugStringW(stream.str().c_str());
+        OutputDebugStringW(str.c_str());
 #endif
     }
 

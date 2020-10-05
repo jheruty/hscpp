@@ -228,7 +228,7 @@ namespace hscpp
             return ICmdShellTask::TaskState::Failure;
         }
 
-		if (!StartVcVarsAllTask(bestVsPath, "VC\\Auxiliary\\Build\\vcvarsall.bat"))
+		if (!StartVcVarsAllTask(bestVsPath, "VC/Auxiliary/Build"))
 		{
 			log::Error() << HSCPP_LOG_PREFIX << "Failed to start vcvarsall task." << log::End();
 			return ICmdShellTask::TaskState::Failure;

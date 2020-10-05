@@ -124,7 +124,7 @@ namespace hscpp { namespace log
     {
         // Direct logs to debugger output.
         return Stream(s_bLogBuild, [](const std::wstringstream& stream) {
-            platform::WriteDebugString(stream.str().c_str());
+            platform::WriteDebugString(stream.str());
         });
     }
 

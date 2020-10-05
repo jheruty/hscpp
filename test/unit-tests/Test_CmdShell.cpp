@@ -154,7 +154,7 @@ namespace hscpp { namespace test
         REQUIRE(pCmdShell->CreateCmdProcess());
 
         int taskId = 2987;
-        pCmdShell->StartTask("while true", taskId);
+        pCmdShell->StartTask("command_that_will_not_succeed 123454321", taskId);
 
         ICmdShell::TaskState taskState = ICmdShell::TaskState::Idle;
 
