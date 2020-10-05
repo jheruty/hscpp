@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <algorithm>
 
 #include "hscpp/module/CompileTimeString.h"
 #include "hscpp/module/Constructors.h"

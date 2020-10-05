@@ -17,7 +17,7 @@ namespace hscpp
 
     bool FileWatcher::AddWatch(const fs::path& directoryPath)
     {
-        auto pWatch = std::make_unique<DirectoryWatch>();
+        auto pWatch = std::unique_ptr<DirectoryWatch>(new DirectoryWatch());
 
         // FILE_FLAG_BACKUP_SEMANTICS is necessary to open a directory.
         HANDLE hDirectory = CreateFileW(

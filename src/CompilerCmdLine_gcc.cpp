@@ -3,6 +3,7 @@
 
 #include "hscpp/CompilerCmdLine_gcc.h"
 #include "hscpp/Log.h"
+#include "hscpp/Util.h"
 
 namespace hscpp
 {
@@ -15,7 +16,7 @@ namespace hscpp
                                                   const fs::path& moduleFilePath,
                                                   const ICompiler::Input &input)
     {
-        std::ofstream commandFile(commandFilePath.native().c_str());
+        std::ofstream commandFile(commandFilePath.u8string().c_str());
         std::stringstream command;
 
         if (!commandFile.is_open())
@@ -25,8 +26,11 @@ namespace hscpp
             return false;
         }
 
+        // For paths, must convert '\' to '/', as both clang and g++ don't seem to be able to deal
+        // with the Windows variants in cmdfiles, even on a Win32 platform.
+
         // Output module name.
-        command << "-o " << moduleFilePath.u8string() << std::endl;
+        command << "-o " << util::UnixSlashes(moduleFilePath.u8string()) << std::endl;
 
         for (const auto& option : input.compileOptions)
         {
@@ -45,17 +49,17 @@ namespace hscpp
 
         for (const auto& includeDirectory : input.includeDirectoryPaths)
         {
-            command << "-I " << "\"" << includeDirectory.u8string() << "\"" << std::endl;
+            command << "-I " << "\"" << util::UnixSlashes(includeDirectory.u8string()) << "\"" << std::endl;
         }
 
         for (const auto& library : input.libraryPaths)
         {
-            command << "\"" << library.u8string() << "\"" << std::endl;
+            command << "\"" << util::UnixSlashes(library.u8string()) << "\"" << std::endl;
         }
 
         for (const auto& file : input.sourceFilePaths)
         {
-            command << "\"" << file.u8string() << "\"" << std::endl;
+            command << "\"" << util::UnixSlashes(file.u8string()) << "\"" << std::endl;
         }
 
         // Print effective command line.

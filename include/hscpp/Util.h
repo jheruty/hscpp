@@ -24,6 +24,8 @@ namespace hscpp { namespace util
     bool IsWhitespace(const std::string& str);
     std::string Trim(const std::string& str);
 
+    std::string UnixSlashes(const std::string& str);
+
     std::string CreateGuid();
 
     bool IsHeaderFile(const fs::path& filePath);

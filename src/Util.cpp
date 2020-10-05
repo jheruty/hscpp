@@ -108,6 +108,14 @@ namespace hscpp { namespace util
         return "";
     }
 
+    std::string UnixSlashes(const std::string& str)
+    {
+        std::string replacedStr = str;
+        std::replace(replacedStr.begin(), replacedStr.end(), '\\', '/');
+
+        return replacedStr;
+    }
+
     std::string CreateGuid()
     {
 
