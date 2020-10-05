@@ -96,6 +96,7 @@ namespace hscpp
 
 		if (compilerVersion == "14.0")
 		{
+#if defined(HSCPP_PLATFORM_WIN32)
 			// VS2015 stores installation path in registry key.
 			HKEY registryKey;
 			std::string registryName = "SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VS7";
@@ -121,12 +122,12 @@ namespace hscpp
 				return;
 			}
 
-
 			if (!StartVcVarsAllTask(vsPath, "VC"))
 			{
 				log::Error() << HSCPP_LOG_PREFIX << "Failed to start vcvarsall task." << log::End();
 				return;
 			}
+#endif
 		}
 		else
 		{

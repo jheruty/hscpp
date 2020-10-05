@@ -53,8 +53,8 @@ namespace hscpp { namespace platform
 
 #elif defined(HSCPP_PLATFORM_UNIX)
 
-        #if defined(__clang__) || defined(__GNUC__) || defined(__GNUG__)
-        return Setup::UnixPlatform_MsvcInitializer_MsvcInterface;
+#if defined(__clang__) || defined(__GNUC__) || defined(__GNUG__)
+        return Setup::UnixPlatform_GccInitializer_GccInterface;
 #endif
 
 #endif
