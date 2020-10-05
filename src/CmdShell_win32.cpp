@@ -112,6 +112,11 @@ namespace hscpp
         m_LeftoverCmdOutput.clear();
     }
 
+    void CmdShell::CancelTask()
+    {
+        m_TaskState = TaskState::Cancelled;
+    }
+
     CmdShell::TaskState CmdShell::GetTaskState()
     {
         return m_TaskState;
@@ -125,6 +130,11 @@ namespace hscpp
         {
             m_TaskState = TaskState::Idle;
             return TaskState::Error;
+        }
+        else if (m_TaskState == TaskState::Cancelled)
+        {
+            m_TaskState = TaskState::Idle;
+            return TaskState::Cancelled;
         }
         else if (m_TaskState == TaskState::Idle)
         {

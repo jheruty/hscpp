@@ -17,8 +17,8 @@ namespace hscpp
         m_StartTime = std::chrono::steady_clock::now();
         m_Timeout = timeout;
 
-        std::string versionCmd = "\"" + m_Config.executable.u8string() + "\" --version";
-        m_pCmdShell->StartTask(versionCmd, static_cast<int>(CompilerTask::GetVersion));
+        //std::string versionCmd = "\"" + m_Config.executable.u8string() + "\" --version";
+        m_pCmdShell->StartTask("while true", static_cast<int>(CompilerTask::GetVersion));
     }
 
     ICmdShellTask::TaskState CompilerInitializeTask_gcc::Update()
@@ -29,7 +29,18 @@ namespace hscpp
         switch (state)
         {
             case ICmdShell::TaskState::Running:
+            {
+                auto now = std::chrono::steady_clock::now();
+                if (now - m_StartTime > m_Timeout)
+                {
+                    m_pCmdShell->CancelTask();
+                    return ICmdShellTask::TaskState::Timeout;
+                }
+
+                break;
+            }
             case ICmdShell::TaskState::Idle:
+            case ICmdShell::TaskState::Cancelled:
                 // Do nothing.
                 break;
             case ICmdShell::TaskState::Done:
@@ -41,12 +52,6 @@ namespace hscpp
             default:
                 assert(false);
                 break;
-        }
-
-        auto now = std::chrono::steady_clock::now();
-        if (now - m_StartTime > m_Timeout)
-        {
-            return ICmdShellTask::TaskState::Timeout;
         }
 
         return ICmdShellTask::TaskState::Running;

@@ -14,6 +14,7 @@ namespace hscpp
             Idle,
             Running,
             Done,
+            Cancelled,
             Error,
         };
 
@@ -22,6 +23,7 @@ namespace hscpp
         virtual bool CreateCmdProcess() = 0;
 
         virtual void StartTask(const std::string& command, int taskId) = 0;
+        virtual void CancelTask() = 0;
 
         virtual TaskState GetTaskState() = 0;
         virtual TaskState Update(int& taskId) = 0;

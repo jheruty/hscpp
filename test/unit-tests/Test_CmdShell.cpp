@@ -1,3 +1,5 @@
+#include <thread>
+
 #include "catch/catch.hpp"
 #include "common/Common.h"
 
@@ -144,6 +146,36 @@ namespace hscpp { namespace test
 
         REQUIRE(output.size() == 1);
         REQUIRE(output.at(0) == "HscppVar");
+    }
+
+    TEST_CASE("CmdShell task can be cancelled.")
+    {
+        std::unique_ptr<ICmdShell> pCmdShell = platform::CreateCmdShell();
+        REQUIRE(pCmdShell->CreateCmdProcess());
+
+        int taskId = 2987;
+        pCmdShell->StartTask("while true", taskId);
+
+        ICmdShell::TaskState taskState = ICmdShell::TaskState::Idle;
+
+        auto cb = [&](Milliseconds timeElapsed){
+            taskState = pCmdShell->Update(taskId);
+            if (taskState == ICmdShell::TaskState::Cancelled)
+            {
+                return UpdateLoop::Done;
+            }
+
+            if (timeElapsed > Milliseconds(30))
+            {
+                pCmdShell->CancelTask();
+            }
+
+            return UpdateLoop::Running;
+        };
+
+        CALL(StartUpdateLoop, Milliseconds(100), Milliseconds(10), cb);
+
+        REQUIRE(taskState == ICmdShell::TaskState::Cancelled);
     }
 
 }}

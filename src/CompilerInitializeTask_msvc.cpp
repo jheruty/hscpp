@@ -25,7 +25,18 @@ namespace hscpp
         switch (state)
         {
             case ICmdShell::TaskState::Running:
+            {
+                auto now = std::chrono::steady_clock::now();
+                if (now - m_StartTime > m_Timeout)
+                {
+                    m_pCmdShell->CancelTask();
+                    return ICmdShellTask::TaskState::Timeout;
+                }
+
+                break;
+            }
             case ICmdShell::TaskState::Idle:
+            case ICmdShell::TaskState::Cancelled:
                 // Do nothing.
                 break;
             case ICmdShell::TaskState::Done:
@@ -42,6 +53,7 @@ namespace hscpp
         auto now = std::chrono::steady_clock::now();
         if (now - m_StartTime > m_Timeout)
         {
+            m_pCmdShell->CancelTask();
             return ICmdShellTask::TaskState::Timeout;
         }
 

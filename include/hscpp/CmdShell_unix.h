@@ -15,6 +15,7 @@ namespace hscpp
         bool CreateCmdProcess() override;
 
         void StartTask(const std::string& command, int taskId) override;
+        void CancelTask() override;
 
         TaskState GetTaskState() override;
         TaskState Update(int& taskId) override;
