@@ -191,7 +191,7 @@ namespace hscpp
 
     void FileWatcher::CloseWatch(DirectoryWatch* pWatch)
     {
-        bool bResult = CancelIoEx(pWatch->hDirectory, &pWatch->overlapped);
+        bool bResult = (CancelIoEx(pWatch->hDirectory, &pWatch->overlapped) != 0);
         if (!bResult)
         {
             log::Error() << HSCPP_LOG_PREFIX << "Failed to cancel IO. "
@@ -201,7 +201,7 @@ namespace hscpp
 
         // Wait for IO to be canceled.
         DWORD nBytesTransferred = 0;
-        bResult = GetOverlappedResult(pWatch->hDirectory, &pWatch->overlapped, &nBytesTransferred, true);
+        bResult = (GetOverlappedResult(pWatch->hDirectory, &pWatch->overlapped, &nBytesTransferred, true) != 0);
 
         // If we were in the middle of an IO operation (like ReadDirectoryChangesW) and call CancelIoEx,
         // GetOverlappedResult returns false, with ERROR_OPERATON_ABORTED.

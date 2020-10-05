@@ -63,7 +63,7 @@ namespace hscpp
 
         std::wstring cmdLine = process + L" " + options;
 
-        bool bSuccess = CreateProcessW(
+        bool bSuccess = (CreateProcessW(
             NULL, // Application name.
             const_cast<wchar_t*>(cmdLine.c_str()), // Command line.
             NULL, // Process security attributes.
@@ -73,7 +73,7 @@ namespace hscpp
             NULL,
             NULL,
             &startupInfo,
-            &processInfo);
+            &processInfo) != 0);
 
         if (!bSuccess)
         {
