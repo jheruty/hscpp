@@ -131,6 +131,7 @@ endif()
 
 option(HSCPP_BUILD_EXAMPLES "Enable building examples." ON)
 option(HSCPP_BUILD_TESTS "Enable building tests." ON)
+option(HSCPP_USE_GHC_FILESYSTEM "Use ghc filesystem as a substitute of std::filesystem." OFF)
 
 if(NOT DEFINED CMAKE_CXX_STANDARD)
     # Set C++17 as default build target.
@@ -143,8 +144,12 @@ endif()
 
 message(STATUS "hscpp CMAKE_CXX_STANDARD set to ${CMAKE_CXX_STANDARD}.")
 
-if (CMAKE_CXX_STANDARD LESS 17)
-    message(STATUS "hscpp CMAKE_CXX_STANDARD < 17, so using ghc filesystem rather than std::filesystem.")
+if (HSCPP_USE_GHC_FILESYSTEM OR (CMAKE_CXX_STANDARD LESS 17))
+    if (CMAKE_CXX_STANDARD LESS 17)
+        message(STATUS "hscpp CMAKE_CXX_STANDARD < 17, so using ghc filesystem rather than std::filesystem.")
+    else()
+        message(STATUS "Using ghc filesystem rather than std::filesystem.")
+    endif()
 
     list(APPEND LINK_LIBRARIES ghc_filesystem)
     list(APPEND COMPILE_DEFINITIONS HSCPP_USE_GHC_FILESYSTEM)

@@ -117,9 +117,8 @@ namespace hscpp { namespace platform
 
     static std::vector<std::string> GetDefaultCompileOptions_msvc(int cppStandard)
     {
-        return {
+		std::vector<std::string> options = {
             "/nologo", // Suppress cl startup banner.
-            "/std:c++" + std::to_string(cppStandard), // C++ standard (ex. C++17).
             "/Z7", // Add full debugging information.
             "/FC", // Print full filepath in diagnostic messages.
             "/MP", // Build with multiple processes.
@@ -135,6 +134,23 @@ namespace hscpp { namespace platform
             "/LD", // Create release DLL.
 #endif
         };
+
+		// /std option is not consistent on msvc, and is only available on VS2017 and above.
+		// https://docs.microsoft.com/en-us/cpp/build/reference/std-specify-language-standard-version?view=vs-2019
+		if (cppStandard <= 11)
+		{
+#if defined(_MSC_VER)
+#if (_MSC_VER > 1900)
+			options.push_back("/std:c" + std::to_string(cppStandard));
+#endif
+#endif
+		}
+		else
+		{
+			options.push_back("/std:c++" + std::to_string(cppStandard));
+		}
+
+		return options;
     }
 
     static std::vector<std::string> GetDefaultCompileOptions_win32_gcc(int cppStandard)

@@ -25,6 +25,8 @@ namespace hscpp
         std::chrono::milliseconds m_Timeout = std::chrono::milliseconds(0);
 
         void StartVsPathTask();
+		bool StartVcVarsAllTask(const fs::path& vsPath, const fs::path& vcVarsAllDirectoryPath);
+
         TaskState HandleTaskComplete(CompilerTask task);
         TaskState HandleGetVsPathTaskComplete(const std::vector<std::string>& output);
         TaskState HandleSetVcVarsAllTaskComplete(std::vector<std::string> output);
