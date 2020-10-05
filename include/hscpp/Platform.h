@@ -47,9 +47,21 @@ typedef int TOsError;
 
         std::vector<std::string> GetDefaultCompileOptions(int cppStandard = HSCPP_CXX_STANDARD);
         std::vector<std::string> GetDefaultPreprocessorDefinitions();
-
         fs::path GetDefaultCompilerExecutable();
 
+        void WriteDebugString(const std::wstring& str);
+        std::string CreateGuid();
+
+#if defined(HSCPP_PLATFORM_WIN32)
+        std::wstring GetErrorString(TOsError error);
+        std::wstring GetLastErrorString();
+
+#elif defined(HSCPP_PLATFORM_UNIX)
+        std::wstring GetErrorString(TOsError error);
+        std::wstring GetLastErrorString();
+#endif
+
+        std::string GetModuleExtension();
         void* LoadModule(const fs::path& modulePath);
 
         template <typename TSignature>

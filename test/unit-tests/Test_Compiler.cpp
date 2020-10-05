@@ -27,7 +27,7 @@ namespace hscpp { namespace test
             bCreatedBuildDirectory = true;
         }
 
-        std::string buildFolderName = "build-" + util::CreateGuid();
+        std::string buildFolderName = "build-" + platform::CreateGuid();
         fs::path buildDirectoryPath = BUILD_DIRECTORY_PATH / buildFolderName;
         REQUIRE(fs::create_directory(buildDirectoryPath));
 

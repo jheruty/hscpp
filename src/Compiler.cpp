@@ -8,14 +8,8 @@ namespace hscpp
 {
 
     const static std::string COMMAND_FILENAME = "cmdfile";
+    const static std::string MODULE_FILENAME = "module." + platform::GetModuleExtension();
 
-#if defined(HSCPP_PLATFORM_WIN32)
-    const static std::string MODULE_FILENAME = "module.dll";
-#elif defined(HSCPP_PLATFORM_APPLE)
-    const static std::string MODULE_FILENAME = "module.dynlib";
-#elif defined(HSCPP_PLATFORM_UNIX)
-    const static std::string MODULE_FILENAME = "module.so";
-#endif
 
     Compiler::Compiler(const CompilerConfig& config,
                        std::unique_ptr<ICmdShellTask> pInitializeTask,

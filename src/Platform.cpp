@@ -1,17 +1,22 @@
+#include <cstring>
+
 #include "hscpp/Platform.h"
 #include "hscpp/Log.h"
 
+// Add includes for platform-specific OS headers.
 #if defined(HSCPP_PLATFORM_WIN32)
+    #include <Windows.h>
+#elif defined(HSCPP_PLATFORM_UNIX)
+    #include <uuid/uuid.h>
+#endif
 
-#include "hscpp/FileWatcher_win32.h"
-#include "hscpp/CmdShell_win32.h"
-
-// FileWatcher and CmdShell have platform-specific code.
+// Add includes for platform-specific hscpp classes.
+#if defined(HSCPP_PLATFORM_WIN32)
+    #include "hscpp/FileWatcher_win32.h"
+    #include "hscpp/CmdShell_win32.h"
 #elif defined(HSCPP_PLATFORM_APPLE)
-
-#include "hscpp/FileWatcher_apple.h"
-#include "hscpp/CmdShell_unix.h"
-
+    #include "hscpp/FileWatcher_apple.h"
+    #include "hscpp/CmdShell_unix.h"
 #elif defined(HSCPP_PLATFORM_UNIX)
 
 #include "hscpp/FileWatcher_unix.h"
@@ -44,19 +49,15 @@ namespace hscpp { namespace platform
     static Setup GetCompilerSetup()
     {
 #if defined(HSCPP_PLATFORM_WIN32)
-
-#if defined(__clang__) || defined(__GNUC__) || defined(__GNUG__)
+    #if defined(__clang__) || defined(__GNUC__) || defined(__GNUG__)
         return Setup::Win32Platform_GccInitializer_GccInterface;
-#elif defined(_MSC_VER)
+    #elif defined(_MSC_VER)
         return Setup::Win32Platform_MsvcInitializer_MsvcInterface;
-#endif
-
+    #endif
 #elif defined(HSCPP_PLATFORM_UNIX)
-
-#if defined(__clang__) || defined(__GNUC__) || defined(__GNUG__)
+    #if defined(__clang__) || defined(__GNUC__) || defined(__GNUG__)
         return Setup::UnixPlatform_GccInitializer_GccInterface;
-#endif
-
+    #endif
 #endif
         return Setup::Unknown;
     }
@@ -140,9 +141,9 @@ namespace hscpp { namespace platform
 		if (cppStandard <= 11)
 		{
 #if defined(_MSC_VER)
-#if (_MSC_VER > 1900)
-			options.push_back("/std:c" + std::to_string(cppStandard));
-#endif
+    #if (_MSC_VER > 1900)
+            options.push_back("/std:c" + std::to_string(cppStandard));
+    #endif
 #endif
 		}
 		else
@@ -244,8 +245,113 @@ namespace hscpp { namespace platform
     }
 
     //============================================================================
-    // Load Module
+    // Utilities
     //============================================================================
+
+    void WriteDebugString(const std::wstring& str)
+    {
+#if defined(HSCPP_PLATFORM_WIN32)
+        OutputDebugStringW(stream.str().c_str());
+#endif
+    }
+
+    std::string CreateGuid()
+    {
+
+#if defined(HSCPP_PLATFORM_WIN32)
+
+        GUID guid;
+    CoCreateGuid(&guid);
+
+    char buf[64];
+    snprintf(buf, sizeof(buf), "%08X-%04hX-%04hX-%02X%02X-%02X%02X%02X%02X%02X%02X",
+        guid.Data1, guid.Data2, guid.Data3, guid.Data4[0], guid.Data4[1], guid.Data4[2],
+        guid.Data4[3], guid.Data4[4], guid.Data4[5], guid.Data4[6], guid.Data4[7]);
+
+    return buf;
+
+#elif defined(HSCPP_PLATFORM_UNIX)
+
+        uuid_t uuid;
+        uuid_generate_random(uuid);
+
+        char buf[64];
+        uuid_unparse(uuid, buf);
+
+        return buf;
+#endif
+
+    }
+
+#if defined(HSCPP_PLATFORM_WIN32)
+
+    std::wstring GetErrorString(TOsError error)
+    {
+        if (error == ERROR_SUCCESS)
+        {
+            return L""; // No error.
+        }
+
+        LPWSTR buffer = nullptr;
+        size_t size = FormatMessageW(
+            FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+            NULL,
+            error,
+            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+            reinterpret_cast<LPWSTR>(&buffer),
+            0,
+            NULL);
+
+        std::wstring message(buffer, size);
+        LocalFree(buffer);
+
+        // Remove trailing '\r\n'.
+        if (message.size() >= 2
+            && message.at(message.size() - 2) == '\r'
+            && message.at(message.size() - 1) == '\n')
+        {
+            message.pop_back();
+            message.pop_back();
+        }
+
+        return message;
+    }
+
+    std::wstring GetLastErrorString()
+    {
+        return GetErrorString(GetLastError());
+    }
+
+#elif defined(HSCPP_PLATFORM_UNIX)
+
+    std::wstring GetErrorString(TOsError error)
+    {
+        std::string errorStr = strerror(errno);
+        return std::wstring(errorStr.begin(), errorStr.end());
+    }
+
+    std::wstring GetLastErrorString()
+    {
+        return GetErrorString(errno);
+    }
+
+#endif
+
+    std::string GetModuleExtension()
+    {
+#if defined(HSCPP_PLATFORM_WIN32)
+        return "dll";
+#elif defined(HSCPP_PLATFORM_APPLE)
+        return "dynlib";
+#elif defined(HSCPP_PLATFORM_UNIX)
+        return "so";
+#endif
+
+        log::Warning() << HSCPP_LOG_PREFIX
+            << "Unable to deduce module extension, defaulting to 'so'." << log::End();
+        return "so";
+    }
+
 
     void* LoadModule(const fs::path& modulePath)
     {

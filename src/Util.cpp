@@ -6,18 +6,6 @@
 #include "hscpp/Log.h"
 #include "hscpp/FsPathHasher.h"
 
-#if defined(HSCPP_PLATFORM_WIN32)
-
-#include <Windows.h>
-
-#elif defined(HSCPP_PLATFORM_UNIX)
-
-#include <uuid/uuid.h>
-
-#include <cstring>
-
-#endif
-
 namespace hscpp { namespace util
 {
 
@@ -33,60 +21,6 @@ namespace hscpp { namespace util
         ".cc",
         ".cxx",
     };
-
-#if defined(HSCPP_PLATFORM_WIN32)
-
-    std::wstring GetErrorString(TOsError error)
-    {
-        if (error == ERROR_SUCCESS)
-        {
-            return L""; // No error.
-        }
-
-        LPWSTR buffer = nullptr;
-        size_t size = FormatMessageW(
-            FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-            NULL,
-            error,
-            MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-            reinterpret_cast<LPWSTR>(&buffer),
-            0,
-            NULL);
-
-        std::wstring message(buffer, size);
-        LocalFree(buffer);
-
-        // Remove trailing '\r\n'.
-        if (message.size() >= 2
-            && message.at(message.size() - 2) == '\r'
-            && message.at(message.size() - 1) == '\n')
-        {
-            message.pop_back();
-            message.pop_back();
-        }
-
-        return message;
-    }
-
-    std::wstring GetLastErrorString()
-    {
-        return GetErrorString(GetLastError());
-    }
-
-#elif defined(HSCPP_PLATFORM_UNIX)
-
-    std::wstring GetErrorString(TOsError error)
-    {
-        std::string errorStr = strerror(errno);
-        return std::wstring(errorStr.begin(), errorStr.end());
-    }
-
-    std::wstring GetLastErrorString()
-    {
-        return GetErrorString(errno);
-    }
-
-#endif
 
     bool IsWhitespace(const std::string& str)
     {
@@ -114,34 +48,6 @@ namespace hscpp { namespace util
         std::replace(replacedStr.begin(), replacedStr.end(), '\\', '/');
 
         return replacedStr;
-    }
-
-    std::string CreateGuid()
-    {
-
-#if defined(HSCPP_PLATFORM_WIN32)
-
-        GUID guid;
-        CoCreateGuid(&guid);
-
-        char buf[64];
-        snprintf(buf, sizeof(buf), "%08X-%04hX-%04hX-%02X%02X-%02X%02X%02X%02X%02X%02X",
-            guid.Data1, guid.Data2, guid.Data3, guid.Data4[0], guid.Data4[1], guid.Data4[2],
-            guid.Data4[3], guid.Data4[4], guid.Data4[5], guid.Data4[6], guid.Data4[7]);
-
-        return buf;
-
-#elif defined(HSCPP_PLATFORM_UNIX)
-
-        uuid_t uuid;
-        uuid_generate_random(uuid);
-
-        char buf[64];
-        uuid_unparse(uuid, buf);
-
-        return buf;
-#endif
-
     }
 
     bool IsHeaderFile(const fs::path& filePath)

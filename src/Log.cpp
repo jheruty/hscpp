@@ -3,12 +3,6 @@
 #include "hscpp/Log.h"
 #include "hscpp/Util.h"
 
-#if defined(HSCPP_PLATFORM_WIN32)
-
-#pragma warning(disable:4996) // Disable security warning to allow std::mbstowcs.
-
-#endif
-
 namespace hscpp { namespace log
 {
     static Level s_Level = Level::Info;
@@ -64,7 +58,7 @@ namespace hscpp { namespace log
             return *this;
         }
 
-        m_Stream << L"[" << util::GetLastErrorString() << L"]";
+        m_Stream << L"[" << platform::GetLastErrorString() << L"]";
         return *this;
     }
 
@@ -75,7 +69,7 @@ namespace hscpp { namespace log
             return *this;
         }
 
-        m_Stream << L"[" << util::GetErrorString(osError.ErrorCode()) << L"]";
+        m_Stream << L"[" << platform::GetErrorString(osError.ErrorCode()) << L"]";
         return *this;
     }
 
@@ -128,14 +122,10 @@ namespace hscpp { namespace log
 
     Stream Build()
     {
-#if defined(HSCPP_PLATFORM_WIN32)
-        // Direct logs to Visual Studio output.
+        // Direct logs to debugger output.
         return Stream(s_bLogBuild, [](const std::wstringstream& stream) {
-            OutputDebugStringW(stream.str().c_str());
-            });
-#else
-        return Stream(s_bLogBuild);
-#endif
+            platform::WriteDebugString(stream.str().c_str());
+        });
     }
 
     void SetLevel(Level level)

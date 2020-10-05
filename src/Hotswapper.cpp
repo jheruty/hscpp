@@ -622,7 +622,7 @@ namespace hscpp
             }
         }
 
-        std::string guid = util::CreateGuid();
+        std::string guid = platform::CreateGuid();
         m_BuildDirectoryPath = m_HscppTempDirectoryPath / guid;
 
         std::error_code error;
