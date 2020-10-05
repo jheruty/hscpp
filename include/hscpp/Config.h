@@ -15,7 +15,6 @@ namespace hscpp
         int cppStandard = HSCPP_CXX_STANDARD;
 
         fs::path executable;
-        fs::path startupScript;
     };
 
     struct FileWatcherConfig
