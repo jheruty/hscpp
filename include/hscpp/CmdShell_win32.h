@@ -14,15 +14,15 @@ namespace hscpp
     public:
         ~CmdShell();
 
-        bool CreateCmdProcess();
+        bool CreateCmdProcess() override;
 
-        void StartTask(const std::string& command, int taskId);
+        void StartTask(const std::string& command, int taskId) override;
         void CancelTask() override;
         
-        TaskState GetTaskState();
-        TaskState Update(int& taskId);
+        TaskState GetTaskState() override;
+        TaskState Update(int& taskId) override;
 
-        const std::vector<std::string>& PeekTaskOutput();
+        const std::vector<std::string>& PeekTaskOutput() override;
 
     private:
         HANDLE m_hProcess = INVALID_HANDLE_VALUE;
