@@ -18,10 +18,8 @@
     #include "hscpp/FileWatcher_apple.h"
     #include "hscpp/CmdShell_unix.h"
 #elif defined(HSCPP_PLATFORM_UNIX)
-
-#include "hscpp/FileWatcher_unix.h"
-#include "hscpp/CmdShell_unix.h"
-
+    #include "hscpp/FileWatcher_unix.h"
+    #include "hscpp/CmdShell_unix.h"
 #endif
 
 // Compiler code is cross-platform. For example, one may wish to run the clang compiler on Windows.
@@ -136,20 +134,20 @@ namespace hscpp { namespace platform
 #endif
         };
 
+#if defined(_MSC_VER)
+    #if (_MSC_VER > 1900)
 		// /std option is not consistent on msvc, and is only available on VS2017 and above.
 		// https://docs.microsoft.com/en-us/cpp/build/reference/std-specify-language-standard-version?view=vs-2019
 		if (cppStandard <= 11)
 		{
-#if defined(_MSC_VER)
-    #if (_MSC_VER > 1900)
             options.push_back("/std:c" + std::to_string(cppStandard));
-    #endif
-#endif
 		}
 		else
 		{
 			options.push_back("/std:c++" + std::to_string(cppStandard));
 		}
+    #endif
+#endif
 
 		return options;
     }
