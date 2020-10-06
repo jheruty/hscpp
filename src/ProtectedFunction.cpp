@@ -9,14 +9,7 @@
 ProtectedFunction::Result ProtectedFunction::Call(const std::function<void()>& cb)
 {
 #if defined(HSCPP_PLATFORM_WIN32)
-
-    if (!IsDebuggerPresent())
-    {
-        // No debugger attached, so there's no way to recover from this exception.
-        cb();
-        return Result::Success;
-    }
-
+    
     __try
     {
         cb();
