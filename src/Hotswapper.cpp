@@ -33,7 +33,7 @@ namespace hscpp
         }
         else
         {
-            m_pFileWatcher = platform::CreateFileWatcher();
+            m_pFileWatcher = platform::CreateFileWatcher(&m_pConfig->fileWatcher);
         }
 
         if (pCompiler != nullptr)

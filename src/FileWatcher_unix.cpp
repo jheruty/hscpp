@@ -8,6 +8,10 @@
 namespace hscpp
 {
 
+    FileWatcher::FileWatcher(FileWatcherConfig* pConfig)
+        : m_pConfig(pConfig)
+    {}
+
     bool FileWatcher::AddWatch(const fs::path& directoryPath)
     {
         // Create the inotify fd, if it is not already initialized.
@@ -80,11 +84,6 @@ namespace hscpp
         m_DirectoryPathsByWd.clear();
     }
 
-    void FileWatcher::SetPollFrequencyMs(int ms)
-    {
-        m_PollFrequency = std::chrono::milliseconds(ms);
-    }
-
     void FileWatcher::PollChanges(std::vector<Event>& events)
     {
         events.clear();
@@ -109,7 +108,7 @@ namespace hscpp
             // Currently gathering events. Return if not enough time has passed yet.
             auto now = std::chrono::steady_clock::now();
             auto dt = now - m_LastPollTime;
-            if (dt < m_PollFrequency)
+            if (dt < m_pConfig->latency)
             {
                 return;
             }

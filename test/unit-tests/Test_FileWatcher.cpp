@@ -21,7 +21,8 @@ namespace hscpp { namespace test
         fs::path testFilePath = sandboxPath / "src" / "Test.cpp";
         fs::path newFilePath = sandboxPath / "src" / "NewFile.cpp";
 
-        std::unique_ptr<IFileWatcher> pFileWatcher = platform::CreateFileWatcher();
+        auto pConfig = std::unique_ptr<Config>(new Config());
+        std::unique_ptr<IFileWatcher> pFileWatcher = platform::CreateFileWatcher(&pConfig->fileWatcher);
         REQUIRE(pFileWatcher->AddWatch(sandboxPath / "src"));
 
         std::vector<IFileWatcher::Event> events;

@@ -10,6 +10,10 @@ namespace hscpp
 
     const static std::chrono::milliseconds DEBOUNCE_TIME = std::chrono::milliseconds(20);
 
+    FileWatcher::FileWatcher(FileWatcherConfig *pConfig)
+        : m_pConfig(pConfig)
+    {}
+
     FileWatcher::~FileWatcher()
     {
         ClearAllWatches();
@@ -89,11 +93,6 @@ namespace hscpp
         m_Watchers.clear();
     }
 
-    void FileWatcher::SetPollFrequencyMs(int ms)
-    {
-        m_PollFrequency = std::chrono::milliseconds(ms);
-    }
-
     void FileWatcher::PollChanges(std::vector<Event>& events)
     {
         events.clear();
@@ -118,7 +117,7 @@ namespace hscpp
             // Currently gathering events. Return if not enough time has passed yet.
             auto now = std::chrono::steady_clock::now();
             auto dt = now - m_LastPollTime;
-            if (dt < m_PollFrequency)
+            if (dt < m_pConfig->latency)
             {
                 return;
             }

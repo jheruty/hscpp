@@ -10,6 +10,7 @@
 
 #include "hscpp/Platform.h"
 #include "hscpp/IFileWatcher.h"
+#include "hscpp/Config.h"
 
 namespace hscpp
 {
@@ -17,11 +18,12 @@ namespace hscpp
     class FileWatcher : public IFileWatcher
     {
     public:
+        FileWatcher(FileWatcherConfig* pConfig);
+
         bool AddWatch(const fs::path& directoryPath) override;
         bool RemoveWatch(const fs::path& directoryPath) override;
         void ClearAllWatches() override;
 
-        void SetPollFrequencyMs(int ms) override;
         void PollChanges(std::vector<Event>& events) override;
 
     private:
@@ -31,7 +33,8 @@ namespace hscpp
             fs::path directoryPath;
         };
 
-        std::chrono::milliseconds m_PollFrequency = std::chrono::milliseconds(100);
+        FileWatcherConfig* m_pConfig = nullptr;
+
         std::chrono::steady_clock::time_point m_LastPollTime = std::chrono::steady_clock::now();
         bool m_bGatheringEvents = false;
 

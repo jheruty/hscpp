@@ -21,7 +21,6 @@ namespace hscpp
         virtual bool RemoveWatch(const fs::path& directoryPath) = 0;
         virtual void ClearAllWatches() = 0;
 
-        virtual void SetPollFrequencyMs(int ms) = 0;
         virtual void PollChanges(std::vector<Event>& events) = 0;
     };
 

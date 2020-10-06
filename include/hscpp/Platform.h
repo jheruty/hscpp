@@ -41,7 +41,7 @@ typedef int TOsError;
 
     namespace platform
     {
-        std::unique_ptr<IFileWatcher> CreateFileWatcher();
+        std::unique_ptr<IFileWatcher> CreateFileWatcher(FileWatcherConfig* pConfig);
         std::unique_ptr<ICompiler> CreateCompiler(CompilerConfig* pConfig);
         std::unique_ptr<ICmdShell> CreateCmdShell();
 

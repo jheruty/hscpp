@@ -64,9 +64,9 @@ namespace hscpp { namespace platform
     // FileWatcher
     //============================================================================
 
-    std::unique_ptr<IFileWatcher> CreateFileWatcher()
+    std::unique_ptr<IFileWatcher> CreateFileWatcher(FileWatcherConfig* pConfig)
     {
-        return std::unique_ptr<IFileWatcher>(new FileWatcher());
+        return std::unique_ptr<IFileWatcher>(new FileWatcher(pConfig));
     }
 
     //============================================================================

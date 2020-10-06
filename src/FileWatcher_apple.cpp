@@ -11,7 +11,8 @@
 namespace hscpp
 {
 
-    FileWatcher::FileWatcher()
+    FileWatcher::FileWatcher(FileWatcherConfig* pConfig)
+        : m_pConfig(pConfig)
     {
         m_pFsContext = std::unique_ptr<FSEventStreamContext>(new FSEventStreamContext());
         m_pFsContext->version = 0; // 0 is the only valid value.
@@ -85,13 +86,6 @@ namespace hscpp
         CreateFsEventStream();
     }
 
-    void FileWatcher::SetPollFrequencyMs(int ms)
-    {
-        std::lock_guard<std::mutex> lock(m_Mutex);
-
-        m_PollFrequency = std::chrono::milliseconds(ms);
-    }
-
     void FileWatcher::PollChanges(std::vector<Event> &events)
     {
         std::lock_guard<std::mutex> lock(m_Mutex);
@@ -115,7 +109,7 @@ namespace hscpp
             // Currently gathering events. Return if not enough time has passed yet.
             auto now = std::chrono::steady_clock::now();
             auto dt = now - m_LastPollTime;
-            if (dt < m_PollFrequency)
+            if (dt < m_pConfig->latency)
             {
                 return;
             }
