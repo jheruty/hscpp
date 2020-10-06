@@ -32,7 +32,7 @@ int main()
     // We can set variables that will be interpolated with %VAR_NAME% in hscpp_require_ macros. Note
     // that these will take precedence over environment variables of the same name.
 #ifdef _DEBUG
-    swapper.SetHscppRequireVariable("PROJECT_CONFIGURATION", "Debug");
+    swapper.SetVar("PROJECT_CONFIGURATION", "Debug");
 #else
     swapper.SetVar("PROJECT_CONFIGURATION", "Release");
 #endif
