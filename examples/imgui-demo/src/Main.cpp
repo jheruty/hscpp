@@ -83,7 +83,7 @@ int main(int, char**)
     auto srcPath = DEMO_PATH / "src";
     auto includePath = DEMO_PATH / "include";
     auto exampleUtilsIncludePath = hscpp::util::GetHscppExamplesPath() / "hscpp-example-utils" / "include";
-    auto imguiIncludePath = hscpp::util::GetHscppExamplesPath()  / "lib" / "imgui";
+    auto imguiIncludePath = DEMO_PATH  / "lib" / "imgui";
 
     swapper.AddSourceDirectory(srcPath);
     swapper.AddIncludeDirectory(includePath);

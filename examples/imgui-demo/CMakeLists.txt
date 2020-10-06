@@ -15,3 +15,5 @@ target_link_libraries(imgui-demo
     hscpp-example-utils
     imgui
 )
+
+add_subdirectory(lib)
