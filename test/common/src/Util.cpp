@@ -3,7 +3,7 @@
 #include <thread>
 
 #include "catch/catch.hpp"
-#include "common/FileUtil.h"
+#include "common/Util.h"
 #include "common/Typedefs.h"
 
 #include "hscpp/Platform.h"
@@ -99,6 +99,20 @@ namespace hscpp { namespace test
         REQUIRE(error.value() == HSCPP_ERROR_SUCCESS);
 
         return canonicalPath;
+    }
+
+    void test::RunWin32(const std::function<void()> &cb)
+    {
+#if defined(HSCPP_PLATFORM_WIN32)
+        cb();
+#endif
+    }
+
+    void RunUnix(const std::function<void()> &cb)
+    {
+#if defined(HSCPP_PLATFORM_UNIX)
+        cb();
+#endif
     }
 
 }}

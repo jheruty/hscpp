@@ -72,11 +72,9 @@ namespace hscpp { namespace test
         REQUIRE(pCmdShell->CreateCmdProcess());
 
         std::string catExecutable;
-#if defined(HSCPP_PLATFORM_WIN32)
-        catExecutable = "type";
-#else
-        catExecutable = "cat";
-#endif
+
+        RunWin32([&](){ catExecutable = "type"; });
+        RunUnix([&](){ catExecutable = "cat"; });
 
         std::string cmd = catExecutable + " \"" + catFilePath.u8string() + "\"";
         int taskId = 0;
@@ -99,31 +97,22 @@ namespace hscpp { namespace test
         // Validate that echoing variable is empty.
         int taskId = 28;
 
-#if defined(HSCPP_PLATFORM_WIN32)
-        pCmdShell->StartTask("echo %HSCPP_VAR%", taskId);
-#else
-        pCmdShell->StartTask("echo $HSCPP_VAR", taskId);
-#endif
+        RunWin32([&](){ pCmdShell->StartTask("echo %HSCPP_VAR%", taskId); });
+        RunUnix([&](){ pCmdShell->StartTask("echo $HSCPP_VAR", taskId); });
 
         CALL(WaitForCmdDone, pCmdShell.get(), taskId);
 
         std::vector<std::string> output = pCmdShell->PeekTaskOutput();
         RemoveBlankLines(output);
 
-#if defined(HSCPP_PLATFORM_WIN32)
-        REQUIRE(output.size() == 1);
-        REQUIRE(output.at(0) == "%HSCPP_VAR%");
-#else
-        REQUIRE(output.empty());
-#endif
+        RunWin32([&](){
+            REQUIRE(output.size() == 1);
+            REQUIRE(output.at(0) == "%HSCPP_VAR%");
+        });
+        RunUnix([&](){ REQUIRE(output.empty()); });
 
-#if defined(HSCPP_PLATFORM_WIN32)
-        // Set variable.
-        pCmdShell->StartTask("set HSCPP_VAR=HscppVar", taskId);
-#else
-        // Set variable.
-        pCmdShell->StartTask("HSCPP_VAR=HscppVar", taskId);
-#endif
+        RunWin32([&](){ pCmdShell->StartTask("set HSCPP_VAR=HscppVar", taskId); });
+        RunUnix([&](){ pCmdShell->StartTask("HSCPP_VAR=HscppVar", taskId); });
 
         CALL(WaitForCmdDone, pCmdShell.get(), taskId);
 
@@ -132,12 +121,8 @@ namespace hscpp { namespace test
 
         REQUIRE(output.empty());
 
-#if defined(HSCPP_PLATFORM_WIN32)
-        pCmdShell->StartTask("echo %HSCPP_VAR%", taskId);
-#else
-        // Validate that variable is set.
-        pCmdShell->StartTask("echo $HSCPP_VAR", taskId);
-#endif
+        RunWin32([&](){ pCmdShell->StartTask("echo %HSCPP_VAR%", taskId); });
+        RunUnix([&](){ pCmdShell->StartTask("echo $HSCPP_VAR", taskId); });
 
         CALL(WaitForCmdDone, pCmdShell.get(), taskId);
 
