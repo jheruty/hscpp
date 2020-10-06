@@ -158,7 +158,6 @@ namespace hscpp { namespace platform
             "-std=c++" + std::to_string(cppStandard), // C++ standard (ex. C++17).
             "-shared", // Compile a shared library.
             "-fvisibility=hidden", // Hide code not explicitly made visible.
-            "-"
 #if defined(HSCPP_DEBUG)
             "-g", // Add debug info.
             "-l msvcrtd.lib", // Same as /MDd
