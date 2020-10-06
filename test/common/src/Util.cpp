@@ -101,7 +101,7 @@ namespace hscpp { namespace test
         return canonicalPath;
     }
 
-    void test::RunWin32(const std::function<void()> &cb)
+    void RunWin32(const std::function<void()> &cb)
     {
 #if defined(HSCPP_PLATFORM_WIN32)
         cb();
