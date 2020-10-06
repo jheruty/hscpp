@@ -36,8 +36,8 @@ namespace hscpp
         };
 
         Hotswapper();
-        explicit Hotswapper(const Config& config);
-        Hotswapper(const Config& config,
+        explicit Hotswapper(std::unique_ptr<Config> pConfig);
+        Hotswapper(std::unique_ptr<Config> pConfig,
                    std::unique_ptr<IFileWatcher> pFileWatcher,
                    std::unique_ptr<ICompiler> pCompiler);
 
@@ -102,6 +102,8 @@ namespace hscpp
         bool RemoveVar(const std::string& name);
 
     private:
+        std::unique_ptr<Config> m_pConfig;
+
         fs::path m_HscppTempDirectoryPath;
 
         int m_NextIncludeDirectoryHandle = 0;

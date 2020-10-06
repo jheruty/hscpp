@@ -8,8 +8,8 @@
 namespace hscpp
 {
 
-    CompilerCmdLine_gcc::CompilerCmdLine_gcc(const CompilerConfig& config)
-        : m_Config(config)
+    CompilerCmdLine_gcc::CompilerCmdLine_gcc(CompilerConfig* pConfig)
+        : m_pConfig(pConfig)
     {}
 
     bool CompilerCmdLine_gcc::GenerateCommandFile(const fs::path &commandFilePath,
@@ -63,7 +63,7 @@ namespace hscpp
         }
 
         // Print effective command line.
-        log::Build() << m_Config.executable.u8string() << " " << command.str() << log::End();
+        log::Build() << m_pConfig->executable.u8string() << " " << command.str() << log::End();
 
         // Write command file.
         commandFile << command.str();

@@ -42,7 +42,7 @@ typedef int TOsError;
     namespace platform
     {
         std::unique_ptr<IFileWatcher> CreateFileWatcher();
-        std::unique_ptr<ICompiler> CreateCompiler(const CompilerConfig& config = CompilerConfig());
+        std::unique_ptr<ICompiler> CreateCompiler(CompilerConfig* pConfig);
         std::unique_ptr<ICmdShell> CreateCmdShell();
 
         std::vector<std::string> GetDefaultCompileOptions(int cppStandard = HSCPP_CXX_STANDARD);

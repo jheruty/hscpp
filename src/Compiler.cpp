@@ -11,10 +11,10 @@ namespace hscpp
     const static std::string MODULE_FILENAME = "module." + platform::GetModuleExtension();
 
 
-    Compiler::Compiler(const CompilerConfig& config,
+    Compiler::Compiler(CompilerConfig* pConfig,
                        std::unique_ptr<ICmdShellTask> pInitializeTask,
                        std::unique_ptr<ICompilerCmdLine> pCompilerCmdLine)
-       : m_Config(config)
+       : m_pConfig(pConfig)
        , m_pInitializeTask(std::move(pInitializeTask))
        , m_pCompilerCmdLine(std::move(pCompilerCmdLine))
     {
@@ -54,7 +54,7 @@ namespace hscpp
         m_CompiledModulePath.clear();
         m_CompilingModulePath = moduleFilePath;
 
-        std::string cmd = "\"" + m_Config.executable.u8string() + "\" @\"" + input.buildDirectoryPath.u8string()
+        std::string cmd = "\"" + m_pConfig->executable.u8string() + "\" @\"" + input.buildDirectoryPath.u8string()
                 + "/" + COMMAND_FILENAME + "\"";
 
         m_pCmdShell->StartTask(cmd, static_cast<int>(CompilerTask::Build));

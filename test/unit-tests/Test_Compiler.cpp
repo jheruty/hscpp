@@ -5,6 +5,7 @@
 #include "hscpp/ICompiler.h"
 #include "hscpp/Util.h"
 #include "hscpp/Log.h"
+#include "hscpp/Config.h"
 
 namespace hscpp { namespace test
 {
@@ -84,7 +85,8 @@ namespace hscpp { namespace test
         fs::path buildDirectoryPath = CALL(CreateBuildDirectory, sandboxPath);
         fs::path filePath = sandboxPath / "Lib.cpp";
 
-        std::unique_ptr<ICompiler> pCompiler = platform::CreateCompiler();
+        auto pConfig = std::unique_ptr<Config>(new Config());
+        std::unique_ptr<ICompiler> pCompiler = platform::CreateCompiler(&pConfig->compiler);
 
         CALL(WaitForInitialize, pCompiler.get());
 

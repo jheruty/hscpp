@@ -73,7 +73,7 @@ namespace hscpp { namespace platform
     // Compiler
     //============================================================================
 
-    std::unique_ptr<ICompiler> CreateCompiler(const CompilerConfig& config /* = CompilerConfig() */)
+    std::unique_ptr<ICompiler> CreateCompiler(CompilerConfig* pConfig /* = CompilerConfig() */)
     {
         std::unique_ptr<ICmdShellTask> pInitializeTask;
         std::unique_ptr<ICompilerCmdLine> pCompilerCmdLine;
@@ -83,22 +83,22 @@ namespace hscpp { namespace platform
         {
             case Setup::Win32Platform_MsvcInitializer_MsvcInterface:
                 pInitializeTask = std::unique_ptr<ICmdShellTask>(new CompilerInitializeTask_msvc());
-                pCompilerCmdLine = std::unique_ptr<ICompilerCmdLine>(new CompilerCmdLine_msvc(config));
+                pCompilerCmdLine = std::unique_ptr<ICompilerCmdLine>(new CompilerCmdLine_msvc(pConfig));
                 break;
             case Setup::Win32Platform_GccInitializer_GccInterface: // Fallthrough
             case Setup::UnixPlatform_GccInitializer_GccInterface:
-                pInitializeTask = std::unique_ptr<ICmdShellTask>(new CompilerInitializeTask_gcc(config));
-                pCompilerCmdLine = std::unique_ptr<ICompilerCmdLine>(new CompilerCmdLine_gcc(config));
+                pInitializeTask = std::unique_ptr<ICmdShellTask>(new CompilerInitializeTask_gcc(pConfig));
+                pCompilerCmdLine = std::unique_ptr<ICompilerCmdLine>(new CompilerCmdLine_gcc(pConfig));
                 break;
             default:
                 log::Warning() << HSCPP_LOG_PREFIX << "Could not deduce compiler, defaulting to gcc." << log::End();
-                pInitializeTask = std::unique_ptr<ICmdShellTask>(new CompilerInitializeTask_gcc(config));
-                pCompilerCmdLine = std::unique_ptr<ICompilerCmdLine>(new CompilerCmdLine_gcc(config));
+                pInitializeTask = std::unique_ptr<ICmdShellTask>(new CompilerInitializeTask_gcc(pConfig));
+                pCompilerCmdLine = std::unique_ptr<ICompilerCmdLine>(new CompilerCmdLine_gcc(pConfig));
                 break;
         }
 
         return std::unique_ptr<ICompiler>(
-                new Compiler(config, std::move(pInitializeTask), std::move(pCompilerCmdLine)));
+                new Compiler(pConfig, std::move(pInitializeTask), std::move(pCompilerCmdLine)));
     }
 
     //============================================================================

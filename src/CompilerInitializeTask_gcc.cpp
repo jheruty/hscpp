@@ -7,8 +7,8 @@
 namespace hscpp
 {
 
-    CompilerInitializeTask_gcc::CompilerInitializeTask_gcc(const CompilerConfig& config)
-        : m_Config(config)
+    CompilerInitializeTask_gcc::CompilerInitializeTask_gcc(CompilerConfig* pConfig)
+        : m_pConfig(pConfig)
     {}
 
     void CompilerInitializeTask_gcc::Start(ICmdShell *pCmdShell, std::chrono::milliseconds timeout)
@@ -18,7 +18,7 @@ namespace hscpp
         m_StartTime = std::chrono::steady_clock::now();
         m_Timeout = timeout;
 
-        std::string versionCmd = "\"" + m_Config.executable.u8string() + "\" --version";
+        std::string versionCmd = "\"" + m_pConfig->executable.u8string() + "\" --version";
         m_pCmdShell->StartTask(versionCmd, static_cast<int>(CompilerTask::GetVersion));
     }
 
@@ -80,7 +80,7 @@ namespace hscpp
         if (output.empty())
         {
             log::Error() << HSCPP_LOG_PREFIX << "Failed to get version for compiler '"
-                         << m_Config.executable.u8string() << log::End("'.");
+                         << m_pConfig->executable.u8string() << log::End("'.");
             return ICmdShellTask::TaskState::Failure;
         }
 
@@ -107,7 +107,7 @@ namespace hscpp
         if (!bSawLetter || !bSawNumber)
         {
             log::Error() << HSCPP_LOG_PREFIX << "Failed to get version for compiler '"
-                         << m_Config.executable.u8string() << log::End("'.");
+                         << m_pConfig->executable.u8string() << log::End("'.");
             return ICmdShellTask::TaskState::Failure;
         }
 

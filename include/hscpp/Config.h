@@ -1,6 +1,7 @@
 #pragma once
 
 #include <chrono>
+#include <memory>
 
 #include "hscpp/Filesystem.h"
 #include "hscpp/ICompiler.h"

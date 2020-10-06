@@ -15,16 +15,17 @@ namespace hscpp
     const static std::string HSCPP_TEMP_DIRECTORY_NAME = "HSCPP_7c9279ff-25af-488c-a634-b6aa68f47a65";
 
     Hotswapper::Hotswapper()
-        : Hotswapper(Config(), nullptr, nullptr)
+        : Hotswapper(std::unique_ptr<Config>(new Config()), nullptr, nullptr)
     {}
 
-    Hotswapper::Hotswapper(const Config& config)
-        : Hotswapper(config, nullptr, nullptr)
+    Hotswapper::Hotswapper(std::unique_ptr<Config> pConfig)
+        : Hotswapper(std::move(pConfig), nullptr, nullptr)
     {}
 
-    Hotswapper::Hotswapper(const Config& config,
+    Hotswapper::Hotswapper(std::unique_ptr<Config> pConfig,
                            std::unique_ptr<IFileWatcher> pFileWatcher,
                            std::unique_ptr<ICompiler> pCompiler)
+       : m_pConfig(std::move(pConfig))
     {
         if (pFileWatcher != nullptr)
         {
@@ -41,10 +42,10 @@ namespace hscpp
         }
         else
         {
-            m_pCompiler = platform::CreateCompiler(config.compiler);
+            m_pCompiler = platform::CreateCompiler(&m_pConfig->compiler);
         }
 
-        if (!(config.flags & Config::Flag::NoDefaultCompileOptions))
+        if (!(m_pConfig->flags & Config::Flag::NoDefaultCompileOptions))
         {
             for (const auto &option : platform::GetDefaultCompileOptions())
             {
@@ -52,7 +53,7 @@ namespace hscpp
             }
         }
 
-        if (!(config.flags & Config::Flag::NoDefaultPreprocessorDefinitions))
+        if (!(m_pConfig->flags & Config::Flag::NoDefaultPreprocessorDefinitions))
         {
             for (const auto &definition : platform::GetDefaultPreprocessorDefinitions())
             {
@@ -60,14 +61,14 @@ namespace hscpp
             }
         }
 
-        if (!(config.flags & Config::Flag::NoDefaultIncludeDirectories))
+        if (!(m_pConfig->flags & Config::Flag::NoDefaultIncludeDirectories))
         {
             // Add hotswap-cpp include directory as a default include directory, since parts of the
             // library will need to be compiled into each new module.
             Add(util::GetHscppIncludePath(), m_NextIncludeDirectoryHandle, m_IncludeDirectoryPathsByHandle);
         }
 
-        if (!(config.flags & Config::Flag::NoDefaultForceCompiledSourceFiles))
+        if (!(m_pConfig->flags & Config::Flag::NoDefaultForceCompiledSourceFiles))
         {
             fs::path moduleFilePath = util::GetHscppSourcePath() / "module" / "Module.cpp";
             Add(moduleFilePath, m_NextForceCompiledSourceFileHandle, m_ForceCompiledSourceFilePathsByHandle);

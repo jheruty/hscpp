@@ -12,7 +12,7 @@ namespace hscpp
     class Compiler : public ICompiler
     {
     public:
-        Compiler(const CompilerConfig& config,
+        Compiler(CompilerConfig* pConfig,
                  std::unique_ptr<ICmdShellTask> pInitializeTask,
                  std::unique_ptr<ICompilerCmdLine> pCompilerCmdLine);
 
@@ -32,6 +32,8 @@ namespace hscpp
             Build,
         };
 
+        CompilerConfig* m_pConfig = nullptr;
+
         bool m_bInitialized = false;
 
         size_t m_iCompileOutput = 0;
@@ -41,8 +43,6 @@ namespace hscpp
         std::unique_ptr<ICmdShell> m_pCmdShell;
         std::unique_ptr<ICmdShellTask> m_pInitializeTask;
         std::unique_ptr<ICompilerCmdLine> m_pCompilerCmdLine;
-
-        CompilerConfig m_Config;
 
         void UpdateInitialization();
 
