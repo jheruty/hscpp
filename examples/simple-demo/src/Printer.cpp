@@ -27,6 +27,8 @@ Printer::Printer()
 
             // The instances currently in this array have been deleted. Replace the instance
             // with the newly constructed object, so that the Update loop in main keeps working.
+            // The swapping process happens entirely within the hscpp::Hotswapper's Update
+            // method, so this is safe to do.
             pDemoData->pInstances[m_Index] = this;
             break;
         }
