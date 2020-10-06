@@ -50,7 +50,6 @@ namespace hscpp
         void DisableFeature(Feature feature);
         bool IsFeatureEnabled(Feature feature);
 
-        void CreateDependencyGraph();
         void TriggerManualBuild();
 
         UpdateResult Update();
@@ -62,7 +61,7 @@ namespace hscpp
         //============================================================================
         // Add & Remove Functions
         //============================================================================
-        
+
         int AddIncludeDirectory(const fs::path& directoryPath);
         bool RemoveIncludeDirectory(int handle);
         void EnumerateIncludeDirectories(const std::function<void(int handle, const fs::path& directoryPath)>& cb);
@@ -135,22 +134,23 @@ namespace hscpp
         VarManager m_VarManager;
         FileParser m_FileParser;
 
+        bool m_bDependencyGraphNeedsRefresh = true;
+
         AllocationResolver m_AllocationResolver;
         Callbacks m_Callbacks;
 
         bool StartCompile(ICompiler::Input& compilerInput);
 
-        //
         ICompiler::Input CreateCompilerInput(const std::vector<fs::path>& sourceFilePaths);
         void Preprocess(ICompiler::Input& input);
         void Deduplicate(ICompiler::Input& input);
-        //
 
         bool PerformRuntimeSwap();
 
         bool CreateHscppTempDirectory();
         bool CreateBuildDirectory();
 
+        void RefreshDependencyGraph();
         void AppendDirectoryFiles(const std::unordered_map<int, fs::path>& directoryPathsByHandle,
             std::unordered_set<fs::path, FsPathHasher>& sourceFilePaths);
 

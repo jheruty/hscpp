@@ -105,64 +105,12 @@ namespace hscpp
         return m_FeatureManager.IsFeatureEnabled(feature);
     }
 
-    void Hotswapper::CreateDependencyGraph()
-    {
-        if (m_FeatureManager.IsFeatureEnabled(Feature::DependentCompilation))
-        {
-            // Header and source directories may overlap, so collect unique files using a set.
-            std::unordered_set<fs::path, FsPathHasher> uniqueSourceFilePaths;
-
-            AppendDirectoryFiles(m_SourceDirectoryPathsByHandle, uniqueSourceFilePaths);
-            AppendDirectoryFiles(m_IncludeDirectoryPathsByHandle, uniqueSourceFilePaths);
-
-            m_DependencyGraph.Clear();
-
-            for (const auto& sourceFilePath : uniqueSourceFilePaths)
-            {
-                FileParser::ParseInfo parseInfo = m_FileParser.Parse(sourceFilePath);
-                std::error_code error;
-                fs::path canonicalFilePath = fs::canonical(parseInfo.filePath, error);
-
-                if (error.value() != HSCPP_ERROR_SUCCESS)
-                {
-                    log::Error() << HSCPP_LOG_PREFIX << "Failed to get canonical path of "
-                                 << canonicalFilePath << ". " << log::OsError(error) << log::End();
-                    return;
-                }
-
-                m_DependencyGraph.SetLinkedModules(canonicalFilePath, parseInfo.modules);
-
-                std::vector<fs::path> canonicalIncludePaths;
-                for (const auto& includePath : parseInfo.includePaths)
-                {
-                    for (const auto& includeDirectoryPath : AsVector(m_IncludeDirectoryPathsByHandle))
-                    {
-                        // For example, the includePath may be "MathUtil.h", but we want to find the full
-                        // for creating the dependency graph. Iterate through our include directories to
-                        // find the folder that contains a matching include.
-                        fs::path fullIncludePath = includeDirectoryPath / includePath;
-                        if (fs::exists(fullIncludePath))
-                        {
-                            fullIncludePath = fs::canonical(fullIncludePath, error);
-                            if (error.value() == HSCPP_ERROR_SUCCESS)
-                            {
-                                canonicalIncludePaths.push_back(fullIncludePath);
-                            }
-                        }
-                    }
-                }
-
-                m_DependencyGraph.SetFileDependencies(canonicalFilePath, canonicalIncludePaths);
-            }
-        }
-    }
-
     void Hotswapper::TriggerManualBuild()
     {
         if (CreateBuildDirectory())
         {
             ICompiler::Input compilerInput = CreateCompilerInput({});
-            
+
             if (StartCompile(compilerInput))
             {
                 while (m_pCompiler->IsCompiling())
@@ -181,6 +129,11 @@ namespace hscpp
 
     Hotswapper::UpdateResult Hotswapper::Update()
     {
+        if (m_bDependencyGraphNeedsRefresh && IsFeatureEnabled(Feature::DependentCompilation))
+        {
+            RefreshDependencyGraph();
+        }
+
         m_pCompiler->Update();
         if (m_pCompiler->IsCompiling())
         {
@@ -248,7 +201,7 @@ namespace hscpp
         // Attempt to call 'Protected' function. On a structured exception, rather than terminating
         // the program, let the user modify their code and attempt to fix the issue.
         ProtectedFunction::Result result = ProtectedFunction::Call(cb);
-        
+
         // Keep recompiling user's changes until protected call succeeds.
         while (result != ProtectedFunction::Result::Success)
         {
@@ -271,6 +224,8 @@ namespace hscpp
 
     int Hotswapper::AddIncludeDirectory(const fs::path& directoryPath)
     {
+        m_bDependencyGraphNeedsRefresh = true;
+
         m_pFileWatcher->AddWatch(directoryPath);
         return Add(directoryPath, m_NextIncludeDirectoryHandle, m_IncludeDirectoryPathsByHandle);
     }
@@ -283,7 +238,13 @@ namespace hscpp
             m_pFileWatcher->RemoveWatch(it->second);
         }
 
-        return Remove(handle, m_IncludeDirectoryPathsByHandle);
+        bool bRemoved = Remove(handle, m_IncludeDirectoryPathsByHandle);
+        if (bRemoved)
+        {
+            m_bDependencyGraphNeedsRefresh = true;
+        }
+
+        return bRemoved;
     }
 
     void Hotswapper::EnumerateIncludeDirectories(const std::function<void(int handle, const fs::path& directoryPath)>& cb)
@@ -298,6 +259,8 @@ namespace hscpp
 
     int Hotswapper::AddSourceDirectory(const fs::path& directoryPath)
     {
+        m_bDependencyGraphNeedsRefresh = true;
+
         m_pFileWatcher->AddWatch(directoryPath);
         return Add(directoryPath, m_NextSourceDirectoryHandle, m_SourceDirectoryPathsByHandle);
     }
@@ -310,7 +273,13 @@ namespace hscpp
             m_pFileWatcher->RemoveWatch(it->second);
         }
 
-        return Remove(handle, m_SourceDirectoryPathsByHandle);
+        bool bRemoved = Remove(handle, m_SourceDirectoryPathsByHandle);
+        if (bRemoved)
+        {
+            m_bDependencyGraphNeedsRefresh = true;
+        }
+
+        return bRemoved;
     }
 
     void Hotswapper::EnumerateSourceDirectories(const std::function<void(int handle, const fs::path& directoryPath)>& cb)
@@ -484,7 +453,7 @@ namespace hscpp
         std::vector<fs::path> additionalLibraryPaths;
         std::vector<std::string> additionalPreprocessorDefinitions;
 
-        if (m_FeatureManager.IsFeatureEnabled(Feature::Preprocessor))
+        if (IsFeatureEnabled(Feature::Preprocessor))
         {
             std::vector<FileParser::ParseInfo> parseInfos = m_FileParser.Parse(input.sourceFilePaths);
             for (const auto& parseInfo : parseInfos)
@@ -538,7 +507,7 @@ namespace hscpp
                 }
             }
 
-            if (m_FeatureManager.IsFeatureEnabled(Feature::DependentCompilation))
+            if (IsFeatureEnabled(Feature::DependentCompilation))
             {
                 for (const auto& sourceFilePath : input.sourceFilePaths)
                 {
@@ -635,6 +604,58 @@ namespace hscpp
         }
 
         return true;
+    }
+
+    void Hotswapper::RefreshDependencyGraph()
+    {
+        if (IsFeatureEnabled(Feature::DependentCompilation))
+        {
+            // Header and source directories may overlap, so collect unique files using a set.
+            std::unordered_set<fs::path, FsPathHasher> uniqueSourceFilePaths;
+
+            AppendDirectoryFiles(m_SourceDirectoryPathsByHandle, uniqueSourceFilePaths);
+            AppendDirectoryFiles(m_IncludeDirectoryPathsByHandle, uniqueSourceFilePaths);
+
+            m_DependencyGraph.Clear();
+
+            for (const auto& sourceFilePath : uniqueSourceFilePaths)
+            {
+                FileParser::ParseInfo parseInfo = m_FileParser.Parse(sourceFilePath);
+                std::error_code error;
+                fs::path canonicalFilePath = fs::canonical(parseInfo.filePath, error);
+
+                if (error.value() != HSCPP_ERROR_SUCCESS)
+                {
+                    log::Error() << HSCPP_LOG_PREFIX << "Failed to get canonical path of "
+                                 << canonicalFilePath << ". " << log::OsError(error) << log::End();
+                    return;
+                }
+
+                m_DependencyGraph.SetLinkedModules(canonicalFilePath, parseInfo.modules);
+
+                std::vector<fs::path> canonicalIncludePaths;
+                for (const auto& includePath : parseInfo.includePaths)
+                {
+                    for (const auto& includeDirectoryPath : AsVector(m_IncludeDirectoryPathsByHandle))
+                    {
+                        // For example, the includePath may be "MathUtil.h", but we want to find the full
+                        // for creating the dependency graph. Iterate through our include directories to
+                        // find the folder that contains a matching include.
+                        fs::path fullIncludePath = includeDirectoryPath / includePath;
+                        if (fs::exists(fullIncludePath))
+                        {
+                            fullIncludePath = fs::canonical(fullIncludePath, error);
+                            if (error.value() == HSCPP_ERROR_SUCCESS)
+                            {
+                                canonicalIncludePaths.push_back(fullIncludePath);
+                            }
+                        }
+                    }
+                }
+
+                m_DependencyGraph.SetFileDependencies(canonicalFilePath, canonicalIncludePaths);
+            }
+        }
     }
 
     void Hotswapper::AppendDirectoryFiles(const std::unordered_map<int, fs::path>& directoryPathsByHandle,
