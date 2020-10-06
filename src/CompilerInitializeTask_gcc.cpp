@@ -17,8 +17,8 @@ namespace hscpp
         m_StartTime = std::chrono::steady_clock::now();
         m_Timeout = timeout;
 
-        //std::string versionCmd = "\"" + m_Config.executable.u8string() + "\" --version";
-        m_pCmdShell->StartTask("while true", static_cast<int>(CompilerTask::GetVersion));
+        std::string versionCmd = "\"" + m_Config.executable.u8string() + "\" --version";
+        m_pCmdShell->StartTask(versionCmd, static_cast<int>(CompilerTask::GetVersion));
     }
 
     ICmdShellTask::TaskState CompilerInitializeTask_gcc::Update()
