@@ -1,4 +1,5 @@
 #include <cassert>
+#include <cctype>
 
 #include "hscpp/CompilerInitializeTask_gcc.h"
 #include "hscpp/Log.h"
@@ -74,16 +75,44 @@ namespace hscpp
     }
 
     ICmdShellTask::TaskState CompilerInitializeTask_gcc::HandleGetVersionTaskComplete(
-            const std::vector<std::string> &output)
+            const std::vector<std::string>& output)
     {
         if (output.empty())
         {
             log::Error() << HSCPP_LOG_PREFIX << "Failed to get version for compiler '"
-                 << m_Config.executable.u8string() << log::End("'.");
+                         << m_Config.executable.u8string() << log::End("'.");
             return ICmdShellTask::TaskState::Failure;
         }
 
-        log::Info() << log::End();
+        // Very rudimentary verification; assume that a --version string will have at least
+        // a letter and a number associated with it.
+        bool bSawLetter = false;
+        bool bSawNumber = false;
+        for (const auto& line : output)
+        {
+            for (const char c : line)
+            {
+                if (std::isdigit(c))
+                {
+                    bSawNumber = true;
+                }
+
+                if (std::isalpha(c))
+                {
+                    bSawLetter = true;
+                }
+            }
+        }
+
+        if (!bSawLetter || !bSawNumber)
+        {
+            log::Error() << HSCPP_LOG_PREFIX << "Failed to get version for compiler '"
+                         << m_Config.executable.u8string() << log::End("'.");
+            return ICmdShellTask::TaskState::Failure;
+        }
+
+        // Since --version verification is not very robust, print out the discovered compiler.
+        log::Info() << log::End(); // newline
         log::Info() << HSCPP_LOG_PREFIX << "Found compiler version:" << log::End();
         for (const auto& line : output)
         {
