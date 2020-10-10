@@ -81,9 +81,7 @@ namespace hscpp { namespace log
         }
 
         *this << endLog.Str();
-        m_Stream << std::endl;
-
-        std::wcout << m_Stream.str();
+        std::wcout << m_Stream.str() << std::endl;
 
         if (m_EndCb != nullptr)
         {
