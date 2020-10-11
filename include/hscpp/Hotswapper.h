@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 #include <unordered_set>
-#include <unordered_map>
+#include <map>
 
 #include "hscpp/Platform.h"
 #include "hscpp/IFileWatcher.h"
@@ -120,14 +120,18 @@ namespace hscpp
         int m_NextLinkOptionHandle = 0;
 
         fs::path m_BuildDirectoryPath;
-        std::unordered_map<int, fs::path> m_IncludeDirectoryPathsByHandle;
-        std::unordered_map<int, fs::path> m_SourceDirectoryPathsByHandle;
-        std::unordered_map<int, fs::path> m_ForceCompiledSourceFilePathsByHandle;
-        std::unordered_map<int, fs::path> m_LibraryDirectoryPathsByHandle;
-        std::unordered_map<int, fs::path> m_LibraryPathsByHandle;
-        std::unordered_map<int, std::string> m_PreprocessorDefinitionsByHandle;
-        std::unordered_map<int, std::string> m_CompileOptionsByHandle;
-        std::unordered_map<int, std::string> m_LinkOptionsByHandle;
+
+        // Use std::map, to ensure that entries are ordered by their handle. Since handles are
+        // assigned in increasing order, map order will match the order in which elements are
+        // added via the API. This is important when linking libraries.
+        std::map<int, fs::path> m_IncludeDirectoryPathsByHandle;
+        std::map<int, fs::path> m_SourceDirectoryPathsByHandle;
+        std::map<int, fs::path> m_ForceCompiledSourceFilePathsByHandle;
+        std::map<int, fs::path> m_LibraryDirectoryPathsByHandle;
+        std::map<int, fs::path> m_LibraryPathsByHandle;
+        std::map<int, std::string> m_PreprocessorDefinitionsByHandle;
+        std::map<int, std::string> m_CompileOptionsByHandle;
+        std::map<int, std::string> m_LinkOptionsByHandle;
 
         std::unordered_set<fs::path, FsPathHasher> m_QueuedSourceFilePaths;
 
@@ -158,24 +162,24 @@ namespace hscpp
         bool CreateBuildDirectory();
 
         void RefreshDependencyGraph();
-        void AppendDirectoryFiles(const std::unordered_map<int, fs::path>& directoryPathsByHandle,
+        void AppendDirectoryFiles(const std::map<int, fs::path>& directoryPathsByHandle,
             std::unordered_set<fs::path, FsPathHasher>& sourceFilePaths);
 
         template <typename T>
-        int Add(const T& value, int& handle, std::unordered_map<int, T>& map);
+        int Add(const T& value, int& handle, std::map<int, T>& map);
 
         template <typename T>
-        bool Remove(int handle, std::unordered_map<int, T>& map);
+        bool Remove(int handle, std::map<int, T>& map);
 
         template <typename T>
-        void Enumerate(const std::function<void(int handle, const T& value)>& cb, std::unordered_map<int, T>& map);
+        void Enumerate(const std::function<void(int handle, const T& value)>& cb, std::map<int, T>& map);
 
         template <typename T>
-        std::vector<T> AsVector(std::unordered_map<int, T>& map);
+        std::vector<T> AsVector(std::map<int, T>& map);
     };
 
     template <typename T>
-    int Hotswapper::Add(const T& value, int& handle, std::unordered_map<int, T>& map)
+    int Hotswapper::Add(const T& value, int& handle, std::map<int, T>& map)
     {
         int curHandle = handle++;
         map[curHandle] = value;
@@ -184,7 +188,7 @@ namespace hscpp
     }
 
     template <typename T>
-    bool Hotswapper::Remove(int handle, std::unordered_map<int, T>& map)
+    bool Hotswapper::Remove(int handle, std::map<int, T>& map)
     {
         auto it = map.find(handle);
         if (it == map.end())
@@ -197,7 +201,7 @@ namespace hscpp
     }
 
     template <typename T>
-    void Hotswapper::Enumerate(const std::function<void(int handle, const T& value)>& cb, std::unordered_map<int, T>& map)
+    void Hotswapper::Enumerate(const std::function<void(int handle, const T& value)>& cb, std::map<int, T>& map)
     {
         for (const auto& handle__val : map)
         {
@@ -206,7 +210,7 @@ namespace hscpp
     }
 
     template <typename T>
-    std::vector<T> Hotswapper::AsVector(std::unordered_map<int, T>& map)
+    std::vector<T> Hotswapper::AsVector(std::map<int, T>& map)
     {
         std::vector<T> vec;
         for (const auto& handle__val : map)

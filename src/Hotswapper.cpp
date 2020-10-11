@@ -679,7 +679,7 @@ namespace hscpp
         }
     }
 
-    void Hotswapper::AppendDirectoryFiles(const std::unordered_map<int, fs::path>& directoryPathsByHandle,
+    void Hotswapper::AppendDirectoryFiles(const std::map<int, fs::path>& directoryPathsByHandle,
         std::unordered_set<fs::path, FsPathHasher>& sourceFilePaths)
     {
         for (const auto& handle__directoryPath : directoryPathsByHandle)
