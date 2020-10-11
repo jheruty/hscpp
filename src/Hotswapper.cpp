@@ -313,6 +313,26 @@ namespace hscpp
         m_ForceCompiledSourceFilePathsByHandle.clear();
     }
 
+    int Hotswapper::AddLibraryDirectory(const fs::path& directoryPath)
+    {
+         return Add(directoryPath, m_NextLibraryDirectoryHandle, m_LibraryDirectoryPathsByHandle);
+    }
+
+    bool Hotswapper::RemoveLibraryDirectory(int handle)
+    {
+        return Remove(handle, m_LibraryDirectoryPathsByHandle);
+    }
+
+    void Hotswapper::EnumerateLibraryDirectories(const std::function<void(int, const fs::path&)>& cb)
+    {
+        Enumerate(cb, m_LibraryDirectoryPathsByHandle);
+    }
+
+    void Hotswapper::ClearLibraryDirectories()
+    {
+        m_LibraryDirectoryPathsByHandle.clear();
+    }
+
     int Hotswapper::AddLibrary(const fs::path& libraryPath)
     {
         return Add(libraryPath, m_NextLibraryHandle, m_LibraryPathsByHandle);
@@ -429,6 +449,7 @@ namespace hscpp
         input.buildDirectoryPath = m_BuildDirectoryPath;
         input.sourceFilePaths = sourceFilePaths;
         input.includeDirectoryPaths = AsVector(m_IncludeDirectoryPathsByHandle);
+        input.libraryDirectoryPaths = AsVector(m_LibraryDirectoryPathsByHandle);
         input.libraryPaths = AsVector(m_LibraryPathsByHandle);
         input.preprocessorDefinitions = AsVector(m_PreprocessorDefinitionsByHandle);
         input.compileOptions = AsVector(m_CompileOptionsByHandle);

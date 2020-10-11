@@ -15,6 +15,7 @@ namespace hscpp
             fs::path buildDirectoryPath;
             std::vector<fs::path> sourceFilePaths;
             std::vector<fs::path> includeDirectoryPaths;
+            std::vector<fs::path> libraryDirectoryPaths;
             std::vector<fs::path> libraryPaths;
             std::vector<std::string> preprocessorDefinitions;
             std::vector<std::string> compileOptions;

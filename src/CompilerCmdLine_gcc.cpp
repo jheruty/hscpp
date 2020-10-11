@@ -52,9 +52,21 @@ namespace hscpp
             command << "-I " << "\"" << util::UnixSlashes(includeDirectory.u8string()) << "\"" << std::endl;
         }
 
+        for (const auto& libraryDirectory : input.libraryDirectoryPaths)
+        {
+            command << "-L " << "\"" << util::UnixSlashes(libraryDirectory.u8string()) << "\"" << std::endl;
+        }
+
         for (const auto& library : input.libraryPaths)
         {
-            command << "\"" << util::UnixSlashes(library.u8string()) << "\"" << std::endl;
+            if (library.parent_path().empty())
+            {
+                command << "-l " << "\"" << library.filename().u8string() << "\"" << std::endl;
+            }
+            else
+            {
+                command << "\"" << util::UnixSlashes(library.u8string()) << "\"" << std::endl;
+            }
         }
 
         for (const auto& file : input.sourceFilePaths)

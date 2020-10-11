@@ -334,7 +334,7 @@ namespace hscpp { namespace platform
 
 #endif
 
-    std::string GetModuleExtension()
+    std::string GetSharedLibraryExtension()
     {
 #if defined(HSCPP_PLATFORM_WIN32)
         return "dll";

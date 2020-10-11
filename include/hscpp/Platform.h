@@ -61,7 +61,7 @@ typedef int TOsError;
         std::wstring GetLastErrorString();
 #endif
 
-        std::string GetModuleExtension();
+        std::string GetSharedLibraryExtension();
         void* LoadModule(const fs::path& modulePath);
 
         template <typename TSignature>

@@ -8,7 +8,7 @@ namespace hscpp
 {
 
     const static std::string COMMAND_FILENAME = "cmdfile";
-    const static std::string MODULE_FILENAME = "module." + platform::GetModuleExtension();
+    const static std::string MODULE_FILENAME = "module." + platform::GetSharedLibraryExtension();
 
 
     Compiler::Compiler(CompilerConfig* pConfig,

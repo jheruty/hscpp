@@ -77,6 +77,11 @@ namespace hscpp
         void EnumerateForceCompiledSourceFiles(const std::function<void(int handle, const fs::path& directoryPath)>& cb);
         void ClearForceCompiledSourceFiles();
 
+        int AddLibraryDirectory(const fs::path& directoryPath);
+        bool RemoveLibraryDirectory(int handle);
+        void EnumerateLibraryDirectories(const std::function<void(int handle, const fs::path& directoryPath)>& cb);
+        void ClearLibraryDirectories();
+
         int AddLibrary(const fs::path& libraryPath);
         bool RemoveLibrary(int handle);
         void EnumerateLibraries(const std::function<void(int handle, const fs::path& libraryPath)>& cb);
@@ -108,6 +113,7 @@ namespace hscpp
         int m_NextIncludeDirectoryHandle = 0;
         int m_NextSourceDirectoryHandle = 0;
         int m_NextForceCompiledSourceFileHandle = 0;
+        int m_NextLibraryDirectoryHandle = 0;
         int m_NextLibraryHandle = 0;
         int m_NextPreprocessorDefinitionHandle = 0;
         int m_NextCompileOptionHandle = 0;
@@ -117,6 +123,7 @@ namespace hscpp
         std::unordered_map<int, fs::path> m_IncludeDirectoryPathsByHandle;
         std::unordered_map<int, fs::path> m_SourceDirectoryPathsByHandle;
         std::unordered_map<int, fs::path> m_ForceCompiledSourceFilePathsByHandle;
+        std::unordered_map<int, fs::path> m_LibraryDirectoryPathsByHandle;
         std::unordered_map<int, fs::path> m_LibraryPathsByHandle;
         std::unordered_map<int, std::string> m_PreprocessorDefinitionsByHandle;
         std::unordered_map<int, std::string> m_CompileOptionsByHandle;
