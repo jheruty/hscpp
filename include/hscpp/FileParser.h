@@ -17,6 +17,7 @@ namespace hscpp
             {
                 Source,
                 Include,
+                LibraryDirectory,
                 Library,
             };
 

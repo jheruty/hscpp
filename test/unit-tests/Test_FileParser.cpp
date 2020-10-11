@@ -25,7 +25,7 @@ namespace hscpp { namespace test
         FileParser::ParseInfo info = parser.Parse(filePath);
 
         REQUIRE(info.filePath == filePath);
-        REQUIRE(info.requires.size() == 3);
+        REQUIRE(info.requires.size() == 4);
         REQUIRE(info.preprocessorDefinitions.size() == 2);
         REQUIRE(info.modules.size() == 2);
         REQUIRE(info.includePaths.size() == 2);
@@ -40,7 +40,12 @@ namespace hscpp { namespace test
             fs::path("../"),
         });
 
-        CALL(ValidateRequire, info.requires.at(2), FileParser::Require::Type::Library, {
+        CALL(ValidateRequire, info.requires.at(2), FileParser::Require::Type::LibraryDirectory, {
+            fs::path("../fake_lib_directory"),
+            fs::path("moredirs"),
+        });
+
+        CALL(ValidateRequire, info.requires.at(3), FileParser::Require::Type::Library, {
             fs::path("fakelib.lib"),
             fs::path("../another/fake/lib.lib"),
         });

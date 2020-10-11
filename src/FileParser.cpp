@@ -53,6 +53,7 @@ namespace hscpp
             // We only care to find:
             //    hscpp_require_source
             //    hscpp_require_include
+            //    hscpp_require_lib_directory
             //    hscpp_require_lib
             //    hscpp_preprocessor_definitions
             //    hscpp_module 
@@ -88,10 +89,20 @@ namespace hscpp
                     }
                     else if (Match("lib"))
                     {
-                        m_Context = "hscpp_require_lib";
+                        if (Match("_directory"))
+                        {
+                            m_Context = "hscpp_require_lib_directory";
 
-                        bRequire = true;
-                        require.type = Require::Type::Library;
+                            bRequire = true;
+                            require.type = Require::Type::LibraryDirectory;
+                        }
+                        else
+                        {
+                            m_Context = "hscpp_require_lib";
+
+                            bRequire = true;
+                            require.type = Require::Type::Library;
+                        }
                     }
 
                     if (bRequire)

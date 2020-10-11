@@ -469,6 +469,7 @@ namespace hscpp
     {
         std::vector<fs::path> additionalSourceFilePaths;
         std::vector<fs::path> additionalIncludeDirectoryPaths;
+        std::vector<fs::path> additionalLibraryDirectoryPaths;
         std::vector<fs::path> additionalLibraryPaths;
         std::vector<std::string> additionalPreprocessorDefinitions;
 
@@ -503,6 +504,9 @@ namespace hscpp
                                     break;
                                 case FileParser::Require::Type::Include:
                                     additionalIncludeDirectoryPaths.push_back(canonicalPath);
+                                    break;
+                                case FileParser::Require::Type::LibraryDirectory:
+                                    additionalLibraryDirectoryPaths.push_back(canonicalPath);
                                     break;
                                 case FileParser::Require::Type::Library:
                                     additionalLibraryPaths.push_back(canonicalPath);
@@ -541,6 +545,8 @@ namespace hscpp
                 additionalSourceFilePaths.begin(), additionalSourceFilePaths.end());
         input.includeDirectoryPaths.insert(input.includeDirectoryPaths.end(),
                 additionalIncludeDirectoryPaths.begin(), additionalIncludeDirectoryPaths.end());
+        input.libraryDirectoryPaths.insert(input.libraryDirectoryPaths.end(),
+                additionalLibraryDirectoryPaths.begin(), additionalLibraryDirectoryPaths.end());
         input.libraryPaths.insert(input.libraryPaths.end(),
                 additionalLibraryPaths.begin(), additionalLibraryPaths.end());
         input.preprocessorDefinitions.insert(input.preprocessorDefinitions.end(),
