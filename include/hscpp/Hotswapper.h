@@ -105,6 +105,13 @@ namespace hscpp
         void SetVar(const std::string& name, const std::string& val);
         bool RemoveVar(const std::string& name);
 
+#if defined(HSCPP_DISABLE)
+    private:
+        ModuleManager m_ModuleManager;
+        AllocationResolver m_AllocationResolver;
+    };
+#else
+
     private:
         std::unique_ptr<Config> m_pConfig;
 
@@ -219,5 +226,7 @@ namespace hscpp
 
         return vec;
     }
+
+#endif
 
 }

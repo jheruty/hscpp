@@ -2,6 +2,11 @@ cmake_minimum_required(VERSION 3.10.0)
 
 project(hscpp)
 
+option(HSCPP_BUILD_EXAMPLES "Enable building examples." ON)
+option(HSCPP_BUILD_TESTS "Enable building tests." ON)
+option(HSCPP_USE_GHC_FILESYSTEM "Use ghc filesystem as a substitute of std::filesystem." OFF)
+option(HSCPP_DISABLE "Disable hscpp." OFF)
+
 list(APPEND SRC_FILES
     src/module/Module.cpp
 
@@ -16,7 +21,6 @@ list(APPEND SRC_FILES
     src/FeatureManager.cpp
     src/FileParser.cpp
     src/FsPathHasher.cpp
-    src/Hotswapper.cpp
     src/Log.cpp
     src/ModuleManager.cpp
     src/Platform.cpp
@@ -130,10 +134,6 @@ elseif(UNIX)
     )
 endif()
 
-option(HSCPP_BUILD_EXAMPLES "Enable building examples." ON)
-option(HSCPP_BUILD_TESTS "Enable building tests." ON)
-option(HSCPP_USE_GHC_FILESYSTEM "Use ghc filesystem as a substitute of std::filesystem." OFF)
-
 if(NOT DEFINED CMAKE_CXX_STANDARD)
     # Set C++17 as default build target.
     set(CMAKE_CXX_STANDARD 17)
@@ -159,6 +159,13 @@ if (HSCPP_USE_GHC_FILESYSTEM OR (CMAKE_CXX_STANDARD LESS 17))
 
     # Use standard conforming .native() calls on Win32 (wstring instead of UTF-8).
     target_compile_definitions(ghc_filesystem INTERFACE GHC_WIN_WSTRING_STRING_TYPE)
+endif()
+
+if (HSCPP_DISABLE)
+    list(APPEND SRC_FILES src/Hotswapper_disabled.cpp)
+    list(APPEND COMPILE_DEFINITIONS HSCPP_DISABLE)
+else()
+    list(APPEND SRC_FILES src/Hotswapper_enabled.cpp)
 endif()
 
 list(APPEND COMPILE_DEFINITIONS
