@@ -19,7 +19,6 @@ namespace hscpp
 
         void SetLinkedModules(const fs::path& filePath, const std::vector<std::string>& modules);
         void SetFileDependencies(const fs::path& filePath, const std::vector<fs::path>& dependencies);
-        void PruneDeletedFiles();
         void RemoveFile(const fs::path& filePath);
 
         void Clear();

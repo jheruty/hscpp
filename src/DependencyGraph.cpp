@@ -93,25 +93,6 @@ namespace hscpp
         }
     }
 
-    void DependencyGraph::PruneDeletedFiles()
-    {
-        std::vector<fs::path> deletedFilePaths;
-
-        for (const auto& handle__pNode : m_NodeByHandle)
-        {
-            fs::path filePath = GetFilepath(handle__pNode.first);
-            if (!fs::exists(filePath))
-            {
-                deletedFilePaths.push_back(filePath);
-            }
-        }
-
-        for (const auto& deletedFilePath : deletedFilePaths)
-        {
-            RemoveFile(deletedFilePath);
-        }
-    }
-
     void DependencyGraph::RemoveFile(const fs::path& filePath)
     {
         int fileHandle = GetHandle(filePath);
@@ -119,6 +100,7 @@ namespace hscpp
         Node* pNode = GetNode(fileHandle);
         if (pNode == nullptr)
         {
+            // File is not part of dependency graph.
             return;
         }
 
