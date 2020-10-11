@@ -133,8 +133,6 @@ namespace hscpp
         std::map<int, std::string> m_CompileOptionsByHandle;
         std::map<int, std::string> m_LinkOptionsByHandle;
 
-        std::unordered_set<fs::path, FsPathHasher> m_QueuedSourceFilePaths;
-
         std::unique_ptr<IFileWatcher> m_pFileWatcher;
         std::vector<IFileWatcher::Event> m_FileEvents;
 

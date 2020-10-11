@@ -146,8 +146,6 @@ namespace hscpp
         {
             if (PerformRuntimeSwap())
             {
-                // Successfully performed runtime swap. No files remain in queue.
-                m_QueuedSourceFilePaths.clear();
                 return UpdateResult::PerformedSwap;
             }
             else
