@@ -148,8 +148,6 @@ namespace hscpp
 
     void Compiler::HandleTaskComplete(Compiler::CompilerTask task)
     {
-        const std::vector<std::string>& output = m_pCmdShell->PeekTaskOutput();
-
         switch (task)
         {
             case CompilerTask::Build:

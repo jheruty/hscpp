@@ -47,7 +47,7 @@ public:
             size_t size = sizeof(typename std::aligned_storage<sizeof(T)>::type);
             size_t iBlock = TakeFirstFreeBlock(size);
 
-            T* pT = new (m_Blocks.at(iBlock).pMemory) T;
+            new (m_Blocks.at(iBlock).pMemory) T;
 
             Ref<T> ref;
             ref.id = iBlock;

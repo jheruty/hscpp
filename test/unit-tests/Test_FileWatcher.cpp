@@ -29,7 +29,7 @@ namespace hscpp { namespace test
         std::vector<fs::path> canonicalModifiedFilePaths;
         std::vector<fs::path> canonicalRemovedFilePaths;
 
-        auto cb = [&](Milliseconds elapsedMs) {
+        auto cb = [&](Milliseconds) {
             pFileWatcher->PollChanges(events);
             return !events.empty()
                    ? UpdateLoop::Done

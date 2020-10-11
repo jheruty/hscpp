@@ -123,6 +123,8 @@ namespace hscpp { namespace platform
 		{
 			options.push_back("/std:c++" + std::to_string(cppStandard));
 		}
+#else
+		HSCPP_UNUSED_PARAM(cppStandard);
 #endif
 
 		return options;
@@ -216,6 +218,8 @@ namespace hscpp { namespace platform
     {
 #if defined(HSCPP_PLATFORM_WIN32)
         OutputDebugStringW(str.c_str());
+#else
+        HSCPP_UNUSED_PARAM(str);
 #endif
     }
 

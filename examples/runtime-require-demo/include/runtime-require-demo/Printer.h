@@ -9,6 +9,8 @@ class Printer : public BaseState
     HSCPP_TRACK(Printer, "Printer1")
 
 public:
+    hscpp_virtual ~Printer() = default;
     Printer();
+
     hscpp_virtual void Update();
 };

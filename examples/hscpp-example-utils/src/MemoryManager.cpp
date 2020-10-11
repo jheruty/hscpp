@@ -70,7 +70,7 @@ uint64_t MemoryManager::Hscpp_Free(uint8_t* pMemory)
 
 size_t MemoryManager::TakeFirstFreeBlock(uint64_t size)
 {
-    size_t iBlock = -1;
+    size_t iBlock = (std::numeric_limits<size_t>::max)();
     for (size_t i = 0; i < m_Blocks.size(); ++i)
     {
         Block& block = m_Blocks.at(i);
@@ -82,7 +82,7 @@ size_t MemoryManager::TakeFirstFreeBlock(uint64_t size)
         }
     }
 
-    if (iBlock == -1)
+    if (iBlock == (std::numeric_limits<size_t>::max)())
     {
         iBlock = m_Blocks.size();
 

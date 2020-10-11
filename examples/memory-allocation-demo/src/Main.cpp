@@ -58,7 +58,6 @@ int main()
     m_UpdatableObjects.push_back(trackedPrinter.As<IUpdatable>());
     m_UpdatableObjects.push_back(untrackedPrinter.As<IUpdatable>());
 
-    auto then = std::chrono::system_clock::now();
     while (true)
     {
         swapper.Update();

@@ -15,7 +15,7 @@ namespace hscpp { namespace test
 
     static bool bCreatedBuildDirectory = false;
 
-    static fs::path CreateBuildDirectory(const fs::path& sandboxPath)
+    static fs::path CreateBuildDirectory()
     {
         // Modules will be loaded by the program, so they cannot be deleted while it is running. Get
         // around this by creating a separate build directory, which houses directories with unique
@@ -37,7 +37,7 @@ namespace hscpp { namespace test
 
     static void WaitForInitialize(ICompiler* pCompiler)
     {
-        auto cb = [&](Milliseconds elapsedTime)
+        auto cb = [&](Milliseconds)
         {
             pCompiler->Update();
             if (pCompiler->IsInitialized())
@@ -55,7 +55,7 @@ namespace hscpp { namespace test
 
     static fs::path CompileUpdateLoop(ICompiler* pCompiler)
     {
-        auto cb = [&](Milliseconds elapsedTime)
+        auto cb = [&](Milliseconds)
         {
             pCompiler->Update();
             if (pCompiler->HasCompiledModule())
@@ -82,7 +82,7 @@ namespace hscpp { namespace test
         fs::path sandboxPath = CALL(InitializeSandbox, assetsPath);
 
         fs::path includeDirectoryPath = sandboxPath;
-        fs::path buildDirectoryPath = CALL(CreateBuildDirectory, sandboxPath);
+        fs::path buildDirectoryPath = CALL(CreateBuildDirectory);
         fs::path filePath = sandboxPath / "Lib.cpp";
 
         auto pConfig = std::unique_ptr<Config>(new Config());

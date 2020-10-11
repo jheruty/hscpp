@@ -135,6 +135,20 @@ elseif(UNIX)
 endif()
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    list(APPEND COMPILE_OPTIONS
+        /permissive # Enforce standard compliance.
+        /W4
+    )
+else()
+    list(APPEND COMPILE_OPTIONS
+        -Wall
+        -Wextra
+        -Wshadow
+        -Wno-unused-function
+    )
+endif()
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     list(APPEND COMPILE_DEFINITIONS HSCPP_COMPILER_MSVC)
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
     list(APPEND COMPILE_DEFINITIONS

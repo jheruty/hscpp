@@ -29,7 +29,7 @@ namespace hscpp { namespace test
 
     static void WaitForCmdDone(ICmdShell* pCmdShell, int expectedTaskId)
     {
-        auto cb = [&](Milliseconds timeElapsed){
+        auto cb = [&](Milliseconds){
             int taskId = 0;
             ICmdShell::TaskState taskState = pCmdShell->Update(taskId);
             REQUIRE(taskId == expectedTaskId);

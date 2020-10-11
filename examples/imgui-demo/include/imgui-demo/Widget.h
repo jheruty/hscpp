@@ -15,7 +15,7 @@ class Widget
 
 public:
     Widget();
-    ~Widget();
+    hscpp_virtual ~Widget();
 
     hscpp_virtual void Init(const std::string& parent, const std::string& title);
     hscpp_virtual void Update();

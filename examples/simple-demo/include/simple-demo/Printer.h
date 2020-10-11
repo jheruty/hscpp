@@ -12,6 +12,8 @@ class Printer
     HSCPP_TRACK(Printer, "Printer");
 
 public:
+    hscpp_virtual ~Printer() = default;
+
     // A default constructor is required. 
     Printer();
     Printer(const std::string& name, int index);
