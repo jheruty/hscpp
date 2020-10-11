@@ -681,6 +681,8 @@ namespace hscpp
                 m_DependencyGraph.SetFileDependencies(canonicalFilePath, canonicalIncludePaths);
             }
         }
+
+        m_bDependencyGraphNeedsRefresh = false;
     }
 
     void Hotswapper::AppendDirectoryFiles(const std::map<int, fs::path>& directoryPathsByHandle,
