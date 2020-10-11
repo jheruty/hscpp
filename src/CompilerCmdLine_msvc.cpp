@@ -71,14 +71,14 @@ namespace hscpp
             command << "/D" << "\"" << preprocessorDefinition << "\"" << std::endl;
         }
 
-        if (!input.linkOptions.empty())
+        for (const auto& libraryDirectory : input.libraryDirectoryPaths)
         {
-            command << "/link " << std::endl;
+            command << "/link " << "/LIBPATH:" << "\"" << libraryDirectory.u8string() << "\"" << std::endl;
         }
 
         for (const auto& option : input.linkOptions)
         {
-            command << option << std::endl;
+            command << "/link " << option << std::endl;
         }
 
         // Print effective command line.
