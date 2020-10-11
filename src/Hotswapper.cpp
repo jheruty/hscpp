@@ -167,6 +167,7 @@ namespace hscpp
                 std::vector<fs::path> canonicalRemovedFiles;
                 util::SortFileEvents(m_FileEvents, canonicalModifiedFiles, canonicalRemovedFiles);
 
+                RemoveFromDependencyGraph(canonicalRemovedFiles);
                 if (!canonicalModifiedFiles.empty())
                 {
                     ICompiler::Input compilerInput = CreateCompilerInput(canonicalModifiedFiles);
@@ -629,6 +630,17 @@ namespace hscpp
         }
 
         return true;
+    }
+
+    void Hotswapper::RemoveFromDependencyGraph(const std::vector<fs::path>& removedFilePaths)
+    {
+        if (IsFeatureEnabled(Feature::DependentCompilation))
+        {
+            for (const auto& removedFilePath : removedFilePaths)
+            {
+                m_DependencyGraph.RemoveFile(removedFilePath);
+            }
+        }
     }
 
     void Hotswapper::RefreshDependencyGraph()

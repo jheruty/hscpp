@@ -159,6 +159,7 @@ namespace hscpp
         bool CreateHscppTempDirectory();
         bool CreateBuildDirectory();
 
+        void RemoveFromDependencyGraph(const std::vector<fs::path>& removedFilePaths);
         void RefreshDependencyGraph();
         void AppendDirectoryFiles(const std::map<int, fs::path>& directoryPathsByHandle,
             std::unordered_set<fs::path, FsPathHasher>& sourceFilePaths);
