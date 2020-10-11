@@ -16,8 +16,8 @@ namespace hscpp
 
         void StartTask(const std::string& command, int taskId) override;
         void CancelTask() override;
+        void Clear() override;
 
-        TaskState GetTaskState() override;
         TaskState Update(int& taskId) override;
 
         const std::vector<std::string>& PeekTaskOutput() override;

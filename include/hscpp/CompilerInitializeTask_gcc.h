@@ -9,10 +9,12 @@ namespace hscpp
     class CompilerInitializeTask_gcc : public ICmdShellTask
     {
     public:
-        CompilerInitializeTask_gcc(CompilerConfig* pConfig);
+        explicit CompilerInitializeTask_gcc(CompilerConfig* pConfig);
 
-        void Start(ICmdShell* pCmdShell, std::chrono::milliseconds timeout) override;
-        TaskState Update() override;
+        void Start(ICmdShell* pCmdShell,
+                   std::chrono::milliseconds timeout,
+                   const std::function<void(Result)>& doneCb) override;
+        void Update() override;
 
     private:
         enum class CompilerTask
@@ -22,12 +24,15 @@ namespace hscpp
 
         CompilerConfig* m_pConfig = nullptr;
         ICmdShell* m_pCmdShell = nullptr;
+        std::function<void(Result)> m_DoneCb;
 
         std::chrono::steady_clock::time_point m_StartTime;
         std::chrono::milliseconds m_Timeout = std::chrono::milliseconds(0);
 
-        TaskState HandleTaskComplete(CompilerTask task);
-        TaskState HandleGetVersionTaskComplete(const std::vector<std::string>& output);
+        void TriggerDoneCb(Result result);
+
+        void HandleTaskComplete(CompilerTask task);
+        void HandleGetVersionTaskComplete(const std::vector<std::string>& output);
     };
 
 }

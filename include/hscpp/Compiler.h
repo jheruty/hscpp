@@ -35,6 +35,7 @@ namespace hscpp
         CompilerConfig* m_pConfig = nullptr;
 
         bool m_bInitialized = false;
+        bool m_bInitializationFailed = false;
 
         size_t m_iCompileOutput = 0;
         fs::path m_CompilingModulePath;
@@ -44,10 +45,8 @@ namespace hscpp
         std::unique_ptr<ICmdShellTask> m_pInitializeTask;
         std::unique_ptr<ICompilerCmdLine> m_pCompilerCmdLine;
 
-        void UpdateInitialization();
-
-        bool HandleTaskComplete(CompilerTask task);
-        bool HandleBuildTaskComplete();
+        void HandleTaskComplete(CompilerTask task);
+        void HandleBuildTaskComplete();
     };
 
 }

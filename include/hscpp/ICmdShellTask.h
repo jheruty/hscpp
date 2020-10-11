@@ -1,6 +1,7 @@
 #pragma once
 
 #include <chrono>
+#include <functional>
 
 #include "hscpp/ICmdShell.h"
 
@@ -9,17 +10,17 @@ namespace hscpp
     class ICmdShellTask
     {
     public:
-        enum class TaskState
+        enum class Result
         {
-            Running,
             Success,
             Failure,
-            Timeout,
         };
 
         virtual ~ICmdShellTask() = default;
 
-        virtual void Start(ICmdShell* pCmdShell, std::chrono::milliseconds timeout) = 0;
-        virtual TaskState Update() = 0;
+        virtual void Start(ICmdShell* pCmdShell,
+                           std::chrono::milliseconds timeout,
+                           const std::function<void(Result)>& doneCb) = 0;
+        virtual void Update() = 0;
     };
 }

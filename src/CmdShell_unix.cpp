@@ -70,6 +70,8 @@ namespace hscpp
 
     void CmdShell::StartTask(const std::string& command, int taskId)
     {
+        Clear();
+
         bool bSuccess = true;
 
         bSuccess &= SendCommand(command);
@@ -97,9 +99,13 @@ namespace hscpp
         m_TaskState = TaskState::Cancelled;
     }
 
-    ICmdShell::TaskState CmdShell::GetTaskState()
+    void CmdShell::Clear()
     {
-        return m_TaskState;
+        m_TaskId = -1;
+        m_TaskOutput.clear();
+        m_LeftoverCmdOutput.clear();
+
+        m_TaskState = TaskState::Idle;
     }
 
     ICmdShell::TaskState CmdShell::Update(int& taskId)

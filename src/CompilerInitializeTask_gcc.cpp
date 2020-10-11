@@ -11,9 +11,12 @@ namespace hscpp
         : m_pConfig(pConfig)
     {}
 
-    void CompilerInitializeTask_gcc::Start(ICmdShell *pCmdShell, std::chrono::milliseconds timeout)
+    void CompilerInitializeTask_gcc::Start(ICmdShell *pCmdShell,
+                                           std::chrono::milliseconds timeout,
+                                           const std::function<void(Result)>& doneCb)
     {
         m_pCmdShell = pCmdShell;
+        m_DoneCb = doneCb;
 
         m_StartTime = std::chrono::steady_clock::now();
         m_Timeout = timeout;
@@ -22,7 +25,7 @@ namespace hscpp
         m_pCmdShell->StartTask(versionCmd, static_cast<int>(CompilerTask::GetVersion));
     }
 
-    ICmdShellTask::TaskState CompilerInitializeTask_gcc::Update()
+    void CompilerInitializeTask_gcc::Update()
     {
         int taskId = 0;
         ICmdShell::TaskState state = m_pCmdShell->Update(taskId);
@@ -35,7 +38,8 @@ namespace hscpp
                 if (now - m_StartTime > m_Timeout)
                 {
                     m_pCmdShell->CancelTask();
-                    return ICmdShellTask::TaskState::Timeout;
+                    TriggerDoneCb(Result::Failure);
+                    return;
                 }
 
                 break;
@@ -45,20 +49,31 @@ namespace hscpp
                 // Do nothing.
                 break;
             case ICmdShell::TaskState::Done:
-                return HandleTaskComplete(static_cast<CompilerTask>(taskId));
+                HandleTaskComplete(static_cast<CompilerTask>(taskId));
+                break;
             case ICmdShell::TaskState::Error:
-                log::Error() << HSCPP_LOG_PREFIX << "CmdShell task '"
-                             << taskId << "' resulted in error." << log::End();
-                return ICmdShellTask::TaskState::Failure;
+                log::Error() << HSCPP_LOG_PREFIX
+                    << "CmdShell task '" << taskId << "' resulted in error." << log::End();
+                TriggerDoneCb(Result::Failure);
+                return;
             default:
                 assert(false);
                 break;
         }
-
-        return ICmdShellTask::TaskState::Running;
     }
 
-    ICmdShellTask::TaskState CompilerInitializeTask_gcc::HandleTaskComplete(CompilerTask task)
+    void CompilerInitializeTask_gcc::TriggerDoneCb(Result result)
+    {
+        if (m_DoneCb != nullptr)
+        {
+            m_DoneCb(result);
+            m_pCmdShell->Clear();
+        }
+
+        m_DoneCb = nullptr;
+    }
+
+    void CompilerInitializeTask_gcc::HandleTaskComplete(CompilerTask task)
     {
         const std::vector<std::string>& output = m_pCmdShell->PeekTaskOutput();
 
@@ -70,24 +85,24 @@ namespace hscpp
                 assert(false);
                 break;
         }
-
-        return ICmdShellTask::TaskState::Failure;
     }
 
-    ICmdShellTask::TaskState CompilerInitializeTask_gcc::HandleGetVersionTaskComplete(
-            const std::vector<std::string>& output)
+    void CompilerInitializeTask_gcc::HandleGetVersionTaskComplete(const std::vector<std::string>& output)
     {
         if (output.empty())
         {
             log::Error() << HSCPP_LOG_PREFIX << "Failed to get version for compiler '"
-                         << m_pConfig->executable.u8string() << log::End("'.");
-            return ICmdShellTask::TaskState::Failure;
+                << m_pConfig->executable.u8string() << log::End("'.");
+
+            TriggerDoneCb(Result::Failure);
+            return;
         }
 
         // Very rudimentary verification; assume that a --version string will have at least
         // a letter and a number associated with it.
         bool bSawLetter = false;
         bool bSawNumber = false;
+        bool bValidVersion = false;
         for (const auto& line : output)
         {
             for (const char c : line)
@@ -101,14 +116,22 @@ namespace hscpp
                 {
                     bSawLetter = true;
                 }
+
+                if (bSawLetter && bSawNumber)
+                {
+                    bValidVersion = true;
+                    break;
+                }
             }
         }
 
-        if (!bSawLetter || !bSawNumber)
+        if (!bValidVersion)
         {
             log::Error() << HSCPP_LOG_PREFIX << "Failed to get version for compiler '"
-                         << m_pConfig->executable.u8string() << log::End("'.");
-            return ICmdShellTask::TaskState::Failure;
+                << m_pConfig->executable.u8string() << log::End("'.");
+
+            TriggerDoneCb(Result::Failure);
+            return;
         }
 
         // Since --version verification is not very robust, print out the discovered compiler.
@@ -120,7 +143,7 @@ namespace hscpp
         }
         log::Info() << log::End();
 
-        return ICmdShellTask::TaskState::Success;
+        TriggerDoneCb(Result::Success);
     }
 
 }

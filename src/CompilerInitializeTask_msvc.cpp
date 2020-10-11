@@ -7,9 +7,12 @@
 namespace hscpp
 {
 
-    void CompilerInitializeTask_msvc::Start(ICmdShell* pCmdShell, std::chrono::milliseconds timeout)
+    void CompilerInitializeTask_msvc::Start(ICmdShell* pCmdShell,
+                                            std::chrono::milliseconds timeout,
+                                            const std::function<void(Result)>& doneCb)
     {
         m_pCmdShell = pCmdShell;
+        m_DoneCb = doneCb;
 
         m_StartTime = std::chrono::steady_clock::now();
         m_Timeout = timeout;
@@ -17,7 +20,7 @@ namespace hscpp
         StartVsPathTask();
     }
 
-    ICmdShellTask::TaskState CompilerInitializeTask_msvc::Update()
+    void CompilerInitializeTask_msvc::Update()
     {
         int taskId = 0;
         ICmdShell::TaskState state = m_pCmdShell->Update(taskId);
@@ -30,7 +33,8 @@ namespace hscpp
                 if (now - m_StartTime > m_Timeout)
                 {
                     m_pCmdShell->CancelTask();
-                    return ICmdShellTask::TaskState::Timeout;
+                    TriggerDoneCb(Result::Failure);
+                    return;
                 }
 
                 break;
@@ -40,24 +44,28 @@ namespace hscpp
                 // Do nothing.
                 break;
             case ICmdShell::TaskState::Done:
-                return HandleTaskComplete(static_cast<CompilerTask>(taskId));
+                HandleTaskComplete(static_cast<CompilerTask>(taskId));
+                break;
             case ICmdShell::TaskState::Error:
                 log::Error() << HSCPP_LOG_PREFIX << "CmdShell task '"
                              << taskId << "' resulted in error." << log::End();
-                return ICmdShellTask::TaskState::Failure;
+                TriggerDoneCb(Result::Failure);
+                return;
             default:
                 assert(false);
                 break;
         }
+    }
 
-        auto now = std::chrono::steady_clock::now();
-        if (now - m_StartTime > m_Timeout)
+    void CompilerInitializeTask_msvc::TriggerDoneCb(Result result)
+    {
+        if (m_DoneCb != nullptr)
         {
-            m_pCmdShell->CancelTask();
-            return ICmdShellTask::TaskState::Timeout;
+            m_DoneCb(result);
+            m_pCmdShell->Clear();
         }
 
-        return ICmdShellTask::TaskState::Running;
+        m_DoneCb = nullptr;
     }
 
     void CompilerInitializeTask_msvc::StartVsPathTask()
@@ -183,31 +191,33 @@ namespace hscpp
 		return true;
 	}
 
-    ICmdShellTask::TaskState CompilerInitializeTask_msvc::HandleTaskComplete(CompilerTask task)
+    void CompilerInitializeTask_msvc::HandleTaskComplete(CompilerTask task)
     {
         const std::vector<std::string>& output = m_pCmdShell->PeekTaskOutput();
 
         switch (task)
         {
             case CompilerTask::GetVsPath:
-                return HandleGetVsPathTaskComplete(output);
+                HandleGetVsPathTaskComplete(output);
+                break;
             case CompilerTask::SetVcVarsAll:
-                return HandleSetVcVarsAllTaskComplete(output);
+                HandleSetVcVarsAllTaskComplete(output);
+                break;
             default:
                 assert(false);
                 break;
         }
-
-        return ICmdShellTask::TaskState::Failure;
     }
 
-    ICmdShellTask::TaskState CompilerInitializeTask_msvc::HandleGetVsPathTaskComplete(
+    void CompilerInitializeTask_msvc::HandleGetVsPathTaskComplete(
             const std::vector<std::string> &output)
     {
         if (output.empty())
         {
             log::Error() << HSCPP_LOG_PREFIX << "Failed to run vswhere.exe command." << log::End();
-            return ICmdShellTask::TaskState::Failure;
+
+            TriggerDoneCb(Result::Failure);
+            return;
         }
 
         // Find first non-empty line. Results should be sorted by newest VS version first.
@@ -225,25 +235,29 @@ namespace hscpp
         {
             log::Error() << HSCPP_LOG_PREFIX
                 << "vswhere.exe failed to find Visual Studio installation path." << log::End();
-            return ICmdShellTask::TaskState::Failure;
+
+            TriggerDoneCb(Result::Failure);
+            return;
         }
 
 		if (!StartVcVarsAllTask(bestVsPath, "VC/Auxiliary/Build"))
 		{
 			log::Error() << HSCPP_LOG_PREFIX << "Failed to start vcvarsall task." << log::End();
-			return ICmdShellTask::TaskState::Failure;
-		}
 
-		return ICmdShellTask::TaskState::Running;
+            TriggerDoneCb(Result::Failure);
+            return;
+		}
     }
 
-    ICmdShellTask::TaskState CompilerInitializeTask_msvc::HandleSetVcVarsAllTaskComplete(
+    void CompilerInitializeTask_msvc::HandleSetVcVarsAllTaskComplete(
             std::vector<std::string> output)
     {
         if (output.empty())
         {
             log::Error() << HSCPP_LOG_PREFIX << "Failed to run vcvarsall.bat command." << log::End();
-            return ICmdShellTask::TaskState::Failure;
+
+            TriggerDoneCb(Result::Failure);
+            return;
         }
 
         for (auto rIt = output.rbegin(); rIt != output.rend(); ++rIt)
@@ -251,12 +265,13 @@ namespace hscpp
             if (rIt->find("[vcvarsall.bat] Environment initialized") != std::string::npos)
             {
                 // Environmental variables set, we can now use 'cl' to compile.
-                return ICmdShellTask::TaskState::Success;
+                TriggerDoneCb(Result::Success);
+                return;
             }
         }
 
         log::Error() << HSCPP_LOG_PREFIX << "Failed to initialize environment with vcvarsall.bat." << log::End();
-        return ICmdShellTask::TaskState::Success;
+        TriggerDoneCb(Result::Failure);
     }
 
 }

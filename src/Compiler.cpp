@@ -25,7 +25,22 @@ namespace hscpp
             return;
         }
 
-        m_pInitializeTask->Start(m_pCmdShell.get(), std::chrono::milliseconds(5000));
+        m_pInitializeTask->Start(m_pCmdShell.get(), std::chrono::milliseconds(5000),
+                [&](ICmdShellTask::Result result){
+            switch (result)
+            {
+                case ICmdShellTask::Result::Success:
+                    m_bInitialized = true;
+                    break;
+                case ICmdShellTask::Result::Failure:
+                    m_bInitializationFailed = true;
+                    log::Error() << HSCPP_LOG_PREFIX << "Failed to initialize Compiler." << log::End();
+                    break;
+                default:
+                    assert(false);
+                    break;
+            }
+        });
     }
 
     bool Compiler::IsInitialized()
@@ -35,9 +50,16 @@ namespace hscpp
 
     bool Compiler::StartBuild(const ICompiler::Input& input)
     {
-        if (!m_bInitialized)
+        if (m_bInitializationFailed)
         {
-            log::Info() << HSCPP_LOG_PREFIX << "Compiler is still initializing, skipping compilation." << log::End();
+            log::Error() << HSCPP_LOG_PREFIX
+                << "Compiler failed initialization phase, cannot compile." << log::End();
+            return false;
+        }
+        else if (!m_bInitialized)
+        {
+            log::Info() << HSCPP_LOG_PREFIX
+                << "Compiler is still initializing, skipping compilation." << log::End();
             return false;
         }
 
@@ -64,9 +86,13 @@ namespace hscpp
 
     void Compiler::Update()
     {
-        if (!m_bInitialized)
+        if (m_bInitializationFailed)
         {
-            UpdateInitialization();
+            return;
+        }
+        else if (!m_bInitialized)
+        {
+            m_pInitializeTask->Update();
             return;
         }
 
@@ -120,30 +146,7 @@ namespace hscpp
         return modulePath;
     }
 
-    void Compiler::UpdateInitialization()
-    {
-        ICmdShellTask::TaskState taskState = m_pInitializeTask->Update();
-        switch (taskState)
-        {
-            case ICmdShellTask::TaskState::Running:
-                // Do nothing.
-                break;
-            case ICmdShellTask::TaskState::Success:
-                m_bInitialized = true;
-                break;
-            case ICmdShellTask::TaskState::Failure:
-                log::Error() << HSCPP_LOG_PREFIX << "Failed to initialize compiler." << log::End();
-                break;
-            case ICmdShellTask::TaskState::Timeout:
-                log::Error() << HSCPP_LOG_PREFIX << "Timed out initializing compiler." << log::End();
-                break;
-            default:
-                assert(false);
-                break;
-        }
-    }
-
-    bool Compiler::HandleTaskComplete(Compiler::CompilerTask task)
+    void Compiler::HandleTaskComplete(Compiler::CompilerTask task)
     {
         const std::vector<std::string>& output = m_pCmdShell->PeekTaskOutput();
 
@@ -155,16 +158,12 @@ namespace hscpp
                 assert(false);
                 break;
         }
-
-        return false;
     }
 
-    bool Compiler::HandleBuildTaskComplete()
+    void Compiler::HandleBuildTaskComplete()
     {
         m_CompiledModulePath = m_CompilingModulePath;
         m_CompilingModulePath.clear();
-
-        return true;
     }
 
 }

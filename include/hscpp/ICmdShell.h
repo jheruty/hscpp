@@ -24,8 +24,8 @@ namespace hscpp
 
         virtual void StartTask(const std::string& command, int taskId) = 0;
         virtual void CancelTask() = 0;
+        virtual void Clear() = 0;
 
-        virtual TaskState GetTaskState() = 0;
         virtual TaskState Update(int& taskId) = 0;
 
         virtual const std::vector<std::string>& PeekTaskOutput() = 0;
