@@ -416,7 +416,8 @@ namespace hscpp
 
             if (pEventFlags[i] & kFSEventStreamEventFlagItemCreated
                 || pEventFlags[i] & kFSEventStreamEventFlagItemModified
-                || pEventFlags[i] & kFSEventStreamEventFlagItemRemoved)
+                || pEventFlags[i] & kFSEventStreamEventFlagItemRemoved
+                || pEventFlags[i] & kFSEventStreamEventFlagItemRenamed)
             {
                 pThis->m_PendingEvents.push_back(event);
             }
