@@ -290,7 +290,7 @@ namespace hscpp { namespace platform
 
     std::wstring GetErrorString(TOsError error)
     {
-        std::string errorStr = strerror(errno);
+        std::string errorStr = strerror(error);
         return std::wstring(errorStr.begin(), errorStr.end());
     }
 
