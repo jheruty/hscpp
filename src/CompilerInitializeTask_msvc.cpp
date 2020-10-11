@@ -74,16 +74,7 @@ namespace hscpp
         // Find the matching compiler version. Versions supported: VS2015, VS2017, VS2019
         std::string compilerVersion = "16.0";
 
-        int mscVersion = -1;
-
-#ifdef _MSC_VER
-        mscVersion = _MSC_VER;
-#else
-        log::Error() << HSCPP_LOG_PREFIX << "_MSC_VER is not defined, cannot use MSVC compiler." << log::End();
-        return;
-#endif
-
-        switch (mscVersion)
+        switch (_MSC_VER)
         {
 			case 1900:
 				compilerVersion = "14.0";
@@ -116,7 +107,6 @@ namespace hscpp
 
 		if (compilerVersion == "14.0")
 		{
-#if defined(HSCPP_PLATFORM_WIN32)
 			// VS2015 stores installation path in registry key.
 			HKEY registryKey;
 			std::string registryName = "SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VS7";
@@ -147,7 +137,6 @@ namespace hscpp
 				log::Error() << HSCPP_LOG_PREFIX << "Failed to start vcvarsall task." << log::End();
 				return;
 			}
-#endif
 		}
 		else
 		{

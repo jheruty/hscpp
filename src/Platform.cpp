@@ -34,33 +34,6 @@ namespace hscpp { namespace platform
 {
 
     //============================================================================
-    // Setup
-    //============================================================================
-    enum class Setup
-    {
-        UnixPlatform_GccInitializer_GccInterface,
-        Win32Platform_GccInitializer_GccInterface,
-        Win32Platform_MsvcInitializer_MsvcInterface,
-        Unknown,
-    };
-
-    static Setup GetCompilerSetup()
-    {
-#if defined(HSCPP_PLATFORM_WIN32)
-    #if defined(__clang__) || defined(__GNUC__) || defined(__GNUG__)
-        return Setup::Win32Platform_GccInitializer_GccInterface;
-    #elif defined(_MSC_VER)
-        return Setup::Win32Platform_MsvcInitializer_MsvcInterface;
-    #endif
-#elif defined(HSCPP_PLATFORM_UNIX)
-    #if defined(__clang__) || defined(__GNUC__) || defined(__GNUG__)
-        return Setup::UnixPlatform_GccInitializer_GccInterface;
-    #endif
-#endif
-        return Setup::Unknown;
-    }
-
-    //============================================================================
     // FileWatcher
     //============================================================================
 
@@ -78,24 +51,25 @@ namespace hscpp { namespace platform
         std::unique_ptr<ICmdShellTask> pInitializeTask;
         std::unique_ptr<ICompilerCmdLine> pCompilerCmdLine;
 
-        Setup setup = GetCompilerSetup();
-        switch (setup)
-        {
-            case Setup::Win32Platform_MsvcInitializer_MsvcInterface:
-                pInitializeTask = std::unique_ptr<ICmdShellTask>(new CompilerInitializeTask_msvc());
-                pCompilerCmdLine = std::unique_ptr<ICompilerCmdLine>(new CompilerCmdLine_msvc(pConfig));
-                break;
-            case Setup::Win32Platform_GccInitializer_GccInterface: // Fallthrough
-            case Setup::UnixPlatform_GccInitializer_GccInterface:
-                pInitializeTask = std::unique_ptr<ICmdShellTask>(new CompilerInitializeTask_gcc(pConfig));
-                pCompilerCmdLine = std::unique_ptr<ICompilerCmdLine>(new CompilerCmdLine_gcc(pConfig));
-                break;
-            default:
-                log::Warning() << HSCPP_LOG_PREFIX << "Could not deduce compiler, defaulting to gcc." << log::End();
-                pInitializeTask = std::unique_ptr<ICmdShellTask>(new CompilerInitializeTask_gcc(pConfig));
-                pCompilerCmdLine = std::unique_ptr<ICompilerCmdLine>(new CompilerCmdLine_gcc(pConfig));
-                break;
-        }
+#if defined(HSCPP_COMPILER_MSVC)
+        pInitializeTask = std::unique_ptr<ICmdShellTask>(new CompilerInitializeTask_msvc());
+        pCompilerCmdLine = std::unique_ptr<ICompilerCmdLine>(new CompilerCmdLine_msvc(pConfig));
+#elif defined(HSCPP_COMPILER_CLANG)
+    #if defined(HSCPP_PLATFORM_WIN32)
+        pInitializeTask = std::unique_ptr<ICmdShellTask>(new CompilerInitializeTask_gcc(pConfig));
+        pCompilerCmdLine = std::unique_ptr<ICompilerCmdLine>(new CompilerCmdLine_msvc(pConfig));
+    #else
+        pInitializeTask = std::unique_ptr<ICmdShellTask>(new CompilerInitializeTask_gcc(pConfig));
+        pCompilerCmdLine = std::unique_ptr<ICompilerCmdLine>(new CompilerCmdLine_gcc(pConfig));
+    #endif
+#elif defined(HSCPP_COMPILER_GCC)
+        pInitializeTask = std::unique_ptr<ICmdShellTask>(new CompilerInitializeTask_gcc(pConfig));
+        pCompilerCmdLine = std::unique_ptr<ICompilerCmdLine>(new CompilerCmdLine_gcc(pConfig));
+#else
+        log::Warning() << HSCPP_LOG_PREFIX << "Could not deduce compiler, defaulting to gcc." << log::End();
+        pInitializeTask = std::unique_ptr<ICmdShellTask>(new CompilerInitializeTask_gcc(pConfig));
+        pCompilerCmdLine = std::unique_ptr<ICompilerCmdLine>(new CompilerCmdLine_gcc(pConfig));
+#endif
 
         return std::unique_ptr<ICompiler>(
                 new Compiler(pConfig, std::move(pInitializeTask), std::move(pCompilerCmdLine)));
@@ -114,14 +88,18 @@ namespace hscpp { namespace platform
     // Compile Options
     //============================================================================
 
+
     static std::vector<std::string> GetDefaultCompileOptions_msvc(int cppStandard)
     {
-		std::vector<std::string> options = {
+        std::vector<std::string> options = {
             "/nologo", // Suppress cl startup banner.
             "/Z7", // Add full debugging information.
             "/FC", // Print full filepath in diagnostic messages.
-            "/MP", // Build with multiple processes.
             "/EHsc", // Full support for standard C++ exception handling.
+#if !defined(HSCPP_COMPILER_CLANG)
+            "/MP", // Build with multiple processes (not supported on clang-cl).
+#endif
+
 #if defined(HSCPP_DEBUG)
             // Debug flags.
             "/MDd", // Use multithreaded debug DLL version of run-time library.
@@ -134,8 +112,7 @@ namespace hscpp { namespace platform
 #endif
         };
 
-#if defined(_MSC_VER)
-    #if (_MSC_VER > 1900)
+#if (_MSC_VER > 1900)
 		// /std option is not consistent on msvc, and is only available on VS2017 and above.
 		// https://docs.microsoft.com/en-us/cpp/build/reference/std-specify-language-standard-version?view=vs-2019
 		if (cppStandard <= 11)
@@ -146,28 +123,12 @@ namespace hscpp { namespace platform
 		{
 			options.push_back("/std:c++" + std::to_string(cppStandard));
 		}
-    #endif
 #endif
 
 		return options;
     }
 
-    static std::vector<std::string> GetDefaultCompileOptions_win32_gcc(int cppStandard)
-    {
-        return {
-            "-std=c++" + std::to_string(cppStandard), // C++ standard (ex. C++17).
-            "-shared", // Compile a shared library.
-            "-fvisibility=hidden", // Hide code not explicitly made visible.
-#if defined(HSCPP_DEBUG)
-            "-g", // Add debug info.
-            "-l msvcrtd.lib", // Same as /MDd
-#else
-            "-l msvcrt.lib", // Same as /Md
-#endif
-        };
-    }
-
-    static std::vector<std::string> GetDefaultCompileOptions_unix_gcc(int cppStandard)
+    static std::vector<std::string> GetDefaultCompileOptions_gcc(int cppStandard)
     {
         return {
             "-std=c++" + std::to_string(cppStandard), // C++ standard (ex. C++17).
@@ -183,19 +144,21 @@ namespace hscpp { namespace platform
 
     std::vector<std::string> GetDefaultCompileOptions(int cppStandard /*= HSCPP_CXX_STANDARD*/)
     {
-        Setup setup = GetCompilerSetup();
-        switch (setup)
-        {
-            case Setup::Win32Platform_MsvcInitializer_MsvcInterface:
-                return GetDefaultCompileOptions_msvc(cppStandard);
-            case Setup::Win32Platform_GccInitializer_GccInterface:
-                return GetDefaultCompileOptions_win32_gcc(cppStandard);
-            case Setup::UnixPlatform_GccInitializer_GccInterface:
-                return GetDefaultCompileOptions_unix_gcc(cppStandard);
-            default:
-                log::Warning() << HSCPP_LOG_PREFIX << "Could not deduce compiler, defaulting to gcc." << log::End();
-                return GetDefaultCompileOptions_unix_gcc(cppStandard);
-        }
+
+#if defined(HSCPP_COMPILER_MSVC)
+        return GetDefaultCompileOptions_msvc(cppStandard);
+#elif defined(HSCPP_COMPILER_CLANG)
+    #if defined(HSCPP_PLATFORM_WIN32)
+        return GetDefaultCompileOptions_msvc(cppStandard);
+    #else
+        return GetDefaultCompileOptions_gcc(cppStandard);
+    #endif
+#elif defined(HSCPP_COMPILER_GCC)
+        return GetDefaultCompileOptions_gcc(cppStandard);
+#endif
+
+        log::Warning() << HSCPP_LOG_PREFIX << "Could not deduce compiler, defaulting to gcc." << log::End();
+        return GetDefaultCompileOptions_gcc(cppStandard);
     }
 
     //============================================================================
@@ -229,12 +192,16 @@ namespace hscpp { namespace platform
 
     fs::path GetDefaultCompilerExecutable()
     {
-#if defined(__clang__)
-        return fs::path("clang++");
-#elif defined(__GNUC__) || defined(__GNUG__)
-        return fs::path("g++");
-#elif defined(_MSC_VER)
+#if defined(HSCPP_COMPILER_MSVC)
         return fs::path("cl");
+#elif defined(HSCPP_COMPILER_CLANG)
+    #if defined(HSCPP_PLATFORM_WIN32)
+        return fs::path("clang-cl");
+    #else
+        return fs::path("clang++");
+    #endif
+#elif defined(HSCPP_COMPILER_GCC)
+        return fs::path("g++");
 #endif
         log::Warning() << HSCPP_LOG_PREFIX
             << "Unable to deduce compiler executable. Defaulting to clang++." << log::End();

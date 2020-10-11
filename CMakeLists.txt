@@ -14,7 +14,6 @@ list(APPEND SRC_FILES
     src/CompilerCmdLine_gcc.cpp
     src/CompilerCmdLine_msvc.cpp
     src/CompilerInitializeTask_gcc.cpp
-    src/CompilerInitializeTask_msvc.cpp
     src/Config.cpp
     src/DependencyGraph.cpp
     src/Feature.cpp
@@ -80,6 +79,7 @@ list(APPEND LINK_LIBRARIES)
 if (WIN32)
     list(APPEND SRC_FILES
         src/CmdShell_win32.cpp
+        src/CompilerInitializeTask_msvc.cpp
         src/FileWatcher_win32.cpp
 
         include/hscpp/CmdShell_win32.h
@@ -132,6 +132,19 @@ elseif(UNIX)
         dl
         uuid
     )
+endif()
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    list(APPEND COMPILE_DEFINITIONS HSCPP_COMPILER_MSVC)
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+    list(APPEND COMPILE_DEFINITIONS
+        HSCPP_COMPILER_CLANG
+        HSCPP_COMPILER_GCC
+    )
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    list(APPEND COMPILE_DEFINITIONS HSCPP_COMPILER_GCC)
+else()
+    message(WARNING "Compiler is not officially supported.")
 endif()
 
 if(NOT DEFINED CMAKE_CXX_STANDARD)
