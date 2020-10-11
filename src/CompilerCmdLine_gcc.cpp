@@ -75,7 +75,7 @@ namespace hscpp
         }
 
         // Print effective command line.
-        log::Build() << m_pConfig->executable.u8string() << " " << command.str() << log::End();
+        log::Build() << m_pConfig->executable.u8string() << "\n" << command.str() << log::End();
 
         // Write command file.
         commandFile << command.str();
