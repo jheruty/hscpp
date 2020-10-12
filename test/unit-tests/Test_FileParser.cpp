@@ -17,7 +17,7 @@ namespace hscpp { namespace test
         ValidateOrderedVector(require.paths, paths);
     }
 
-    TEST_CASE("FileParser can parse simple file.", "[FileParser]")
+    TEST_CASE("FileParser can parse simple file.")
     {
         FileParser parser;
 

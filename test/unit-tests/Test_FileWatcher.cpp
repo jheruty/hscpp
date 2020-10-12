@@ -14,7 +14,7 @@ namespace hscpp { namespace test
 
     const static fs::path TEST_FILES_PATH = util::GetHscppTestPath() / "unit-tests" / "files" / "test-file-watcher";
 
-    TEST_CASE("FileWatcher can monitor simple directory for changes.", "[FileWatcher]")
+    TEST_CASE("FileWatcher can monitor simple directory for changes.")
     {
         fs::path assetsPath = TEST_FILES_PATH / "simple-test";
         fs::path sandboxPath = CALL(InitializeSandbox, assetsPath);

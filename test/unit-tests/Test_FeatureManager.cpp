@@ -5,7 +5,7 @@
 namespace hscpp { namespace test
 {
 
-    TEST_CASE("FeatureManager is functional.", "[FeatureManager]")
+    TEST_CASE("FeatureManager is functional.")
     {
         hscpp::FeatureManager featureManager;
 

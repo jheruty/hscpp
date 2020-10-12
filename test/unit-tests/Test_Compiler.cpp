@@ -76,7 +76,7 @@ namespace hscpp { namespace test
         return modulePath;
     }
 
-    TEST_CASE("Compiler can compile a basic library.", "[Compiler]")
+    TEST_CASE("Compiler can compile a basic library.")
     {
         fs::path assetsPath = TEST_FILES_PATH / "simple-test";
         fs::path sandboxPath = CALL(InitializeSandbox, assetsPath);

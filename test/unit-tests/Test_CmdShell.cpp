@@ -45,7 +45,7 @@ namespace hscpp { namespace test
         CALL(StartUpdateLoop, Milliseconds(5000), Milliseconds(10), cb);
     }
 
-    TEST_CASE("CmdShell can perform a basic echo.", "[CmdShell]")
+    TEST_CASE("CmdShell can perform a basic echo.")
     {
         std::unique_ptr<ICmdShell> pCmdShell = platform::CreateCmdShell();
         REQUIRE(pCmdShell->CreateCmdProcess());
