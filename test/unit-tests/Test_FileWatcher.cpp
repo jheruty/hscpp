@@ -83,7 +83,7 @@ namespace hscpp { namespace test
             fs::path oldFilePath = testFilePath;
             fs::path newFilePath = testFilePath.parent_path() / "Renamed.cpp";
 
-            CALL(MoveFile, oldFilePath, newFilePath);
+            CALL(RenameFile, oldFilePath, newFilePath);
             CALL(StartUpdateLoop, Milliseconds(2000), Milliseconds(10), cb);
             util::SortFileEvents(events, canonicalModifiedFilePaths, canonicalRemovedFilePaths);
 

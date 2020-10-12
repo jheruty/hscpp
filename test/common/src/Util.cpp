@@ -91,7 +91,7 @@ namespace hscpp { namespace test
         REQUIRE(error.value() == HSCPP_ERROR_SUCCESS);
     }
 
-    void MoveFile(const fs::path& oldFilePath, const fs::path& newFilePath)
+    void RenameFile(const fs::path& oldFilePath, const fs::path& newFilePath)
     {
         std::error_code error;
         fs::rename(oldFilePath, newFilePath, error);
