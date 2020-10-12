@@ -7,7 +7,7 @@ namespace hscpp { namespace test {
 
     TEST_CASE("DependencyGraph can handle minimal graph.")
     {
-        hscpp::DependencyGraph graph;
+        DependencyGraph graph;
 
         fs::path childCpp = "child.cpp";
         fs::path parent1H = "parent1.h";
@@ -62,6 +62,26 @@ namespace hscpp { namespace test {
         resolvedForChildCpp = graph.ResolveGraph(childCpp);
         CALL(ValidateUnorderedVector, resolvedForChildCpp, {
             childCpp,
+        });
+    }
+
+    TEST_CASE("DependencyGraph can handle circular dependencies.")
+    {
+        DependencyGraph graph;
+
+        fs::path pathA = "pathA.cpp";
+        fs::path pathB = "pathB.cpp";
+
+        graph.SetFileDependencies(pathA, { pathB });
+        graph.SetFileDependencies(pathB, { pathA });
+
+        graph.SetLinkedModules(pathA, { "module" });
+        graph.SetLinkedModules(pathB, { "module" });
+
+        std::vector<fs::path> resolved = graph.ResolveGraph(pathA);
+        CALL(ValidateUnorderedVector, resolved, {
+            pathA,
+            pathB,
         });
     }
 
