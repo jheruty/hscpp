@@ -19,7 +19,8 @@ namespace hscpp { namespace test
         fs::path assetsPath = TEST_FILES_PATH / "simple-test";
         fs::path sandboxPath = CALL(InitializeSandbox, assetsPath);
         fs::path testFilePath = sandboxPath / "src" / "Test.cpp";
-        fs::path newFilePath = sandboxPath / "src" / "NewFile.cpp";
+
+        fs::path canonicalTestFilePath = CALL(Canonical, testFilePath);
 
         auto pConfig = std::unique_ptr<Config>(new Config());
         std::unique_ptr<IFileWatcher> pFileWatcher = platform::CreateFileWatcher(&pConfig->fileWatcher);
@@ -42,8 +43,6 @@ namespace hscpp { namespace test
                 { "Body", "int main() {}" },
             });
 
-            fs::path canonicalTestFilePath = CALL(Canonical, testFilePath);
-
             CALL(StartUpdateLoop, Milliseconds(2000), Milliseconds(10), cb);
             util::SortFileEvents(events, canonicalModifiedFilePaths, canonicalRemovedFilePaths);
 
@@ -54,6 +53,8 @@ namespace hscpp { namespace test
 
         SECTION("Creating a new file triggers event.")
         {
+            fs::path newFilePath = sandboxPath / "src" / "NewFile.cpp";
+
             CALL(NewFile, newFilePath, "int main() {}");
 
             fs::path canonicalNewFilePath = CALL(Canonical, newFilePath);
@@ -68,14 +69,30 @@ namespace hscpp { namespace test
 
         SECTION("Deleting an existing file triggers event.")
         {
-            fs::path canonicalTestFilePath = CALL(Canonical, testFilePath);
-
             CALL(RemoveFile, testFilePath);
             CALL(StartUpdateLoop, Milliseconds(2000), Milliseconds(10), cb);
             util::SortFileEvents(events, canonicalModifiedFilePaths, canonicalRemovedFilePaths);
 
             REQUIRE(canonicalModifiedFilePaths.empty());
             REQUIRE(canonicalRemovedFilePaths.size() == 1);
+            REQUIRE(canonicalRemovedFilePaths.at(0) == canonicalTestFilePath);
+        }
+
+        SECTION("Moving an existing file triggers event.")
+        {
+            fs::path oldFilePath = testFilePath;
+            fs::path newFilePath = testFilePath.parent_path() / "Renamed.cpp";
+
+            CALL(MoveFile, oldFilePath, newFilePath);
+            CALL(StartUpdateLoop, Milliseconds(2000), Milliseconds(10), cb);
+            util::SortFileEvents(events, canonicalModifiedFilePaths, canonicalRemovedFilePaths);
+
+            REQUIRE(canonicalModifiedFilePaths.size() == 1);
+            REQUIRE(canonicalRemovedFilePaths.size() == 1);
+
+            fs::path canonicalNewFilePath = CALL(Canonical, newFilePath);
+
+            REQUIRE(canonicalModifiedFilePaths.at(0) == canonicalNewFilePath);
             REQUIRE(canonicalRemovedFilePaths.at(0) == canonicalTestFilePath);
         }
     }
