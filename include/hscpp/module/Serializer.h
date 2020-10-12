@@ -9,7 +9,7 @@ namespace hscpp
 
     struct ISerializedProperty
     {
-        virtual ~ISerializedProperty() {};
+        virtual ~ISerializedProperty() = default;
     };
 
     template <typename T>
@@ -28,7 +28,7 @@ namespace hscpp
         template <typename T>
         void Serialize(const std::string& name, const T& val)
         {
-           auto pProperty = std::make_unique<SerializedProperty<T>>();
+           auto pProperty = std::unique_ptr<SerializedProperty<T>>(new SerializedProperty<T>());
            pProperty->value = val;
 
             m_Properties[name] = std::move(pProperty);

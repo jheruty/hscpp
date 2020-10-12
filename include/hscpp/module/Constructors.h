@@ -7,6 +7,7 @@
 #include <functional>
 #include <unordered_set>
 #include <typeindex>
+#include <vector>
 
 #include "hscpp/module/IAllocator.h"
 #include "hscpp/module/ModuleSharedState.h"
@@ -20,7 +21,7 @@ namespace hscpp
     class IConstructor
     {
     public:
-        virtual ~IConstructor() {};
+        virtual ~IConstructor() = default;
         virtual AllocationInfo Allocate() = 0;
         virtual AllocationInfo AllocateSwap(uint64_t id) = 0;
     };
@@ -33,14 +34,14 @@ namespace hscpp
     class Constructor : public IConstructor
     {
     public:
-        virtual AllocationInfo Allocate() override
+        AllocationInfo Allocate() override
         {
             return Allocate([](uint64_t size) {
                 return ModuleSharedState::s_pAllocator->Hscpp_Allocate(size);
                 });
         }
 
-        virtual AllocationInfo AllocateSwap(uint64_t id) override
+        AllocationInfo AllocateSwap(uint64_t id) override
         {
             return Allocate([id](uint64_t size) {
                 return ModuleSharedState::s_pAllocator->Hscpp_AllocateSwap(id, size);
@@ -48,7 +49,7 @@ namespace hscpp
         }
 
     private:
-        AllocationInfo Allocate(const std::function<AllocationInfo(uint64_t size)> allocatorCb)
+        AllocationInfo Allocate(const std::function<AllocationInfo(uint64_t size)>& allocatorCb)
         {
             if (ModuleSharedState::s_pAllocator == nullptr)
             {
@@ -58,9 +59,9 @@ namespace hscpp
             }
             else
             {
-                uint64_t size = sizeof(std::aligned_storage<sizeof(T)>::type);
+                uint64_t size = sizeof(typename std::aligned_storage<sizeof(T)>::type);
                 AllocationInfo info = allocatorCb(size);
-                T* pT = new (info.pMemory) T;
+                new (info.pMemory) T;
 
                 return info;
             }
@@ -89,7 +90,7 @@ namespace hscpp
 
             GetConstructorKeys().push_back(key);
 
-            GetConstructors().push_back(std::make_unique<Constructor<T>>());
+            GetConstructors().push_back(std::unique_ptr<Constructor<T>>(new Constructor<T>()));
             size_t iConstructor = GetConstructors().size() - 1;
 
             GetConstructorsByKey()[key] = iConstructor;
@@ -120,14 +121,14 @@ namespace hscpp
         {
             std::vector<DuplicateKey> duplicates;
 
-            for (const auto& [key, types] : TypesByKey())
+            for (const auto& key__types : TypesByKey())
             {
-                if (types.size() > 1)
+                if (key__types.second.size() > 1)
                 {
-                    for (const auto& type : types)
+                    for (const auto& type : key__types.second)
                     {
                         DuplicateKey duplicate;
-                        duplicate.key = key;
+                        duplicate.key = key__types.first;
                         duplicate.type = type.name();
 
                         duplicates.push_back(duplicate);

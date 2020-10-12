@@ -1,11 +1,21 @@
+**/.DS_Store
 *.suo
 *.user
 *.ipch
 *.VC.db
 *.tlog
 **/.vs/**
+*.sln
+*.vcxproj.*
 
 **/Release/**
 **/Debug/**
+**/build*/*
+**/out/**
+test/sandbox/**
+test/test-module-builds/**
+
+.vscode
+.idea
 
 imgui.ini

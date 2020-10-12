@@ -1,7 +1,7 @@
 #pragma once
 
 #include <iostream>
-#include <stdint.h>
+#include <cstdint>
 #include <type_traits>
 
 #include "hscpp/module/IAllocator.h"
@@ -56,7 +56,7 @@ namespace hscpp
         {
             // This type has an hscpp_ClassTracker member, and it is assumed it has been registered
             // with HSCPP_TRACK. Allocate it using an hscpp Constructor.
-            const char* pKey = T::hscpp_ClassKey;
+            const char* pKey = decltype(T::hscpp_ClassKey)().ToString();
 
             auto constructorIt = ModuleSharedState::s_pConstructorsByKey->find(pKey);
             if (constructorIt != ModuleSharedState::s_pConstructorsByKey->end())
@@ -74,10 +74,10 @@ namespace hscpp
             // This is a non-tracked type. Perform a normal allocation.
             if (ModuleSharedState::s_pAllocator != nullptr)
             {
-                uint64_t size = sizeof(std::aligned_storage<sizeof(T)>::type);
+                uint64_t size = sizeof(typename std::aligned_storage<sizeof(T)>::type);
 
                 AllocationInfo info = ModuleSharedState::s_pAllocator->Hscpp_Allocate(size);
-                T* pT = new (info.pMemory) T;
+                new (info.pMemory) T;
 
                 return info;
             }

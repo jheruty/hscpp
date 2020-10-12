@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <vector>
 #include <type_traits>
+#include <cstring>
 
 #include "hscpp/module/IAllocator.h"
 #include "hscpp/module/AllocationResolver.h"
@@ -20,7 +21,7 @@ private:
     {
         bool bFree = false;
         bool bExternallyOwned = false;
-        size_t capacity = 0;
+        uint64_t capacity = 0;
         uint8_t* pMemory = nullptr;
     };
 
@@ -43,10 +44,10 @@ public:
     {
         if (m_pHscppAllocationResolver == nullptr)
         {
-            size_t size = sizeof(std::aligned_storage<sizeof(T)>::type);
+            size_t size = sizeof(typename std::aligned_storage<sizeof(T)>::type);
             size_t iBlock = TakeFirstFreeBlock(size);
 
-            T* pT = new (m_Blocks.at(iBlock).pMemory) T;
+            new (m_Blocks.at(iBlock).pMemory) T;
 
             Ref<T> ref;
             ref.id = iBlock;
@@ -73,14 +74,14 @@ public:
     {
         if (ref.id < m_Blocks.size())
         {
-            Block& block = m_Blocks.at(ref.id);
+            Block& block = m_Blocks.at(static_cast<size_t>(ref.id));
             block.bFree = true;
 
             T* pObject = reinterpret_cast<T*>(block.pMemory);
             pObject->~T();
 
             // Zero out memory to cause crashes when dereferencing dangling pointers.
-            std::memset(block.pMemory, 0, block.capacity);
+            std::memset(block.pMemory, 0, static_cast<size_t>(block.capacity));
         }
     }
 
@@ -102,7 +103,7 @@ public:
         return ref;
     }
 
-    uint8_t* GetMemory(size_t id) override;
+    uint8_t* GetMemory(uint64_t id) override;
 
     //============================================================================
     // hscpp::IAllocator implementation.
@@ -112,7 +113,7 @@ public:
     uint64_t Hscpp_Free(uint8_t* pMemory) override;
 
 private:
-    size_t TakeFirstFreeBlock(size_t size);
+    size_t TakeFirstFreeBlock(uint64_t size);
 
     std::vector<Block> m_Blocks;
     hscpp::AllocationResolver* m_pHscppAllocationResolver = nullptr;

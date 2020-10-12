@@ -1,16 +1,15 @@
+#include "hscpp/ProtectedFunction.h"
+
+#if defined(HSCPP_PLATFORM_WIN32)
+
 #include <windows.h>
 
-#include "hscpp/ProtectedFunction.h"
+#endif
 
 ProtectedFunction::Result ProtectedFunction::Call(const std::function<void()>& cb)
 {
-    if (!IsDebuggerPresent())
-    {
-        // No debugger attached, so there's no way to recover from this exception.
-        cb();
-        return Result::Success;
-    }
-
+#if defined(HSCPP_PLATFORM_WIN32)
+    
     __try
     {
         cb();
@@ -20,4 +19,19 @@ ProtectedFunction::Result ProtectedFunction::Call(const std::function<void()>& c
     {
         return Result::Exception;
     }
+
+#elif defined(HSCPP_PLATFORM_UNIX)
+
+    try
+    {
+        cb();
+        return Result::Success;
+    }
+    catch(const std::exception& e)
+    {
+        return Result::Exception;
+    }
+    
+#endif
+
 }

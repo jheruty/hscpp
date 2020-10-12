@@ -1,7 +1,9 @@
 #pragma once
 
 #include <functional>
+#include <algorithm>
 
+#include "hscpp/module/CompileTimeString.h"
 #include "hscpp/module/Constructors.h"
 #include "hscpp/module/ModuleSharedState.h"
 #include "hscpp/module/SwapInfo.h"
@@ -15,22 +17,28 @@ namespace hscpp
     // Register
     //============================================================================
 
-    template <typename T, const char* Key>
+    template <typename T, typename CompileTimeKey>
     class Register
     {
     public:
         Register()
         {
             // This will be executed on module load.
-            hscpp::Constructors::RegisterConstructor<T>(Key);
+            const char* pKey = CompileTimeKey().ToString();
+            hscpp::Constructors::RegisterConstructor<T>(pKey);
         }
+
+        // Unused static may be optimized out. Explicitly call this function to ensure that Register
+        // gets initialized.
+        void ForceInitialization()
+        {}
     };
 
     //============================================================================
     // Tracker 
     //============================================================================
 
-    template <typename T, const char* Key>
+    template <typename T, typename CompileTimeKey>
     class Tracker : public ITracker
     {
     public:
@@ -42,17 +50,21 @@ namespace hscpp
 
         Tracker(T* pTrackedObj)
         {
+            s_Register.ForceInitialization();
+
             // Pointer to the instance we are tracking.
             m_pTrackedObj = pTrackedObj;
 
             // Register self.
-            (*ModuleSharedState::s_pTrackersByKey)[Key].push_back(this);
+            const char* pKey = CompileTimeKey().ToString();
+            (*ModuleSharedState::s_pTrackersByKey)[pKey].push_back(this);
         }
 
         ~Tracker()
         {
             // Unregister self.
-            std::vector<ITracker*>& trackers = (*ModuleSharedState::s_pTrackersByKey)[Key];
+            const char* pKey = CompileTimeKey().ToString();
+            std::vector<ITracker*>& trackers = (*ModuleSharedState::s_pTrackersByKey)[pKey];
 
             auto trackerIt = std::find(trackers.begin(), trackers.end(), this);
             if (trackerIt != trackers.end())
@@ -61,7 +73,7 @@ namespace hscpp
             }
         }
 
-        virtual uint64_t FreeTrackedObject() override
+        uint64_t FreeTrackedObject() override
         {
             // Destroying the tracked object will also destroy the tracker it owns.
             if (ModuleSharedState::s_pAllocator == nullptr)
@@ -76,7 +88,7 @@ namespace hscpp
             }
         }
 
-        virtual void CallSwapHandler(SwapInfo& info) override
+        void CallSwapHandler(SwapInfo& info) override
         {
             if (SwapHandler != nullptr)
             {
@@ -84,15 +96,18 @@ namespace hscpp
             }
         }
 
-        virtual std::string GetKey() override
+        std::string GetKey() override
         {
-            return Key;
+            return CompileTimeKey().ToString();
         }
 
     private:
-        inline static Register<T, Key> s_Register;
+        static Register<T, CompileTimeKey> s_Register;
         T* m_pTrackedObj = nullptr;
     };
+
+    template <typename T, typename CompileTimeKey>
+    Register<T, CompileTimeKey> Tracker<T, CompileTimeKey>::s_Register;
 
 }
 
@@ -105,9 +120,35 @@ namespace hscpp
 #ifndef HSCPP_DISABLE
 
 #define HSCPP_TRACK(type, key) \
+/* Allocation resolver will access hscpp_ClassKey and hscpp_ClassTracker. Mark as a friend class,
+ * as user may call HSCPP_TRACK in the private area of the class.*/ \
 friend class hscpp::AllocationResolver; \
-inline static const char hscpp_ClassKey[] = key;\
-hscpp::Tracker<type, hscpp_ClassKey> hscpp_ClassTracker = hscpp::Tracker<type, hscpp_ClassKey>(this);
+\
+/* Cache key length to avoid repeated calls to constexpr method slowing down compilation. This also
+ * validates that the key length is <= 128 bytes. */ \
+static constexpr hscpp::compile_time::KeylenCache<hscpp::compile_time::Strlen(key)> hscpp_KeylenCache = {}; \
+\
+/* Split string into segments that fit into a uint64_t and save it as the key.. */\
+static constexpr hscpp::compile_time::String<                                                          \
+    hscpp::compile_time::StringSegmentToIntegral(key, 0, decltype(hscpp_KeylenCache)::len), \
+    hscpp::compile_time::StringSegmentToIntegral(key, 1, decltype(hscpp_KeylenCache)::len), \
+    hscpp::compile_time::StringSegmentToIntegral(key, 2, decltype(hscpp_KeylenCache)::len), \
+    hscpp::compile_time::StringSegmentToIntegral(key, 3, decltype(hscpp_KeylenCache)::len), \
+    hscpp::compile_time::StringSegmentToIntegral(key, 4, decltype(hscpp_KeylenCache)::len), \
+    hscpp::compile_time::StringSegmentToIntegral(key, 5, decltype(hscpp_KeylenCache)::len), \
+    hscpp::compile_time::StringSegmentToIntegral(key, 6, decltype(hscpp_KeylenCache)::len), \
+    hscpp::compile_time::StringSegmentToIntegral(key, 7, decltype(hscpp_KeylenCache)::len), \
+    hscpp::compile_time::StringSegmentToIntegral(key, 8, decltype(hscpp_KeylenCache)::len), \
+    hscpp::compile_time::StringSegmentToIntegral(key, 9, decltype(hscpp_KeylenCache)::len), \
+    hscpp::compile_time::StringSegmentToIntegral(key, 10, decltype(hscpp_KeylenCache)::len), \
+    hscpp::compile_time::StringSegmentToIntegral(key, 11, decltype(hscpp_KeylenCache)::len), \
+    hscpp::compile_time::StringSegmentToIntegral(key, 12, decltype(hscpp_KeylenCache)::len), \
+    hscpp::compile_time::StringSegmentToIntegral(key, 13, decltype(hscpp_KeylenCache)::len), \
+    hscpp::compile_time::StringSegmentToIntegral(key, 14, decltype(hscpp_KeylenCache)::len), \
+    hscpp::compile_time::StringSegmentToIntegral(key, 15, decltype(hscpp_KeylenCache)::len)> hscpp_ClassKey = {}; \
+\
+/* Create Tracker to track instance of this class. */ \
+hscpp::Tracker<type, decltype(hscpp_ClassKey)> hscpp_ClassTracker = { this };
 
 #define Hscpp_SetSwapHandler(...) \
 hscpp_ClassTracker.SwapHandler = __VA_ARGS__;

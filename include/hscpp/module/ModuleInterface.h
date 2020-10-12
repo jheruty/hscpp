@@ -9,7 +9,15 @@
 #include "hscpp/module/Constructors.h"
 #include "hscpp/module/ITracker.h"
 
+#ifdef _WIN32
+
 #define HSCPP_API __declspec(dllexport)
+
+#else
+
+#define HSCPP_API __attribute__((visibility("default")))
+
+#endif
 
 namespace hscpp
 {
@@ -132,9 +140,5 @@ namespace hscpp
 
 extern "C"
 {
-    HSCPP_API inline hscpp::ModuleInterface* Hscpp_GetModuleInterface()
-    {
-        static hscpp::ModuleInterface moduleInterface;
-        return &moduleInterface;
-    }
+    HSCPP_API hscpp::ModuleInterface* Hscpp_GetModuleInterface();
 }

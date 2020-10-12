@@ -1,13 +1,10 @@
 #include <algorithm>
-#include <assert.h>
 
 #include "hscpp/DependencyGraph.h"
 #include "hscpp/Util.h"
 
 namespace hscpp
 {
-
-
 
     std::vector<hscpp::fs::path> DependencyGraph::ResolveGraph(const fs::path& filePath)
     {
@@ -96,25 +93,6 @@ namespace hscpp
         }
     }
 
-    void DependencyGraph::PruneDeletedFiles()
-    {
-        std::vector<fs::path> deletedFilePaths;
-
-        for (const auto& [handle, pNode] : m_NodeByHandle)
-        {
-            fs::path filePath = GetFilepath(handle);
-            if (!fs::exists(filePath))
-            {
-                deletedFilePaths.push_back(filePath);
-            }
-        }
-
-        for (const auto& deletedFilePath : deletedFilePaths)
-        {
-            RemoveFile(deletedFilePath);
-        }
-    }
-
     void DependencyGraph::RemoveFile(const fs::path& filePath)
     {
         int fileHandle = GetHandle(filePath);
@@ -122,6 +100,7 @@ namespace hscpp
         Node* pNode = GetNode(fileHandle);
         if (pNode == nullptr)
         {
+            // File is not part of dependency graph.
             return;
         }
 
@@ -152,7 +131,8 @@ namespace hscpp
         m_NodeByHandle.clear();
     }
 
-    void DependencyGraph::Collect(int handle, std::unordered_set<int>& collectedHandles, std::function<void(Node*)> cb)
+    void DependencyGraph::Collect(int handle,
+            std::unordered_set<int>& collectedHandles, const std::function<void(Node*)>& cb)
     {
         if (collectedHandles.find(handle) != collectedHandles.end())
         {
@@ -288,7 +268,7 @@ namespace hscpp
 
     hscpp::DependencyGraph::Node* DependencyGraph::CreateNode(int handle)
     {
-        m_NodeByHandle[handle] = std::make_unique<Node>();
+        m_NodeByHandle[handle] = std::unique_ptr<Node>(new Node());
 
         Node* pNode = m_NodeByHandle[handle].get();
         return pNode;

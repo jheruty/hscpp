@@ -1,5 +1,3 @@
-#include <Windows.h>
-
 #include "hscpp/ModuleManager.h"
 #include "hscpp/Log.h"
 #include "hscpp/Util.h"
@@ -27,28 +25,26 @@ void hscpp::ModuleManager::SetGlobalUserData(void* pGlobalUserData)
     Hscpp_GetModuleInterface()->SetGlobalUserData(m_pGlobalUserData);
 }
 
-bool hscpp::ModuleManager::PerformRuntimeSwap(const fs::path& moduleFilepath)
+bool hscpp::ModuleManager::PerformRuntimeSwap(const fs::path& modulePath)
 {
-    HMODULE hModule = LoadLibrary(moduleFilepath.native().c_str());
-    if (hModule == nullptr)
+    void* pModule = platform::LoadModule(modulePath);
+    if (pModule == nullptr)
     {
         log::Error() << HSCPP_LOG_PREFIX << "Failed to load module "
-            << moduleFilepath << ". " << log::LastOsError() << log::End();
+             << modulePath << ". " << log::LastOsError() << log::End();
         return false;
     }
 
-    typedef ModuleInterface* (__cdecl* Hsccp_GetModuleInterfaceProc)(void);
-    auto getModuleInterfaceProc = reinterpret_cast<Hsccp_GetModuleInterfaceProc>(
-        GetProcAddress(hModule, "Hscpp_GetModuleInterface"));
-
-    if (getModuleInterfaceProc == nullptr)
+    auto GetModuleInterface = platform::GetModuleFunction<ModuleInterface*()>(
+            pModule, "Hscpp_GetModuleInterface");
+    if (GetModuleInterface == nullptr)
     {
         log::Error() << HSCPP_LOG_PREFIX << "Failed to load Hscpp_GetModuleInterface procedure. "
             << log::LastOsError() << log::End();
         return false;
     }
 
-    ModuleInterface* pModuleInterface = getModuleInterfaceProc();
+    ModuleInterface* pModuleInterface = GetModuleInterface();
     if (pModuleInterface == nullptr)
     {
         log::Error() << HSCPP_LOG_PREFIX << "Failed to get pointer to module interface." << log::End();
@@ -63,6 +59,8 @@ bool hscpp::ModuleManager::PerformRuntimeSwap(const fs::path& moduleFilepath)
     pModuleInterface->PerformRuntimeSwap();
 
     WarnDuplicateKeys(pModuleInterface);
+
+    log::Build() << HSCPP_LOG_PREFIX << "Successfully performed runtime swap." << log::End();
 
     return true;
 }
