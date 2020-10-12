@@ -1,26 +1,45 @@
 #pragma once
 
-#include <Windows.h>
 #include <string>
 #include <vector>
-#include <filesystem>
+#include <algorithm>
+#include <unordered_set>
 
 #include "hscpp/Platform.h"
 
-namespace hscpp
+namespace hscpp { namespace util
 {
 
-    namespace util
+    bool IsWhitespace(const std::string& str);
+    std::string Trim(const std::string& str);
+
+    std::string UnixSlashes(const std::string& str);
+
+    bool IsHeaderFile(const fs::path& filePath);
+    bool IsSourceFile(const fs::path& filePath);
+
+    fs::path GetHscppIncludePath();
+    fs::path GetHscppSourcePath();
+    fs::path GetHscppExamplesPath();
+    fs::path GetHscppTestPath();
+
+    void SortFileEvents(const std::vector<IFileWatcher::Event>& events,
+                        std::vector<fs::path>& canonicalModifiedFilePaths,
+                        std::vector<fs::path>& canonicalRemovedFilePaths);
+
+    template <typename T, typename THasher=std::hash<T>>
+    void Deduplicate(std::vector<T>& input)
     {
-        std::wstring GetErrorString(DWORD error);
-        std::wstring GetLastErrorString();
+        std::unordered_set<T, THasher> seen;
+        input.erase(std::remove_if(input.begin(), input.end(), [&seen](const T& val){
+            if (seen.find(val) != seen.end())
+            {
+                return true;
+            }
 
-        bool IsWhitespace(const std::string& str);
-        std::string Trim(const std::string& str);
-
-        std::string CreateGuid();
-
-        bool IsHeaderFile(const fs::path& filePath);
-        bool IsSourceFile(const fs::path& filePath);
+            seen.insert(val);
+            return false;
+        }), input.end());
     }
-}
+
+}}

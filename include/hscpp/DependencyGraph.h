@@ -1,6 +1,5 @@
 #pragma once
 
-#include <filesystem>
 #include <vector>
 #include <string>
 #include <unordered_map>
@@ -20,7 +19,6 @@ namespace hscpp
 
         void SetLinkedModules(const fs::path& filePath, const std::vector<std::string>& modules);
         void SetFileDependencies(const fs::path& filePath, const std::vector<fs::path>& dependencies);
-        void PruneDeletedFiles();
         void RemoveFile(const fs::path& filePath);
 
         void Clear();
@@ -44,7 +42,7 @@ namespace hscpp
 
         int m_NextHandle = 0;
 
-        void Collect(int handle, std::unordered_set<int>& collectedHandles, std::function<void(Node*)> cb);
+        void Collect(int handle, std::unordered_set<int>& collectedHandles, const std::function<void(Node*)>& cb);
         void CollectDependencies(int handle, std::unordered_set<int>& collectedHandles);
         void CollectDependents(int handle, std::unordered_set<int>& collectedHandles);
 

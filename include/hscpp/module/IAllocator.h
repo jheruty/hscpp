@@ -14,7 +14,7 @@ namespace hscpp
     class IAllocator
     {
     public:
-        virtual ~IAllocator() {};
+        virtual ~IAllocator() = default;
 
         // Called when an object is first constructed.
         virtual AllocationInfo Hscpp_Allocate(uint64_t size) = 0;

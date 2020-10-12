@@ -2,6 +2,7 @@
 
 namespace hscpp
 {
+
     class GlobalUserData
     {
     public:
@@ -10,16 +11,17 @@ namespace hscpp
             return s_pData == nullptr;
         }
 
-        template <typename T>
-        static T* GetAs()
+        template <typename U>
+        static U* GetAs()
         {
-            return static_cast<T*>(s_pData);
+            return static_cast<U*>(s_pData);
         }
 
     private:
         friend class ModuleInterface;
 
-        inline static void* s_pData = nullptr;
+        static void* s_pData;
     };
+
 }
 

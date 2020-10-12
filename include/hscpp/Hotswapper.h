@@ -2,14 +2,12 @@
 
 #include <string>
 #include <vector>
-#include <filesystem>
 #include <unordered_set>
-#include <unordered_map>
+#include <map>
 
 #include "hscpp/Platform.h"
-#include "hscpp/FileWatcher.h"
-#include "hscpp/Preprocessor.h"
-#include "hscpp/Compiler.h"
+#include "hscpp/IFileWatcher.h"
+#include "hscpp/ICompiler.h"
 #include "hscpp/ModuleManager.h"
 #include "hscpp/module/AllocationResolver.h"
 #include "hscpp/Feature.h"
@@ -18,6 +16,9 @@
 #include "hscpp/Callbacks.h"
 #include "hscpp/FeatureManager.h"
 #include "hscpp/FsPathHasher.h"
+#include "hscpp/Config.h"
+#include "hscpp/VarManager.h"
+#include "hscpp/DependencyGraph.h"
 
 namespace hscpp
 {
@@ -27,14 +28,18 @@ namespace hscpp
     public:
         enum class UpdateResult
         {
-            Nothing,
+            Idle,
             Compiling,
             StartedCompiling,
             PerformedSwap,
             FailedSwap,
         };
 
-        Hotswapper(bool bUseDefaults = true);
+        Hotswapper();
+        explicit Hotswapper(std::unique_ptr<Config> pConfig);
+        Hotswapper(std::unique_ptr<Config> pConfig,
+                   std::unique_ptr<IFileWatcher> pFileWatcher,
+                   std::unique_ptr<ICompiler> pCompiler);
 
         AllocationResolver* GetAllocationResolver();
 
@@ -45,7 +50,6 @@ namespace hscpp
         void DisableFeature(Feature feature);
         bool IsFeatureEnabled(Feature feature);
 
-        void CreateDependencyGraph();
         void TriggerManualBuild();
 
         UpdateResult Update();
@@ -57,7 +61,7 @@ namespace hscpp
         //============================================================================
         // Add & Remove Functions
         //============================================================================
-        
+
         int AddIncludeDirectory(const fs::path& directoryPath);
         bool RemoveIncludeDirectory(int handle);
         void EnumerateIncludeDirectories(const std::function<void(int handle, const fs::path& directoryPath)>& cb);
@@ -67,6 +71,16 @@ namespace hscpp
         bool RemoveSourceDirectory(int handle);
         void EnumerateSourceDirectories(const std::function<void(int handle, const fs::path& directoryPath)>& cb);
         void ClearSourceDirectories();
+
+        int AddForceCompiledSourceFile(const fs::path& filePath);
+        bool RemoveForceCompiledSourceFile(int handle);
+        void EnumerateForceCompiledSourceFiles(const std::function<void(int handle, const fs::path& directoryPath)>& cb);
+        void ClearForceCompiledSourceFiles();
+
+        int AddLibraryDirectory(const fs::path& directoryPath);
+        bool RemoveLibraryDirectory(int handle);
+        void EnumerateLibraryDirectories(const std::function<void(int handle, const fs::path& directoryPath)>& cb);
+        void ClearLibraryDirectories();
 
         int AddLibrary(const fs::path& libraryPath);
         bool RemoveLibrary(int handle);
@@ -88,82 +102,90 @@ namespace hscpp
         void EnumerateLinkOptions(const std::function<void(int handle, const std::string& option)>& cb);
         void ClearLinkOptions();
 
-        void SetHscppRequireVariable(const std::string& name, const std::string& val);
+        void SetVar(const std::string& name, const std::string& val);
+        bool RemoveVar(const std::string& name);
+
+#if defined(HSCPP_DISABLE)
+    private:
+        ModuleManager m_ModuleManager;
+        AllocationResolver m_AllocationResolver;
+    };
+#else
 
     private:
+        std::unique_ptr<Config> m_pConfig;
+
         fs::path m_HscppTempDirectoryPath;
 
         int m_NextIncludeDirectoryHandle = 0;
         int m_NextSourceDirectoryHandle = 0;
+        int m_NextForceCompiledSourceFileHandle = 0;
+        int m_NextLibraryDirectoryHandle = 0;
         int m_NextLibraryHandle = 0;
         int m_NextPreprocessorDefinitionHandle = 0;
         int m_NextCompileOptionHandle = 0;
         int m_NextLinkOptionHandle = 0;
 
         fs::path m_BuildDirectoryPath;
-        std::unordered_map<int, fs::path> m_IncludeDirectoryPathsByHandle;
-        std::unordered_map<int, fs::path> m_SourceDirectoryPathsByHandle;
-        std::unordered_map<int, fs::path> m_LibraryPathsByHandle;
-        std::unordered_map<int, std::string> m_PreprocessorDefinitionsByHandle;
-        std::unordered_map<int, std::string> m_CompileOptionsByHandle;
-        std::unordered_map<int, std::string> m_LinkOptionsByHandle;
 
-        std::unordered_set<fs::path, FsPathHasher> m_QueuedSourceFilePaths;
+        // Use std::map, to ensure that entries are ordered by their handle. Since handles are
+        // assigned in increasing order, map order will match the order in which elements are
+        // added via the API. This is important when linking libraries.
+        std::map<int, fs::path> m_IncludeDirectoryPathsByHandle;
+        std::map<int, fs::path> m_SourceDirectoryPathsByHandle;
+        std::map<int, fs::path> m_ForceCompiledSourceFilePathsByHandle;
+        std::map<int, fs::path> m_LibraryDirectoryPathsByHandle;
+        std::map<int, fs::path> m_LibraryPathsByHandle;
+        std::map<int, std::string> m_PreprocessorDefinitionsByHandle;
+        std::map<int, std::string> m_CompileOptionsByHandle;
+        std::map<int, std::string> m_LinkOptionsByHandle;
 
-        std::unordered_map<std::string, std::string> m_HscppRequireVariables;
+        std::unique_ptr<IFileWatcher> m_pFileWatcher;
+        std::vector<IFileWatcher::Event> m_FileEvents;
 
-        FileWatcher m_FileWatcher;
-        std::vector<FileWatcher::Event> m_FileEvents;
-
-        Preprocessor m_Preprocessor;
-        Compiler m_Compiler;
+        std::unique_ptr<ICompiler> m_pCompiler;
         ModuleManager m_ModuleManager;
         FeatureManager m_FeatureManager;
+        DependencyGraph m_DependencyGraph;
+        VarManager m_VarManager;
+        FileParser m_FileParser;
+
+        bool m_bDependencyGraphNeedsRefresh = true;
 
         AllocationResolver m_AllocationResolver;
         Callbacks m_Callbacks;
 
-        Preprocessor::Input CreatePreprocessorInput(const std::vector<fs::path>& sourceFilePaths);
-        Preprocessor::Output Preprocess(Preprocessor::Input& preprocessorInput);
+        bool StartCompile(ICompiler::Input& compilerInput);
 
-        Compiler::Input CreateCompilerInput(const Preprocessor::Output& preprocessorOutput);
-        bool StartCompile(Compiler::Input& compilerInput);
+        ICompiler::Input CreateCompilerInput(const std::vector<fs::path>& sourceFilePaths);
+        void Preprocess(ICompiler::Input& input);
+        void Deduplicate(ICompiler::Input& input);
 
         bool PerformRuntimeSwap();
-
-        fs::path GetHscppIncludePath();
 
         bool CreateHscppTempDirectory();
         bool CreateBuildDirectory();
 
-        void HandleRemovedFiles();
-        std::vector<fs::path> GetChangedFiles();
-        void AppendDirectoryFiles(const std::unordered_map<int, fs::path>& directoryPathsByHandle,
+        void RemoveFromDependencyGraph(const std::vector<fs::path>& removedFilePaths);
+        void RefreshDependencyGraph();
+        void AppendDirectoryFiles(const std::map<int, fs::path>& directoryPathsByHandle,
             std::unordered_set<fs::path, FsPathHasher>& sourceFilePaths);
 
         template <typename T>
-        int Add(const T& value, int& handle, std::unordered_map<int, T>& map);
+        int Add(const T& value, int& handle, std::map<int, T>& map);
 
         template <typename T>
-        bool Remove(int handle, std::unordered_map<int, T>& map);
+        bool Remove(int handle, std::map<int, T>& map);
 
         template <typename T>
-        void Enumerate(const std::function<void(int handle, const T& value)>& cb, std::unordered_map<int, T>& map);
+        void Enumerate(const std::function<void(int handle, const T& value)>& cb, std::map<int, T>& map);
 
         template <typename T>
-        std::vector<T> AsVector(std::unordered_map<int, T>& map);
+        std::vector<T> AsVector(std::map<int, T>& map);
     };
 
-    // Inline this function, so that __FILE__ is within the include directory.
-    inline fs::path Hotswapper::GetHscppIncludePath()
-    {
-        // __FILE__ returns "<path>/include/hscpp/Hotswapper.h". We want "<path>/include".
-        fs::path currentPath = __FILE__;
-        return currentPath.parent_path().parent_path();
-    }
-
     template <typename T>
-    int Hotswapper::Add(const T& value, int& handle, std::unordered_map<int, T>& map)
+    int Hotswapper::Add(const T& value, int& handle, std::map<int, T>& map)
     {
         int curHandle = handle++;
         map[curHandle] = value;
@@ -172,7 +194,7 @@ namespace hscpp
     }
 
     template <typename T>
-    bool Hotswapper::Remove(int handle, std::unordered_map<int, T>& map)
+    bool Hotswapper::Remove(int handle, std::map<int, T>& map)
     {
         auto it = map.find(handle);
         if (it == map.end())
@@ -185,24 +207,26 @@ namespace hscpp
     }
 
     template <typename T>
-    void Hotswapper::Enumerate(const std::function<void(int handle, const T& value)>& cb, std::unordered_map<int, T>& map)
+    void Hotswapper::Enumerate(const std::function<void(int handle, const T& value)>& cb, std::map<int, T>& map)
     {
-        for (const auto& [handle, val] : map)
+        for (const auto& handle__val : map)
         {
-            cb(handle, val);
+            cb(handle__val.first, handle__val.second);
         }
     }
 
     template <typename T>
-    std::vector<T> Hotswapper::AsVector(std::unordered_map<int, T>& map)
+    std::vector<T> Hotswapper::AsVector(std::map<int, T>& map)
     {
         std::vector<T> vec;
-        for (const auto& [handle, val] : map)
+        for (const auto& handle__val : map)
         {
-            vec.push_back(val);
+            vec.push_back(handle__val.second);
         }
 
         return vec;
     }
+
+#endif
 
 }

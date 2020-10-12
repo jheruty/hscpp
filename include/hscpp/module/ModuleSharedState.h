@@ -7,6 +7,7 @@
 
 namespace hscpp
 {
+
     class ITracker;
     class IConstructor;
 
@@ -14,10 +15,10 @@ namespace hscpp
     {
     public:
         // Internal global state required by hscpp. Modify at your own peril.
-        inline static bool* s_pbSwapping = nullptr;
-        inline static std::unordered_map<std::string, std::vector<ITracker*>>* s_pTrackersByKey = nullptr;
-        inline static std::unordered_map<std::string, IConstructor*>* s_pConstructorsByKey = nullptr;
-        inline static IAllocator* s_pAllocator = nullptr;
+        static bool* s_pbSwapping;
+        static std::unordered_map<std::string, std::vector<ITracker*>>* s_pTrackersByKey;
+        static std::unordered_map<std::string, IConstructor*>* s_pConstructorsByKey;
+        static IAllocator* s_pAllocator;
     };
 
 }

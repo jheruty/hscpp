@@ -1,4 +1,5 @@
 #include <unordered_map>
+#include <vector>
 
 #include "hscpp/FeatureManager.h"
 
@@ -7,7 +8,7 @@ namespace hscpp
 
     // Features may implicitly enable other features, for example, Feature::DependentCompilation
     // implicitly enables Feature::Preprocessor.
-    const static std::unordered_map<Feature, std::vector<Feature>> LINKED_FEATURES = {
+    const static std::unordered_map<Feature, std::vector<Feature>, FeatureHasher> LINKED_FEATURES = {
         { Feature::Preprocessor, { Feature::DependentCompilation } },
     };
 

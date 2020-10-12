@@ -1,62 +1,52 @@
 #pragma once
 
-#include <vector>
-#include <string>
-#include <filesystem>
-
-#include "hscpp/Platform.h"
-#include "hscpp/CmdShell.h"
+#include "hscpp/ICmdShellTask.h"
+#include "hscpp/ICompilerCmdLine.h"
+#include "hscpp/ICompiler.h"
+#include "hscpp/ICmdShell.h"
+#include "hscpp/Config.h"
 
 namespace hscpp
 {
 
-    class Compiler
+    class Compiler : public ICompiler
     {
     public:
-        struct Input
-        {
-            fs::path buildDirectoryPath;
-            std::vector<fs::path> sourceFilePaths;
-            std::vector<fs::path> includeDirectoryPaths;
-            std::vector<fs::path> libraryPaths;
-            std::vector<std::string> preprocessorDefinitions;
-            std::vector<std::string> compileOptions;
-            std::vector<std::string> linkOptions;
-        };
+        Compiler(CompilerConfig* pConfig,
+                 std::unique_ptr<ICmdShellTask> pInitializeTask,
+                 std::unique_ptr<ICompilerCmdLine> pCompilerCmdLine);
 
-        Compiler();
-        
-        bool StartBuild(const Input& info);
-        void Update();
+        bool IsInitialized() override;
 
-        bool IsCompiling();
+        bool StartBuild(const Input& input) override;
+        void Update() override;
 
-        bool HasCompiledModule();
-        fs::path PopModule();
+        bool IsCompiling() override;
+
+        bool HasCompiledModule() override;
+        fs::path PopModule() override;
 
     private:
         enum class CompilerTask
         {
-            GetVsPath,
-            SetVcVarsAll,
             Build,
         };
 
-        bool m_Initialized = false;
-        CmdShell m_CmdShell;
+        CompilerConfig* m_pConfig = nullptr;
+
+        bool m_bInitialized = false;
+        bool m_bInitializationFailed = false;
 
         size_t m_iCompileOutput = 0;
         fs::path m_CompilingModulePath;
         fs::path m_CompiledModulePath;
 
-        bool CreateClCommandFile(const Input& info);
+        std::unique_ptr<ICmdShell> m_pCmdShell;
+        std::unique_ptr<ICmdShellTask> m_pInitializeTask;
+        std::unique_ptr<ICompilerCmdLine> m_pCompilerCmdLine;
 
-        void StartVsPathTask();
-        bool HandleTaskComplete(CompilerTask task);
-        bool HandleGetVsPathTaskComplete(const std::vector<std::string>& output);
-        bool HandleSetVcVarsAllTaskComplete(std::vector<std::string> output);
-        bool HandleBuildTaskComplete();
-
+        void HandleTaskComplete(CompilerTask task);
+        void HandleBuildTaskComplete();
     };
 
 }

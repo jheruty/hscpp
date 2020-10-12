@@ -6,6 +6,7 @@
 
 namespace hscpp
 {
+
     class FeatureManager
     {
     public:
@@ -14,6 +15,7 @@ namespace hscpp
         bool IsFeatureEnabled(Feature feature);
 
     private:
-        std::unordered_set<Feature> m_Features;
+        std::unordered_set<Feature, FeatureHasher> m_Features;
     };
+
 }
