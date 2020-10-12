@@ -137,7 +137,6 @@ endif()
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     list(APPEND COMPILE_OPTIONS
         /permissive # Enforce standard compliance.
-        /W4
     )
 else()
     list(APPEND COMPILE_OPTIONS
