@@ -17,7 +17,7 @@
 #include "hscpp/FeatureManager.h"
 #include "hscpp/FsPathHasher.h"
 #include "hscpp/Config.h"
-#include "hscpp/VarManager.h"
+#include "hscpp/VarStore.h"
 #include "hscpp/DependencyGraph.h"
 
 namespace hscpp
@@ -147,7 +147,7 @@ namespace hscpp
         ModuleManager m_ModuleManager;
         FeatureManager m_FeatureManager;
         DependencyGraph m_DependencyGraph;
-        VarManager m_VarManager;
+        VarStore m_VarStore;
         FileParser m_FileParser;
 
         bool m_bDependencyGraphNeedsRefresh = true;

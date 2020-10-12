@@ -414,12 +414,12 @@ namespace hscpp
 
     void Hotswapper::SetVar(const std::string& name, const std::string& val)
     {
-        m_VarManager.SetVar(name, val);
+        m_VarStore.SetVar(name, val);
     }
 
     bool Hotswapper::RemoveVar(const std::string& name)
     {
-        return m_VarManager.RemoveVar(name);
+        return m_VarStore.RemoveVar(name);
     }
 
     //============================================================================
@@ -491,7 +491,7 @@ namespace hscpp
                         }
 
                         // Interpolate vars (ex. ${VARIABLE_NAME}).
-                        fullPath = fs::u8path(m_VarManager.Interpolate(fullPath.u8string()));
+                        fullPath = fs::u8path(m_VarStore.Interpolate(fullPath.u8string()));
 
                         std::error_code error;
                         fs::path canonicalPath = fs::canonical(fullPath, error);

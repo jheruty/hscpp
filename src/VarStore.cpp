@@ -1,15 +1,15 @@
-#include "hscpp/VarManager.h"
+#include "hscpp/VarStore.h"
 #include "hscpp/Log.h"
 
 namespace hscpp
 {
 
-    void VarManager::SetVar(const std::string& name, const std::string& val)
+    void VarStore::SetVar(const std::string& name, const std::string& val)
     {
         m_Vars[name] = val;
     }
 
-    bool VarManager::RemoveVar(const std::string& name)
+    bool VarStore::RemoveVar(const std::string& name)
     {
         auto varIt = m_Vars.find(name);
         if (varIt == m_Vars.end())
@@ -21,7 +21,7 @@ namespace hscpp
         return true;
     }
 
-    std::string VarManager::Interpolate(const std::string& str)
+    std::string VarStore::Interpolate(const std::string& str)
     {
         std::string interpolatedStr = str;
         for (const auto& var : m_Vars)

@@ -6,7 +6,7 @@
 namespace hscpp
 {
 
-    class VarManager
+    class VarStore
     {
     public:
         void SetVar(const std::string& name, const std::string& val);

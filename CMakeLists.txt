@@ -25,7 +25,7 @@ list(APPEND SRC_FILES
     src/Platform.cpp
     src/ProtectedFunction.cpp
     src/Util.cpp
-    src/VarManager.cpp
+    src/VarStore.cpp
 
     include/hscpp/module/AllocationResolver.h
     include/hscpp/module/CompileTimeString.h
@@ -64,7 +64,7 @@ list(APPEND SRC_FILES
     include/hscpp/Platform.h
     include/hscpp/ProtectedFunction.h
     include/hscpp/Util.h
-    include/hscpp/VarManager.h
+    include/hscpp/VarStore.h
 )
 
 list(APPEND COMPILE_OPTIONS)
