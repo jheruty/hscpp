@@ -158,7 +158,7 @@ namespace hscpp { namespace test
             return UpdateLoop::Running;
         };
 
-        CALL(StartUpdateLoop, Milliseconds(100), Milliseconds(10), cb);
+        CALL(StartUpdateLoop, Milliseconds(5000), Milliseconds(10), cb);
 
         REQUIRE(taskState == ICmdShell::TaskState::Cancelled);
     }
