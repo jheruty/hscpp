@@ -87,13 +87,6 @@ if (WIN32)
         include/hscpp/FileWatcher_win32.h
     )
 
-    if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-        list(APPEND COMPILE_OPTIONS
-            /EHa # Use standard exception handling (needs to be explicit for clang-cl).
-        )
-    endif()
-
-
     list(APPEND COMPILE_DEFINITIONS
         HSCPP_PLATFORM_WIN32
         _CRT_SECURE_NO_WARNINGS
@@ -139,7 +132,7 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     list(APPEND COMPILE_OPTIONS
         /permissive # Enforce standard compliance.
     )
-else()
+elseif(NOT CMAKE_CXX_SIMULATE_ID STREQUAL "MSVC")
     list(APPEND COMPILE_OPTIONS
         -Wall
         -Wextra
