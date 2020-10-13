@@ -194,20 +194,7 @@ namespace hscpp { namespace platform
 
     fs::path GetDefaultCompilerExecutable()
     {
-#if defined(HSCPP_COMPILER_MSVC)
-        return fs::path("cl");
-#elif defined(HSCPP_COMPILER_CLANG)
-    #if defined(HSCPP_PLATFORM_WIN32)
-        return fs::path("clang-cl");
-    #else
-        return fs::path("clang++");
-    #endif
-#elif defined(HSCPP_COMPILER_GCC)
-        return fs::path("g++");
-#endif
-        log::Warning() << HSCPP_LOG_PREFIX
-            << "Unable to deduce compiler executable. Defaulting to clang++." << log::End();
-        return fs::path("clang++");
+        return fs::path(HSCPP_COMPILER_PATH);
     }
 
     //============================================================================
