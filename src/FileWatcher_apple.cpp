@@ -157,7 +157,7 @@ namespace hscpp
 
             for (const auto& segment : canonicalPath)
             {
-                HSCPP_UNUSED_PARAM(segment);
+                HSCPP_UNUSED_VAR(segment);
                 sortedPath.nSegments++;
             }
 

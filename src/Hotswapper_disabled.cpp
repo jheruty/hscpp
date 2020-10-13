@@ -6,12 +6,12 @@ namespace hscpp
     Hotswapper::Hotswapper()
     {}
 
-    Hotswapper::Hotswapper(std::unique_ptr<Config> pConfig)
+    Hotswapper::Hotswapper(std::unique_ptr<Config>)
     {}
 
-    Hotswapper::Hotswapper(std::unique_ptr<Config> pConfig,
-    std::unique_ptr<IFileWatcher> pFileWatcher,
-            std::unique_ptr<ICompiler> pCompiler)
+    Hotswapper::Hotswapper(std::unique_ptr<Config>,
+            std::unique_ptr<IFileWatcher>,
+            std::unique_ptr<ICompiler>)
     {}
 
     AllocationResolver* Hotswapper::GetAllocationResolver()
@@ -29,13 +29,13 @@ namespace hscpp
         m_ModuleManager.SetGlobalUserData(pGlobalUserData);
     }
 
-    void Hotswapper::EnableFeature(Feature feature)
+    void Hotswapper::EnableFeature(Feature)
     {}
 
-    void Hotswapper::DisableFeature(Feature feature)
+    void Hotswapper::DisableFeature(Feature)
     {}
 
-    bool Hotswapper::IsFeatureEnabled(Feature feature)
+    bool Hotswapper::IsFeatureEnabled(Feature)
     {
         return false;
     }
@@ -53,7 +53,7 @@ namespace hscpp
         return false;
     }
 
-    void Hotswapper::SetCallbacks(const Callbacks& callbacks)
+    void Hotswapper::SetCallbacks(const Callbacks&)
     {}
 
     void Hotswapper::DoProtectedCall(const std::function<void()>& cb)
@@ -65,138 +65,138 @@ namespace hscpp
     // Add & Remove Functions
     //============================================================================
 
-    int Hotswapper::AddIncludeDirectory(const fs::path& directoryPath)
+    int Hotswapper::AddIncludeDirectory(const fs::path&)
     {
         return -1;
     }
 
-    bool Hotswapper::RemoveIncludeDirectory(int handle)
+    bool Hotswapper::RemoveIncludeDirectory(int)
     {
         return false;
     }
 
-    void Hotswapper::EnumerateIncludeDirectories(const std::function<void(int handle, const fs::path& directoryPath)>& cb)
+    void Hotswapper::EnumerateIncludeDirectories(const std::function<void(int, const fs::path&)>&)
     {}
 
     void Hotswapper::ClearIncludeDirectories()
     {}
 
-    int Hotswapper::AddSourceDirectory(const fs::path& directoryPath)
+    int Hotswapper::AddSourceDirectory(const fs::path&)
     {
         return -1;
     }
 
-    bool Hotswapper::RemoveSourceDirectory(int handle)
+    bool Hotswapper::RemoveSourceDirectory(int)
     {
         return false;
     }
 
-    void Hotswapper::EnumerateSourceDirectories(const std::function<void(int handle, const fs::path& directoryPath)>& cb)
+    void Hotswapper::EnumerateSourceDirectories(const std::function<void(int, const fs::path&)>&)
     {}
 
     void Hotswapper::ClearSourceDirectories()
     {}
 
-    int Hotswapper::AddForceCompiledSourceFile(const fs::path& filePath)
+    int Hotswapper::AddForceCompiledSourceFile(const fs::path&)
     {
         return -1;
     }
 
-    bool Hotswapper::RemoveForceCompiledSourceFile(int handle)
+    bool Hotswapper::RemoveForceCompiledSourceFile(int)
     {
         return false;
     }
 
-    void Hotswapper::EnumerateForceCompiledSourceFiles(const std::function<void(int handle, const fs::path& directoryPath)>& cb)
+    void Hotswapper::EnumerateForceCompiledSourceFiles(const std::function<void(int, const fs::path&)>&)
     {}
 
     void Hotswapper::ClearForceCompiledSourceFiles()
     {}
 
-    int Hotswapper::AddLibraryDirectory(const fs::path& directoryPath)
+    int Hotswapper::AddLibraryDirectory(const fs::path&)
     {
         return -1;
     }
 
-    bool Hotswapper::RemoveLibraryDirectory(int handle)
+    bool Hotswapper::RemoveLibraryDirectory(int)
     {
         return false;
     }
 
-    void Hotswapper::EnumerateLibraryDirectories(const std::function<void(int handle, const fs::path& directoryPath)>& cb)
+    void Hotswapper::EnumerateLibraryDirectories(const std::function<void(int, const fs::path&)>&)
     {}
 
     void Hotswapper::ClearLibraryDirectories()
     {}
 
-    int Hotswapper::AddLibrary(const fs::path& libraryPath)
+    int Hotswapper::AddLibrary(const fs::path&)
     {
         return -1;
     }
 
-    bool Hotswapper::RemoveLibrary(int handle)
+    bool Hotswapper::RemoveLibrary(int)
     {
         return false;
     }
 
-    void Hotswapper::EnumerateLibraries(const std::function<void(int handle, const fs::path& libraryPath)>& cb)
+    void Hotswapper::EnumerateLibraries(const std::function<void(int, const fs::path&)>&)
     {}
 
     void Hotswapper::ClearLibraries()
     {}
 
-    int Hotswapper::AddPreprocessorDefinition(const std::string& definition)
+    int Hotswapper::AddPreprocessorDefinition(const std::string&)
     {
         return -1;
     }
 
-    bool Hotswapper::RemovePreprocessorDefinition(int handle)
+    bool Hotswapper::RemovePreprocessorDefinition(int)
     {
         return false;
     }
 
-    void Hotswapper::EnumeratePreprocessorDefinitions(const std::function<void(int handle, const std::string& definition)>& cb)
+    void Hotswapper::EnumeratePreprocessorDefinitions(const std::function<void(int, const std::string&)>&)
     {}
 
     void Hotswapper::ClearPreprocessorDefinitions()
     {}
 
-    int Hotswapper::AddCompileOption(const std::string& option)
+    int Hotswapper::AddCompileOption(const std::string&)
     {
         return -1;
     }
 
-    bool Hotswapper::RemoveCompileOption(int handle)
+    bool Hotswapper::RemoveCompileOption(int)
     {
         return false;
     }
 
-    void Hotswapper::EnumerateCompileOptions(const std::function<void(int handle, const std::string& option)>& cb)
+    void Hotswapper::EnumerateCompileOptions(const std::function<void(int, const std::string&)>&)
     {}
 
     void Hotswapper::ClearCompileOptions()
     {}
 
-    int Hotswapper::AddLinkOption(const std::string& option)
+    int Hotswapper::AddLinkOption(const std::string&)
     {
         return -1;
     }
 
-    bool Hotswapper::RemoveLinkOption(int handle)
+    bool Hotswapper::RemoveLinkOption(int)
     {
         return false;
     }
 
-    void Hotswapper::EnumerateLinkOptions(const std::function<void(int handle, const std::string& option)>& cb)
+    void Hotswapper::EnumerateLinkOptions(const std::function<void(int, const std::string&)>&)
     {}
 
     void Hotswapper::ClearLinkOptions()
     {}
 
-    void Hotswapper::SetVar(const std::string& name, const std::string& val)
+    void Hotswapper::SetVar(const std::string&, const std::string&)
     {}
 
-    bool Hotswapper::RemoveVar(const std::string& name)
+    bool Hotswapper::RemoveVar(const std::string&)
     {
         return false;
     }

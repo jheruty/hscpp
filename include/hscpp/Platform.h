@@ -80,5 +80,6 @@ typedef int TOsError;
     }
 
 #define HSCPP_UNUSED_PARAM(param) (void)param
+#define HSCPP_UNUSED_VAR(param) (void)param
 
 }
