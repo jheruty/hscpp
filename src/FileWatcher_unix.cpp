@@ -76,9 +76,9 @@ namespace hscpp
 
     void FileWatcher::ClearAllWatches()
     {
-        for (const auto& [wd, path] : m_DirectoryPathsByWd)
+        for (const auto& wd__path : m_DirectoryPathsByWd)
         {
-            CloseWatch(wd);
+            CloseWatch(wd__path.first);
         }
 
         m_DirectoryPathsByWd.clear();
