@@ -2,11 +2,19 @@ cmake_minimum_required(VERSION 3.10.0)
 
 project(hscpp)
 
+# Options:
+#     - HSCPP_BUILD_EXAMPLES: Build demos in the examples directory.
+#     - HSCPP_BUILD_TESTs: Build tests in the test directory.
+#     - HSCPP_USE_GHC_FILESYSTEM: Usg ghc filesystem in place of std::filesystem. This is done
+#       implicitly if CMAKE_CXX_STANDARD < 17.
+#     - HSCPP_DISABLE: Disable hscpp completely. Hotswapper function calls will have no effect,
+#       and no object will be tracked.
 option(HSCPP_BUILD_EXAMPLES "Enable building examples." ON)
 option(HSCPP_BUILD_TESTS "Enable building tests." ON)
 option(HSCPP_USE_GHC_FILESYSTEM "Use ghc filesystem as a substitute of std::filesystem." OFF)
 option(HSCPP_DISABLE "Disable hscpp." OFF)
 
+# List of source files compiled in every configuration.
 list(APPEND SRC_FILES
     src/module/Module.cpp
 
@@ -67,16 +75,24 @@ list(APPEND SRC_FILES
     include/hscpp/VarStore.h
 )
 
+# List of compile options in every configuration.
 list(APPEND COMPILE_OPTIONS)
 
+# List of compile definitions in every configuration.
 list(APPEND COMPILE_DEFINITIONS
-    $<$<CONFIG:Debug>:HSCPP_DEBUG>
     HSCPP_ROOT_PATH="${CMAKE_CURRENT_SOURCE_DIR}"
     HSCPP_COMPILER_PATH="${CMAKE_CXX_COMPILER}"
 )
 
+# List of libraries to link in every configuration.
 list(APPEND LINK_LIBRARIES)
 
+# Additional compile definitions in Debug.
+list(APPEND COMPILE_DEFINITIONS
+    $<$<CONFIG:Debug>:HSCPP_DEBUG>
+)
+
+# OS-specific settings.
 if (WIN32)
     list(APPEND SRC_FILES
         src/CmdShell_win32.cpp
@@ -128,11 +144,14 @@ elseif(UNIX)
     )
 endif()
 
+# Compiler-specific settings.
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     list(APPEND COMPILE_OPTIONS
         /permissive # Enforce standard compliance.
     )
-elseif(NOT CMAKE_CXX_SIMULATE_ID STREQUAL "MSVC")
+
+    list(APPEND COMPILE_DEFINITIONS HSCPP_COMPILER_MSVC)
+elseif (NOT CMAKE_CXX_SIMULATE_ID STREQUAL "MSVC") # Exclude clang-cl.
     list(APPEND COMPILE_OPTIONS
         -Wall
         -Wextra
@@ -141,19 +160,23 @@ elseif(NOT CMAKE_CXX_SIMULATE_ID STREQUAL "MSVC")
     )
 endif()
 
-if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+# Compiler-specific definitions.
+if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC") # cl
     list(APPEND COMPILE_DEFINITIONS HSCPP_COMPILER_MSVC)
-elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_SIMULATE_ID STREQUAL "MSVC") # clang-cl
+    list(APPEND COMPILE_DEFINITIONS HSCPP_COMPILER_CLANG_CL)
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang") # clang
     list(APPEND COMPILE_DEFINITIONS
         HSCPP_COMPILER_CLANG
-        HSCPP_COMPILER_GCC
+        HSCPP_COMPILER_GCC # clang has a gcc-like interface, and can be treated like g++ when invoked.
     )
-elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+elseif (CMAKE_CXX_COMPILER_ID STREQUAL "GNU") # g++
     list(APPEND COMPILE_DEFINITIONS HSCPP_COMPILER_GCC)
 else()
     message(WARNING "Compiler is not officially supported.")
 endif()
 
+# Determine C++ version to use. Default to C++17 if not defined.
 if(NOT DEFINED CMAKE_CXX_STANDARD)
     # Set C++17 as default build target.
     set(CMAKE_CXX_STANDARD 17)
@@ -163,8 +186,13 @@ elseif(CMAKE_CXX_STANDARD LESS 11)
     message(FATAL_ERROR "hotswap-cpp requires C++11.")
 endif()
 
+list(APPEND COMPILE_DEFINITIONS
+    HSCPP_CXX_STANDARD=${CMAKE_CXX_STANDARD}
+)
+
 message(STATUS "hscpp CMAKE_CXX_STANDARD set to ${CMAKE_CXX_STANDARD}.")
 
+# Fallback to ghc filesystem if using C++ version below C++17, or if user requested it.
 if (HSCPP_USE_GHC_FILESYSTEM OR (CMAKE_CXX_STANDARD LESS 17))
     if (CMAKE_CXX_STANDARD LESS 17)
         message(STATUS "hscpp CMAKE_CXX_STANDARD < 17, so using ghc filesystem rather than std::filesystem.")
@@ -181,16 +209,13 @@ if (HSCPP_USE_GHC_FILESYSTEM OR (CMAKE_CXX_STANDARD LESS 17))
     target_compile_definitions(ghc_filesystem INTERFACE GHC_WIN_WSTRING_STRING_TYPE)
 endif()
 
+# Toggle if hscpp is enabled or disabled.
 if (HSCPP_DISABLE)
     list(APPEND SRC_FILES src/Hotswapper_disabled.cpp)
     list(APPEND COMPILE_DEFINITIONS HSCPP_DISABLE)
 else()
     list(APPEND SRC_FILES src/Hotswapper_enabled.cpp)
 endif()
-
-list(APPEND COMPILE_DEFINITIONS
-    HSCPP_CXX_STANDARD=${CMAKE_CXX_STANDARD}
-)
 
 add_library(hscpp ${SRC_FILES})
 
