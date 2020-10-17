@@ -99,9 +99,10 @@ namespace hscpp
         }
 
         // Very rudimentary verification; assume that a --version string will have at least
-        // a letter and a number associated with it.
+        // a letter, a number, and a period associated with it.
         bool bSawLetter = false;
         bool bSawNumber = false;
+        bool bSawPeriod = false;
         bool bValidVersion = false;
         for (const auto& line : output)
         {
@@ -117,7 +118,12 @@ namespace hscpp
                     bSawLetter = true;
                 }
 
-                if (bSawLetter && bSawNumber)
+                if (c == '.')
+                {
+                    bSawPeriod = true;
+                }
+
+                if (bSawLetter && bSawNumber && bSawPeriod)
                 {
                     bValidVersion = true;
                     break;
