@@ -20,7 +20,6 @@ list(APPEND SRC_FILES
 
     src/Compiler.cpp
     src/CompilerCmdLine_gcc.cpp
-    src/CompilerCmdLine_msvc.cpp
     src/CompilerInitializeTask_gcc.cpp
     src/Config.cpp
     src/DependencyGraph.cpp
@@ -51,9 +50,7 @@ list(APPEND SRC_FILES
     include/hscpp/Callbacks.h
     include/hscpp/Compiler.h
     include/hscpp/CompilerCmdLine_gcc.h
-    include/hscpp/CompilerCmdLine_msvc.h
     include/hscpp/CompilerInitializeTask_gcc.h
-    include/hscpp/CompilerInitializeTask_msvc.h
     include/hscpp/DependencyGraph.h
     include/hscpp/Feature.h
     include/hscpp/FeatureManager.h
@@ -96,10 +93,13 @@ list(APPEND COMPILE_DEFINITIONS
 if (WIN32)
     list(APPEND SRC_FILES
         src/CmdShell_win32.cpp
+        src/CompilerCmdLine_msvc.cpp
         src/CompilerInitializeTask_msvc.cpp
         src/FileWatcher_win32.cpp
 
         include/hscpp/CmdShell_win32.h
+        include/hscpp/CompilerCmdLine_msvc.h
+        include/hscpp/CompilerInitializeTask_msvc.h
         include/hscpp/FileWatcher_win32.h
     )
 

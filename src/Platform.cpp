@@ -22,13 +22,15 @@
     #include "hscpp/CmdShell_unix.h"
 #endif
 
-// Compiler code is cross-platform. For example, one may wish to run the clang compiler on Windows.
-// By default hscpp will choose the compiler that was used to compile this file.
+// Compiler and GCC interface is cross-platform. MSVC interface is Win32-only.
 #include "hscpp/Compiler.h"
-#include "hscpp/CompilerInitializeTask_msvc.h"
 #include "hscpp/CompilerInitializeTask_gcc.h"
-#include "hscpp/CompilerCmdLine_msvc.h"
 #include "hscpp/CompilerCmdLine_gcc.h"
+
+#if defined(HSCPP_PLATFORM_WIN32)
+    #include "hscpp/CompilerInitializeTask_msvc.h"
+    #include "hscpp/CompilerCmdLine_msvc.h"
+#endif
 
 namespace hscpp { namespace platform
 {
