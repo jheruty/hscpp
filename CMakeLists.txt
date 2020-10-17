@@ -160,10 +160,13 @@ elseif (NOT CMAKE_CXX_SIMULATE_ID STREQUAL "MSVC") # Exclude clang-cl.
     )
 endif()
 
-# Compiler-specific definitions.
 if (CMAKE_CXX_COMPILER_ID STREQUAL "MSVC") # cl
     list(APPEND COMPILE_DEFINITIONS HSCPP_COMPILER_MSVC)
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" AND CMAKE_CXX_SIMULATE_ID STREQUAL "MSVC") # clang-cl
+    list(APPEND COMPILE_OPTIONS
+        /EHsc # Use standard exception handling.
+    )
+
     list(APPEND COMPILE_DEFINITIONS HSCPP_COMPILER_CLANG_CL)
 elseif (CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang") # clang
     list(APPEND COMPILE_DEFINITIONS
