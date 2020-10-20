@@ -7,7 +7,7 @@
 #include <chrono>
 #include <unordered_set>
 
-#include "hscpp/IFileWatcher.h"
+#include "hscpp/file-watcher/IFileWatcher.h"
 #include "hscpp/FsPathHasher.h"
 #include "hscpp/Config.h"
 

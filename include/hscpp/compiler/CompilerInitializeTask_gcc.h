@@ -1,14 +1,16 @@
 #pragma once
 
-#include "hscpp/ICmdShellTask.h"
+#include "hscpp/cmd-shell/ICmdShellTask.h"
 #include "hscpp/Config.h"
 
 namespace hscpp
 {
 
-    class CompilerInitializeTask_msvc : public ICmdShellTask
+    class CompilerInitializeTask_gcc : public ICmdShellTask
     {
     public:
+        explicit CompilerInitializeTask_gcc(CompilerConfig* pConfig);
+
         void Start(ICmdShell* pCmdShell,
                    std::chrono::milliseconds timeout,
                    const std::function<void(Result)>& doneCb) override;
@@ -17,10 +19,10 @@ namespace hscpp
     private:
         enum class CompilerTask
         {
-            GetVsPath,
-            SetVcVarsAll,
+            GetVersion,
         };
 
+        CompilerConfig* m_pConfig = nullptr;
         ICmdShell* m_pCmdShell = nullptr;
         std::function<void(Result)> m_DoneCb;
 
@@ -29,12 +31,8 @@ namespace hscpp
 
         void TriggerDoneCb(Result result);
 
-        void StartVsPathTask();
-		bool StartVcVarsAllTask(const fs::path& vsPath, const fs::path& vcVarsAllDirectoryPath);
-
         void HandleTaskComplete(CompilerTask task);
-        void HandleGetVsPathTaskComplete(const std::vector<std::string>& output);
-        void HandleSetVcVarsAllTaskComplete(std::vector<std::string> output);
+        void HandleGetVersionTaskComplete(const std::vector<std::string>& output);
     };
 
 }

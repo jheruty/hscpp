@@ -3,9 +3,9 @@
 #include <memory>
 #include <functional>
 
-#include "hscpp/IFileWatcher.h"
-#include "hscpp/ICompiler.h"
-#include "hscpp/ICmdShell.h"
+#include "hscpp/file-watcher/IFileWatcher.h"
+#include "hscpp/compiler/ICompiler.h"
+#include "hscpp/cmd-shell/ICmdShell.h"
 #include "hscpp/Filesystem.h"
 #include "hscpp/Config.h"
 

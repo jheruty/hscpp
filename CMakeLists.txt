@@ -16,11 +16,10 @@ option(HSCPP_DISABLE "Disable hscpp." OFF)
 
 # List of source files compiled in every configuration.
 list(APPEND SRC_FILES
+    src/compiler/Compiler.cpp
+    src/compiler/CompilerCmdLine_gcc.cpp
+    src/compiler/CompilerInitializeTask_gcc.cpp
     src/module/Module.cpp
-
-    src/Compiler.cpp
-    src/CompilerCmdLine_gcc.cpp
-    src/CompilerInitializeTask_gcc.cpp
     src/Config.cpp
     src/DependencyGraph.cpp
     src/Feature.cpp
@@ -34,6 +33,14 @@ list(APPEND SRC_FILES
     src/Util.cpp
     src/VarStore.cpp
 
+    include/hscpp/cmd-shell/ICmdShell.h
+    include/hscpp/cmd-shell/ICmdShellTask.h
+    include/hscpp/compiler/Compiler.h
+    include/hscpp/compiler/CompilerCmdLine_gcc.h
+    include/hscpp/compiler/CompilerInitializeTask_gcc.h
+    include/hscpp/compiler/ICompiler.h
+    include/hscpp/compiler/ICompilerCmdLine.h
+    include/hscpp/file-watcher/IFileWatcher.h
     include/hscpp/module/AllocationResolver.h
     include/hscpp/module/CompileTimeString.h
     include/hscpp/module/Constructors.h
@@ -46,11 +53,7 @@ list(APPEND SRC_FILES
     include/hscpp/module/Serializer.h
     include/hscpp/module/SwapInfo.h
     include/hscpp/module/Tracker.h
-
     include/hscpp/Callbacks.h
-    include/hscpp/Compiler.h
-    include/hscpp/CompilerCmdLine_gcc.h
-    include/hscpp/CompilerInitializeTask_gcc.h
     include/hscpp/DependencyGraph.h
     include/hscpp/Feature.h
     include/hscpp/FeatureManager.h
@@ -58,12 +61,6 @@ list(APPEND SRC_FILES
     include/hscpp/Filesystem.h
     include/hscpp/FsPathHasher.h
     include/hscpp/Hotswapper.h
-    include/hscpp/ICmdShell.h
-    include/hscpp/ICmdShellTask.h
-    include/hscpp/ICmdShellTask.h
-    include/hscpp/ICompiler.h
-    include/hscpp/ICompilerCmdLine.h
-    include/hscpp/IFileWatcher.h
     include/hscpp/Log.h
     include/hscpp/ModuleManager.h
     include/hscpp/Platform.h
@@ -92,15 +89,15 @@ list(APPEND COMPILE_DEFINITIONS
 # OS-specific settings.
 if (WIN32)
     list(APPEND SRC_FILES
-        src/CmdShell_win32.cpp
-        src/CompilerCmdLine_msvc.cpp
-        src/CompilerInitializeTask_msvc.cpp
-        src/FileWatcher_win32.cpp
+        src/cmd-shell/CmdShell_win32.cpp
+        src/compiler/CompilerCmdLine_msvc.cpp
+        src/compiler/CompilerInitializeTask_msvc.cpp
+        src/file-watcher/FileWatcher_win32.cpp
 
-        include/hscpp/CmdShell_win32.h
-        include/hscpp/CompilerCmdLine_msvc.h
-        include/hscpp/CompilerInitializeTask_msvc.h
-        include/hscpp/FileWatcher_win32.h
+        include/hscpp/cmd-shell/CmdShell_win32.h
+        include/hscpp/compiler/CompilerCmdLine_msvc.h
+        include/hscpp/compiler/CompilerInitializeTask_msvc.h
+        include/hscpp/file-watcher/FileWatcher_win32.h
     )
 
     list(APPEND COMPILE_DEFINITIONS
@@ -109,11 +106,11 @@ if (WIN32)
     )
 elseif(APPLE)
     list(APPEND SRC_FILES
-        src/CmdShell_unix.cpp
-        src/FileWatcher_apple.cpp
+        src/cmd-shell/CmdShell_unix.cpp
+        src/file-watcher/FileWatcher_apple.cpp
 
-        include/hscpp/CmdShell_unix.h
-        include/hscpp/FileWatcher_apple.h
+        include/hscpp/cmd-shell/CmdShell_unix.h
+        include/hscpp/file-watcher/FileWatcher_apple.h
     )
 
     list(APPEND COMPILE_DEFINITIONS
@@ -127,11 +124,11 @@ elseif(APPLE)
     )
 elseif(UNIX)
     list(APPEND SRC_FILES
-        src/CmdShell_unix.cpp
-        src/FileWatcher_unix.cpp
+        src/cmd-shell/CmdShell_unix.cpp
+        src/file-watcher/FileWatcher_unix.cpp
 
-        include/hscpp/CmdShell_unix.h
-        include/hscpp/FileWatcher_unix.h
+        include/hscpp/cmd-shell/CmdShell_unix.h
+        include/hscpp/file-watcher/FileWatcher_unix.h
     )
 
     list(APPEND COMPILE_DEFINITIONS

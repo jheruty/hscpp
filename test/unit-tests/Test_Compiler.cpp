@@ -2,7 +2,7 @@
 #include "common/Common.h"
 
 #include "hscpp/Platform.h"
-#include "hscpp/ICompiler.h"
+#include "hscpp/compiler/ICompiler.h"
 #include "hscpp/Util.h"
 #include "hscpp/Log.h"
 #include "hscpp/Config.h"

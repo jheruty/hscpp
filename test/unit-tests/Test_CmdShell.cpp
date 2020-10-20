@@ -3,7 +3,7 @@
 #include "catch/catch.hpp"
 #include "common/Common.h"
 
-#include "hscpp/ICmdShell.h"
+#include "hscpp/cmd-shell/ICmdShell.h"
 #include "hscpp/Platform.h"
 #include "hscpp/Util.h"
 

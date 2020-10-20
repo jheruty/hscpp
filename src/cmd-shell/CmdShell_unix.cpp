@@ -7,7 +7,7 @@
 #include <cstdio>
 #include <cassert>
 
-#include "hscpp/CmdShell_unix.h"
+#include "hscpp/cmd-shell/CmdShell_unix.h"
 #include "hscpp/Log.h"
 
 namespace hscpp

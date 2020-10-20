@@ -6,8 +6,8 @@
 #include <map>
 
 #include "hscpp/Platform.h"
-#include "hscpp/IFileWatcher.h"
-#include "hscpp/ICompiler.h"
+#include "hscpp/file-watcher/IFileWatcher.h"
+#include "hscpp/compiler/ICompiler.h"
 #include "hscpp/ModuleManager.h"
 #include "hscpp/module/AllocationResolver.h"
 #include "hscpp/Feature.h"

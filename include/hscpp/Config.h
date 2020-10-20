@@ -4,8 +4,8 @@
 #include <memory>
 
 #include "hscpp/Filesystem.h"
-#include "hscpp/ICompiler.h"
-#include "hscpp/IFileWatcher.h"
+#include "hscpp/compiler/ICompiler.h"
+#include "hscpp/file-watcher/IFileWatcher.h"
 
 namespace hscpp
 {

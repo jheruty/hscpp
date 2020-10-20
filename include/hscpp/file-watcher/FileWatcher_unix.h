@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "hscpp/Platform.h"
-#include "hscpp/IFileWatcher.h"
+#include "hscpp/file-watcher/IFileWatcher.h"
 #include "hscpp/Config.h"
 
 namespace hscpp

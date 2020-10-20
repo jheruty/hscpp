@@ -1,6 +1,6 @@
 #include <cassert>
 
-#include "hscpp/CompilerInitializeTask_msvc.h"
+#include "hscpp/compiler/CompilerInitializeTask_msvc.h"
 #include "hscpp/Log.h"
 #include "hscpp/Util.h"
 

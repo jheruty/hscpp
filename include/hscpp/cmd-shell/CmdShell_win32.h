@@ -5,7 +5,7 @@
 #include <array>
 #include <vector>
 
-#include "hscpp/ICmdShell.h"
+#include "hscpp/cmd-shell/ICmdShell.h"
 
 namespace hscpp
 {

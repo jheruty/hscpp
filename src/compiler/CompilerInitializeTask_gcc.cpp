@@ -1,7 +1,7 @@
 #include <cassert>
 #include <cctype>
 
-#include "hscpp/CompilerInitializeTask_gcc.h"
+#include "hscpp/compiler/CompilerInitializeTask_gcc.h"
 #include "hscpp/Log.h"
 
 namespace hscpp

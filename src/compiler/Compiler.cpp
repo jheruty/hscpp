@@ -1,6 +1,6 @@
 #include <cassert>
 
-#include "hscpp/Compiler.h"
+#include "hscpp/compiler/Compiler.h"
 #include "hscpp/Platform.h"
 #include "hscpp/Log.h"
 

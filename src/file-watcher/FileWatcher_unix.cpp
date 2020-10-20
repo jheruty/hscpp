@@ -2,7 +2,7 @@
 #include <fcntl.h>
 #include <poll.h>
 
-#include "hscpp/FileWatcher_unix.h"
+#include "hscpp/file-watcher/FileWatcher_unix.h"
 #include "hscpp/Log.h"
 
 namespace hscpp

@@ -1,4 +1,4 @@
-#include "hscpp/CmdShell_win32.h"
+#include "hscpp/cmd-shell/CmdShell_win32.h"
 #include "hscpp/Log.h"
 #include "hscpp/Util.h"
 

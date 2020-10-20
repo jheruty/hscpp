@@ -1,9 +1,9 @@
 #pragma once
 
-#include "hscpp/ICmdShellTask.h"
-#include "hscpp/ICompilerCmdLine.h"
-#include "hscpp/ICompiler.h"
-#include "hscpp/ICmdShell.h"
+#include "hscpp/compiler/ICompilerCmdLine.h"
+#include "hscpp/compiler/ICompiler.h"
+#include "hscpp/cmd-shell/ICmdShell.h"
+#include "hscpp/cmd-shell//ICmdShellTask.h"
 #include "hscpp/Config.h"
 
 namespace hscpp

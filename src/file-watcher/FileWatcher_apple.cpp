@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <unordered_map>
 
-#include "hscpp/FileWatcher_apple.h"
+#include "hscpp/file-watcher/FileWatcher_apple.h"
 #include "hscpp/Log.h"
 
 namespace hscpp

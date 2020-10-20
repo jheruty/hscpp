@@ -3,7 +3,7 @@
 #include <chrono>
 #include <functional>
 
-#include "hscpp/ICmdShell.h"
+#include "hscpp/cmd-shell/ICmdShell.h"
 
 namespace hscpp
 {

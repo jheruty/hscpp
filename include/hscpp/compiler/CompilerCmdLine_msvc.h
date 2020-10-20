@@ -1,15 +1,15 @@
 #pragma once
 
-#include "hscpp/ICompilerCmdLine.h"
+#include "hscpp/compiler/ICompilerCmdLine.h"
 #include "hscpp/Config.h"
 
 namespace hscpp
 {
 
-    class CompilerCmdLine_gcc : public ICompilerCmdLine
+    class CompilerCmdLine_msvc : public ICompilerCmdLine
     {
     public:
-        explicit CompilerCmdLine_gcc(CompilerConfig* pConfig);
+        explicit CompilerCmdLine_msvc(CompilerConfig* pConfig);
 
         bool GenerateCommandFile(const fs::path& commandFilePath,
                                  const fs::path& moduleFilePath,

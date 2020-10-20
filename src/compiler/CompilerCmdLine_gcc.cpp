@@ -1,7 +1,7 @@
 #include <fstream>
 #include <sstream>
 
-#include "hscpp/CompilerCmdLine_gcc.h"
+#include "hscpp/compiler/CompilerCmdLine_gcc.h"
 #include "hscpp/Log.h"
 #include "hscpp/Util.h"
 

@@ -1,7 +1,7 @@
 #include <fstream>
 #include <sstream>
 
-#include "hscpp/CompilerCmdLine_msvc.h"
+#include "hscpp/compiler/CompilerCmdLine_msvc.h"
 #include "hscpp/Log.h"
 
 namespace hscpp

@@ -12,24 +12,24 @@
 
 // Add includes for platform-specific hscpp classes.
 #if defined(HSCPP_PLATFORM_WIN32)
-    #include "hscpp/FileWatcher_win32.h"
-    #include "hscpp/CmdShell_win32.h"
+    #include "hscpp/file-watcher/FileWatcher_win32.h"
+    #include "hscpp/cmd-shell/CmdShell_win32.h"
 #elif defined(HSCPP_PLATFORM_APPLE)
-    #include "hscpp/FileWatcher_apple.h"
-    #include "hscpp/CmdShell_unix.h"
+    #include "hscpp/file-watcher/FileWatcher_apple.h"
+    #include "hscpp/cmd-shell/CmdShell_unix.h"
 #elif defined(HSCPP_PLATFORM_UNIX)
-    #include "hscpp/FileWatcher_unix.h"
-    #include "hscpp/CmdShell_unix.h"
+    #include "hscpp/file-watcher/FileWatcher_unix.h"
+    #include "hscpp/cmd-shell/CmdShell_unix.h"
 #endif
 
 // Compiler and GCC interface is cross-platform. MSVC interface is Win32-only.
-#include "hscpp/Compiler.h"
-#include "hscpp/CompilerInitializeTask_gcc.h"
-#include "hscpp/CompilerCmdLine_gcc.h"
+#include "hscpp/compiler/Compiler.h"
+#include "hscpp/compiler/CompilerInitializeTask_gcc.h"
+#include "hscpp/compiler/CompilerCmdLine_gcc.h"
 
 #if defined(HSCPP_PLATFORM_WIN32)
-    #include "hscpp/CompilerInitializeTask_msvc.h"
-    #include "hscpp/CompilerCmdLine_msvc.h"
+    #include "hscpp/compiler/CompilerInitializeTask_msvc.h"
+    #include "hscpp/compiler/CompilerCmdLine_msvc.h"
 #endif
 
 namespace hscpp { namespace platform

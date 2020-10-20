@@ -5,7 +5,7 @@
 
 #include "catch/catch.hpp"
 #include "common/Common.h"
-#include "hscpp/IFileWatcher.h"
+#include "hscpp/file-watcher/IFileWatcher.h"
 #include "hscpp/Platform.h"
 #include "hscpp/Util.h"
 

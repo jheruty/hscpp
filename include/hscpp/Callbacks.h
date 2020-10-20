@@ -2,7 +2,7 @@
 
 #include <functional>
 
-#include "hscpp/ICompiler.h"
+#include "hscpp/compiler/ICompiler.h"
 
 namespace hscpp
 {
