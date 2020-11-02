@@ -6,7 +6,8 @@
 
 namespace hscpp { namespace test
 {
-    const static fs::path TEST_FILES_PATH = util::GetHscppTestPath() / "unit-tests" / "files" / "test-file-watcher";
+    const static fs::path CLANG_FILES_PATH = util::GetHscppTestPath() / "unit-tests" / "files" / "clang-source";
+    const static fs::path BOOST_FILE_PATH = util::GetHscppTestPath() / "unit-tests" / "files" / "boost-source";
 
     TEST_CASE("Lexer can lex all tokens.")
     {
@@ -161,5 +162,22 @@ namespace hscpp { namespace test
         REQUIRE(tokens.at(8).type == Token::Type::Include);
         REQUIRE(tokens.at(9).type == Token::Type::String);
         REQUIRE(tokens.at(9).value == "FILENAME");
+    }
+
+    TEST_CASE("Lexer can make it through complex C++ files.")
+    {
+        std::vector<Token> tokens;
+
+        Lexer lexer;
+        REQUIRE(lexer.Parse(CLANG_FILES_PATH / "Lexer.cpp", tokens));
+        REQUIRE(tokens.size() > 1000);
+
+        tokens.clear();
+        REQUIRE(lexer.Parse(BOOST_FILE_PATH / "crc.hpp", tokens));
+        REQUIRE(tokens.size() > 1000);
+
+        tokens.clear();
+        REQUIRE(lexer.Parse(BOOST_FILE_PATH / "future.hpp", tokens));
+        REQUIRE(tokens.size() > 1000);
     }
 }}
