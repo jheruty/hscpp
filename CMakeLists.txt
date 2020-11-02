@@ -20,6 +20,7 @@ list(APPEND SRC_FILES
     src/compiler/CompilerCmdLine_gcc.cpp
     src/compiler/CompilerInitializeTask_gcc.cpp
     src/module/Module.cpp
+    src/preprocessor/Lexer.cpp
     src/Config.cpp
     src/DependencyGraph.cpp
     src/Feature.cpp
@@ -53,6 +54,8 @@ list(APPEND SRC_FILES
     include/hscpp/module/Serializer.h
     include/hscpp/module/SwapInfo.h
     include/hscpp/module/Tracker.h
+    include/hscpp/preprocessor/Lexer.h
+    include/hscpp/preprocessor/Token.h
     include/hscpp/Callbacks.h
     include/hscpp/DependencyGraph.h
     include/hscpp/Feature.h
