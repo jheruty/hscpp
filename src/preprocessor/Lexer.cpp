@@ -64,31 +64,28 @@ namespace hscpp
     {
         while (!IsAtEnd())
         {
+            size_t iStartChar = m_iChar;
+
             switch (Peek())
             {
                 case '(':
-                    Advance();
                     PushToken("(", Token::Type::LeftParen, tokens);
                     break;
                 case ')':
-                    Advance();
                     PushToken(")", Token::Type::RightParen, tokens);
                     break;
                 case ',':
-                    Advance();
                     PushToken(",", Token::Type::Comma, tokens);
                     break;
                 case '=':
-                    Advance();
-                    if (Peek() == '=')
+                    if (PeekNext() == '=')
                     {
                         Advance();
                         PushToken("==", Token::Type::Equivalent, tokens);
                     }
                     break;
                 case '<':
-                    Advance();
-                    if (Peek() == '=')
+                    if (PeekNext() == '=')
                     {
                         Advance();
                         PushToken("<=", Token::Type::LessThanOrEqual, tokens);
@@ -99,8 +96,7 @@ namespace hscpp
                     }
                     break;
                 case '>':
-                    Advance();
-                    if (Peek() == '=')
+                    if (PeekNext() == '=')
                     {
                         Advance();
                         PushToken(">=", Token::Type::GreaterThanOrEqual, tokens);
@@ -111,23 +107,20 @@ namespace hscpp
                     }
                     break;
                 case '&':
-                    Advance();
-                    if (Peek() == '&')
+                    if (PeekNext() == '&')
                     {
                         Advance();
                         PushToken("&&", Token::Type::LogicalAnd, tokens);
                     }
                     break;
                 case '|':
-                    Advance();
-                    if (Peek() == '|')
+                    if (PeekNext() == '|')
                     {
                         Advance();
                         PushToken("||", Token::Type::LogicalOr, tokens);
                     }
                     break;
                 case '\n':
-                    Advance();
                     m_Line++;
                     m_Column = 0;
                     break;
@@ -161,15 +154,16 @@ namespace hscpp
                     {
                         ParseNumber(tokens);
                     }
-                    else
-                    {
-                        Advance();
-                    }
             }
 
             if (!m_Error.empty())
             {
                 return false;
+            }
+
+            if (m_iChar == iStartChar)
+            {
+                Advance();
             }
         }
 
