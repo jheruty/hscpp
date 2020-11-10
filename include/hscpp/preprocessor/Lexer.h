@@ -3,6 +3,7 @@
 #include <string>
 
 #include "hscpp/preprocessor/Token.h"
+#include "hscpp/preprocessor/LangError.h"
 #include "hscpp/Platform.h"
 
 namespace hscpp
@@ -11,9 +12,8 @@ namespace hscpp
     class Lexer
     {
     public:
-        bool Parse(const fs::path& filePath, std::vector<Token>& tokens);
-        bool Parse(const std::string& content, std::vector<Token>& tokens);
-        std::string GetLastError();
+        bool Lex(const std::string& content, std::vector<Token>& tokens);
+        LangError GetLastError();
 
     private:
         std::string m_Content;
@@ -21,15 +21,17 @@ namespace hscpp
         size_t m_Column = 0;
         size_t m_Line = 1;
 
-        std::string m_Error;
+        std::vector<Token>* m_pTokens = nullptr;
 
-        void Reset(std::vector<Token>& tokens);
-        bool Tokenize(std::vector<Token>& tokens);
+        LangError m_Error = LangError(LangError::Code::Success);
 
-        bool ParseString(char startChar, char endChar, std::vector<Token>& tokens);
-        bool ParseIdentifier(std::vector<Token>& tokens);
-        bool ParseNumber(std::vector<Token>& tokens);
-        void PushToken(const std::string& value, Token::Type tokenType, std::vector<Token>& tokens);
+        void Reset(const std::string& content, std::vector<Token>& tokens);
+        bool Lex();
+
+        void LexString(char endChar);
+        void LexIdentifier();
+        void LexNumber();
+        void PushToken(const std::string& value, Token::Type tokenType);
 
         bool Match(const std::string& str);
         void SkipWhitespace();
@@ -43,8 +45,7 @@ namespace hscpp
         char PeekNext();
         void Advance();
 
-        void GenerateError(const std::string& error);
-        void GenerateError(size_t iColumn, size_t iLine, const std::string& error);
+        void ThrowError(const LangError& error);
     };
 
 }

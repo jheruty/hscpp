@@ -14,53 +14,48 @@ namespace hscpp
         { "hscpp_require_library_dir", Token::Type::HscppRequireLibraryDir },
         { "hscpp_require_preprocessor_def", Token::Type::HscppRequirePreprocessorDef },
         { "hscpp_module", Token::Type::HscppModule },
+        { "hscpp_message", Token::Type::HscppMessage },
         { "hscpp_if", Token::Type::HscppIf },
         { "hscpp_elif", Token::Type::HscppElif },
         { "hscpp_else", Token::Type::HscppElse },
         { "hscpp_end", Token::Type::HscppEnd },
+        { "true", Token::Type::Bool },
+        { "false", Token::Type::Bool },
     };
 
-    bool Lexer::Parse(const fs::path& filePath, std::vector<Token>& tokens)
+    bool Lexer::Lex(const std::string& content, std::vector<Token>& tokens)
     {
-        std::ifstream file(filePath.native().c_str());
-        if (!file.is_open())
+        Reset(content, tokens);
+
+        try
         {
-            log::Error() << HSCPP_LOG_PREFIX << "Failed to open file " << filePath << log::End(".");
+            return Lex();
+        }
+        catch (const std::runtime_error&)
+        {
             return false;
         }
-
-        std::stringstream buf;
-        buf << file.rdbuf();
-
-        return Parse(buf.str(), tokens);
     }
 
-    bool Lexer::Parse(const std::string& content, std::vector<Token>& tokens)
-    {
-        Reset(tokens);
-
-        m_Content = content;
-        return Tokenize(tokens);
-    }
-
-    std::string Lexer::GetLastError()
+    LangError Lexer::GetLastError()
     {
         return m_Error;
     }
 
-    void Lexer::Reset(std::vector<Token>& tokens)
+    void Lexer::Reset(const std::string& content, std::vector<Token>& tokens)
     {
-        tokens.clear();
-
-        m_Content.clear();
+        m_Content = content;
         m_iChar = 0;
         m_Column = 0;
         m_Line = 1;
 
-        m_Error.clear();
+        tokens.clear();
+        m_pTokens = &tokens;
+
+        m_Error = LangError(LangError::Code::Success);
     }
 
-    bool Lexer::Tokenize(std::vector<Token>& tokens)
+    bool Lexer::Lex()
     {
         while (!IsAtEnd())
         {
@@ -69,96 +64,114 @@ namespace hscpp
             switch (Peek())
             {
                 case '(':
-                    PushToken("(", Token::Type::LeftParen, tokens);
+                    PushToken("(", Token::Type::LeftParen);
                     break;
                 case ')':
-                    PushToken(")", Token::Type::RightParen, tokens);
+                    PushToken(")", Token::Type::RightParen);
                     break;
                 case ',':
-                    PushToken(",", Token::Type::Comma, tokens);
+                    PushToken(",", Token::Type::Comma);
                     break;
                 case '=':
                     if (PeekNext() == '=')
                     {
                         Advance();
-                        PushToken("==", Token::Type::Equivalent, tokens);
+                        PushToken("==", Token::Type::Equivalent);
+                    }
+                    break;
+                case '!':
+                    if (PeekNext() == '=')
+                    {
+                        Advance();
+                        PushToken("!=", Token::Type::Inequivalent);
                     }
                     break;
                 case '<':
                     if (PeekNext() == '=')
                     {
                         Advance();
-                        PushToken("<=", Token::Type::LessThanOrEqual, tokens);
+                        PushToken("<=", Token::Type::LessThanOrEqual);
                     }
                     else
                     {
-                        PushToken("<", Token::Type::LessThan, tokens);
+                        PushToken("<", Token::Type::LessThan);
                     }
                     break;
                 case '>':
                     if (PeekNext() == '=')
                     {
                         Advance();
-                        PushToken(">=", Token::Type::GreaterThanOrEqual, tokens);
+                        PushToken(">=", Token::Type::GreaterThanOrEqual);
                     }
                     else
                     {
-                        PushToken(">", Token::Type::GreaterThan, tokens);
+                        PushToken(">", Token::Type::GreaterThan);
                     }
                     break;
                 case '&':
                     if (PeekNext() == '&')
                     {
                         Advance();
-                        PushToken("&&", Token::Type::LogicalAnd, tokens);
+                        PushToken("&&", Token::Type::LogicalAnd);
                     }
                     break;
                 case '|':
                     if (PeekNext() == '|')
                     {
                         Advance();
-                        PushToken("||", Token::Type::LogicalOr, tokens);
+                        PushToken("||", Token::Type::LogicalOr);
                     }
+                    break;
+                case '+':
+                    PushToken("+", Token::Type::Plus);
+                    break;
+                case '-':
+                    PushToken("-", Token::Type::Minus);
+                    break;
+                case '/':
+                    if (PeekNext() == '/' || PeekNext() == '*')
+                    {
+                        SkipComment();
+                    }
+                    else
+                    {
+                        PushToken("/", Token::Type::Slash);
+                    }
+                    break;
+                case '*':
+                    PushToken("*", Token::Type::Star);
                     break;
                 case '\n':
                     m_Line++;
                     m_Column = 0;
                     break;
-                case '/':
-                    SkipComment();
-                    break;
                 case '"':
-                    ParseString('"', '"', tokens);
+                    LexString('"');
                     break;
                 case '#':
                     Advance();
                     SkipWhitespace(); // # include is valid syntax.
                     if (Match("include"))
                     {
-                        PushToken("#include", Token::Type::Include, tokens);
+                        PushToken("#include", Token::Type::Include);
 
-                        // Treat includes in < > as a string.
+                        // Treat includes with < > as a string.
                         SkipWhitespace();
                         if (Peek() == '<')
                         {
-                            ParseString('<', '>', tokens);
+                            LexString('>');
                         }
                     }
                     break;
                 default:
                     if (IsAlpha(Peek()) || Peek() == '_')
                     {
-                        ParseIdentifier(tokens);
+                        LexIdentifier();
                     }
                     else if (IsDigit(Peek()))
                     {
-                        ParseNumber(tokens);
+                        LexNumber();
                     }
-            }
-
-            if (!m_Error.empty())
-            {
-                return false;
             }
 
             if (m_iChar == iStartChar)
@@ -170,91 +183,11 @@ namespace hscpp
         return true;
     }
 
-    bool Lexer::ParseIdentifier(std::vector<Token>& tokens)
-    {
-        std::string identifier;
-
-        if (IsAlpha(Peek()) || Peek() == '_')
-        {
-            while (IsAlpha(Peek()) || IsDigit(Peek()) || Peek() == '_')
-            {
-                identifier += Peek();
-                Advance();
-            }
-
-            auto keywordIt = KEYWORDS.find(identifier);
-            if (keywordIt != KEYWORDS.end())
-            {
-                PushToken(identifier, keywordIt->second, tokens);
-            }
-            else
-            {
-                PushToken(identifier, Token::Type::Identifier, tokens);
-            }
-
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-
-    bool Lexer::ParseNumber(std::vector<Token>& tokens)
-    {
-        std::string number;
-
-        if (IsDigit(Peek()))
-        {
-            while (IsDigit(Peek()))
-            {
-                number += Peek();
-                Advance();
-            }
-
-            if (Peek() == '.')
-            {
-                number += ".";
-                Advance();
-
-                while (IsDigit(Peek()))
-                {
-                    number += Peek();
-                    Advance();
-                }
-            }
-
-            PushToken(number, Token::Type::Number, tokens);
-            return true;
-        }
-
-        return false;
-    }
-
-    void Lexer::PushToken(const std::string& value, Token::Type tokenType, std::vector<Token>& tokens)
-    {
-        Token token;
-        token.value = value;
-        token.type = tokenType;
-        token.line = m_Line;
-        token.column = m_Column;
-
-        tokens.push_back(token);
-    }
-
-    bool Lexer::ParseString(char startChar, char endChar, std::vector<Token>& tokens)
+    void Lexer::LexString(char endChar)
     {
         std::string str;
 
-        if (Peek() != startChar)
-        {
-            std::string error = "Expected a '\"' but saw '" + std::string(1, Peek()) + "'.";
-            GenerateError(error);
-
-            return false;
-        }
-
-        Advance();
+        Advance(); // Skip opening '"' or '<'.
 
         while (!IsAtEnd() && Peek() != endChar)
         {
@@ -274,16 +207,69 @@ namespace hscpp
 
         if (Peek() != endChar)
         {
-            std::string error = std::string("Unterminated string, expected a ") + endChar + ".";
-            GenerateError(error);
-
-            return false;
+            ThrowError(LangError(LangError::Code::Lexer_UnterminatedString,
+                    m_Line, m_Column, { std::string(1, endChar), std::string(1, Peek()) }));
         }
 
         Advance();
-        PushToken(str, Token::Type::String, tokens);
+        PushToken(str, Token::Type::String);
+    }
 
-        return true;
+    void Lexer::LexIdentifier()
+    {
+        std::string identifier;
+
+        while (IsAlpha(Peek()) || IsDigit(Peek()) || Peek() == '_')
+        {
+            identifier += Peek();
+            Advance();
+        }
+
+        auto keywordIt = KEYWORDS.find(identifier);
+        if (keywordIt != KEYWORDS.end())
+        {
+            PushToken(identifier, keywordIt->second);
+        }
+        else
+        {
+            PushToken(identifier, Token::Type::Identifier);
+        }
+    }
+
+    void Lexer::LexNumber()
+    {
+        std::string number;
+
+        while (IsDigit(Peek()))
+        {
+            number += Peek();
+            Advance();
+        }
+
+        if (Peek() == '.')
+        {
+            number += ".";
+            Advance();
+
+            while (IsDigit(Peek()))
+            {
+                number += Peek();
+                Advance();
+            }
+        }
+
+        PushToken(number, Token::Type::Number);
+    }
+
+    void Lexer::PushToken(const std::string& value, Token::Type tokenType)
+    {
+        Token token;
+        token.value = value;
+        token.type = tokenType;
+        token.line = m_Line;
+        token.column = m_Column;
+
+        m_pTokens->push_back(token);
     }
 
     bool Lexer::Match(const std::string& str)
@@ -400,14 +386,10 @@ namespace hscpp
         }
     }
 
-    void Lexer::GenerateError(const std::string& error)
+    void Lexer::ThrowError(const LangError& error)
     {
-        GenerateError(m_Column, m_Line, error);
-    }
-
-    void Lexer::GenerateError(size_t iColumn, size_t iLine, const std::string& error)
-    {
-        m_Error = error + "(Line: " + std::to_string(iLine) + ", Column: " + std::to_string(iColumn) + ")";
+        m_Error = error;
+        throw std::runtime_error("");
     }
 
 }

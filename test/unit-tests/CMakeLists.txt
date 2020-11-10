@@ -6,7 +6,9 @@ add_executable(unit-tests
     Test_FeatureManager.cpp
     Test_FileParser.cpp
     Test_FileWatcher.cpp
+    Test_Interpreter.cpp
     Test_Lexer.cpp
+    Test_Parser.cpp
     Test_VarStore.cpp
 )
 

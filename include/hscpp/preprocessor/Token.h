@@ -2,6 +2,8 @@
 
 #include <string>
 
+#include "hscpp/preprocessor/LangError.h"
+
 namespace hscpp
 {
 
@@ -15,16 +17,22 @@ namespace hscpp
             RightParen,         // )
             Comma,              // ,
             Equivalent,         // ==
+            Inequivalent,      // !=
             LessThan,           // <
             LessThanOrEqual,    // <=
             GreaterThan,        // >
             GreaterThanOrEqual, // >=
             LogicalAnd,         // &&
             LogicalOr,          // ||
+            Plus,               // +
+            Minus,              // -
+            Slash,              // /
+            Star,               // *
 
             Identifier,
-            Number,
             String,
+            Number,
+            Bool,
 
             Include,
 
@@ -34,6 +42,7 @@ namespace hscpp
             HscppRequireLibraryDir,
             HscppRequirePreprocessorDef,
             HscppModule,
+            HscppMessage,
             HscppIf,
             HscppElif,
             HscppElse,
@@ -41,8 +50,8 @@ namespace hscpp
         };
 
         Type type = Type::Unknown;
-        size_t line = 0;
-        size_t column = 0;
+        size_t line = LangError::NO_VALUE;
+        size_t column = LangError::NO_VALUE;
         std::string value;
     };
 

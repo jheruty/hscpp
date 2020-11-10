@@ -47,15 +47,7 @@ namespace hscpp { namespace test
 
     void ModifyFile(const fs::path& filePath, const std::unordered_map<std::string, std::string>& replacements)
     {
-        REQUIRE(fs::exists(filePath));
-
-        std::ifstream inFile(filePath.c_str());
-        REQUIRE(inFile.is_open());
-
-        std::stringstream buf;
-        buf << inFile.rdbuf();
-
-        std::string content = buf.str();
+        std::string content = FileToString(filePath);
 
         // Replace all (ex.) ${Body} with the values of the key Body in replacements.
         for (const auto& pattern__replacement : replacements)
@@ -73,9 +65,6 @@ namespace hscpp { namespace test
                 }
             } while (iPos != std::string::npos);
         }
-
-        // Close file, we are going to open it again for writing.
-        inFile.close();
 
         std::ofstream outFile(filePath.c_str());
         REQUIRE(outFile.is_open());
@@ -99,7 +88,20 @@ namespace hscpp { namespace test
         REQUIRE(error.value() == HSCPP_ERROR_SUCCESS);
     }
 
-    fs::path Canonical(const fs::path& filePath)
+    std::string FileToString(const fs::path& filePath)
+    {
+        REQUIRE(fs::exists(filePath));
+
+        std::ifstream ifs(filePath.u8string());
+        REQUIRE(ifs.is_open());
+
+        std::stringstream ss;
+        ss << ifs.rdbuf();
+
+        return ss.str();
+    }
+
+        fs::path Canonical(const fs::path& filePath)
     {
         std::error_code error;
         fs::path canonicalPath = fs::canonical(filePath);

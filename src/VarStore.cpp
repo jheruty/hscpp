@@ -5,9 +5,21 @@
 namespace hscpp
 {
 
-    void VarStore::SetVar(const std::string& name, const std::string& val)
+    void VarStore::SetVar(const std::string& name, const Variant& val)
     {
         m_Vars[util::Trim(name)] = val;
+    }
+
+    bool VarStore::GetVar(const std::string& name, Variant& val) const
+    {
+        auto varIt = m_Vars.find(util::Trim(name));
+        if (varIt ==m_Vars.end())
+        {
+            return false;
+        }
+
+        val = varIt->second;
+        return true;
     }
 
     bool VarStore::RemoveVar(const std::string& name)
@@ -22,7 +34,7 @@ namespace hscpp
         return true;
     }
 
-    std::string VarStore::Interpolate(const std::string& str)
+    std::string VarStore::Interpolate(const std::string& str) const
     {
         std::string interpolatedStr = str;
 
@@ -45,7 +57,7 @@ namespace hscpp
                 auto varIt = m_Vars.find(varName);
                 if (varIt != m_Vars.end())
                 {
-                    interpolatedStr.replace(iStart, iEnd - iStart + 1, varIt->second);
+                    interpolatedStr.replace(iStart, iEnd - iStart + 1, varIt->second.ToString());
                 }
             }
 

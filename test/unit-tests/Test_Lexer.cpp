@@ -12,46 +12,57 @@ namespace hscpp { namespace test
     TEST_CASE("Lexer can lex all tokens.")
     {
         std::string str = R"(
-            ( ) , == < <= > >= && || _identifier0 1.0 "str str" #include <map>
+            ( ) , == != < <= > >= && || + - / * _identifier0 1.0 "str str" #include <map>
             hscpp_require_source hscpp_require_include_dir /*comment*/ hscpp_require_library
             hscpp_require_library_dir hscpp_require_preprocessor_def //comment
             hscpp_module hscpp_if hscpp_elif hscpp_else hscpp_end
+
+            true false
         )";
 
         std::vector<Token> tokens;
 
         Lexer lexer;
-        REQUIRE(lexer.Parse(str, tokens));
+        REQUIRE(lexer.Lex(str, tokens));
 
-        REQUIRE(tokens.at(0).type == Token::Type::LeftParen);
-        REQUIRE(tokens.at(1).type == Token::Type::RightParen);
-        REQUIRE(tokens.at(2).type == Token::Type::Comma);
-        REQUIRE(tokens.at(3).type == Token::Type::Equivalent);
-        REQUIRE(tokens.at(4).type == Token::Type::LessThan);
-        REQUIRE(tokens.at(5).type == Token::Type::LessThanOrEqual);
-        REQUIRE(tokens.at(6).type == Token::Type::GreaterThan);
-        REQUIRE(tokens.at(7).type == Token::Type::GreaterThanOrEqual);
-        REQUIRE(tokens.at(8).type == Token::Type::LogicalAnd);
-        REQUIRE(tokens.at(9).type == Token::Type::LogicalOr);
-        REQUIRE(tokens.at(10).type == Token::Type::Identifier);
-        REQUIRE(tokens.at(10).value == "_identifier0");
-        REQUIRE(tokens.at(11).type == Token::Type::Number);
-        REQUIRE(tokens.at(11).value == "1.0");
-        REQUIRE(tokens.at(12).type == Token::Type::String);
-        REQUIRE(tokens.at(12).value == "str str");
-        REQUIRE(tokens.at(13).type == Token::Type::Include);
-        REQUIRE(tokens.at(14).type == Token::Type::String);
-        REQUIRE(tokens.at(14).value == "map");
-        REQUIRE(tokens.at(15).type == Token::Type::HscppRequireSource);
-        REQUIRE(tokens.at(16).type == Token::Type::HscppRequireIncludeDir);
-        REQUIRE(tokens.at(17).type == Token::Type::HscppRequireLibrary);
-        REQUIRE(tokens.at(18).type == Token::Type::HscppRequireLibraryDir);
-        REQUIRE(tokens.at(19).type == Token::Type::HscppRequirePreprocessorDef);
-        REQUIRE(tokens.at(20).type == Token::Type::HscppModule);
-        REQUIRE(tokens.at(21).type == Token::Type::HscppIf);
-        REQUIRE(tokens.at(22).type == Token::Type::HscppElif);
-        REQUIRE(tokens.at(23).type == Token::Type::HscppElse);
-        REQUIRE(tokens.at(24).type == Token::Type::HscppEnd);
+        int i = 0;
+
+        REQUIRE(tokens.at(i++).type == Token::Type::LeftParen);
+        REQUIRE(tokens.at(i++).type == Token::Type::RightParen);
+        REQUIRE(tokens.at(i++).type == Token::Type::Comma);
+        REQUIRE(tokens.at(i++).type == Token::Type::Equivalent);
+        REQUIRE(tokens.at(i++).type == Token::Type::Inequivalent);
+        REQUIRE(tokens.at(i++).type == Token::Type::LessThan);
+        REQUIRE(tokens.at(i++).type == Token::Type::LessThanOrEqual);
+        REQUIRE(tokens.at(i++).type == Token::Type::GreaterThan);
+        REQUIRE(tokens.at(i++).type == Token::Type::GreaterThanOrEqual);
+        REQUIRE(tokens.at(i++).type == Token::Type::LogicalAnd);
+        REQUIRE(tokens.at(i++).type == Token::Type::LogicalOr);
+        REQUIRE(tokens.at(i++).type == Token::Type::Plus);
+        REQUIRE(tokens.at(i++).type == Token::Type::Minus);
+        REQUIRE(tokens.at(i++).type == Token::Type::Slash);
+        REQUIRE(tokens.at(i++).type == Token::Type::Star);
+        REQUIRE(tokens.at(i).type == Token::Type::Identifier);
+        REQUIRE(tokens.at(i++).value == "_identifier0");
+        REQUIRE(tokens.at(i).type == Token::Type::Number);
+        REQUIRE(tokens.at(i++).value == "1.0");
+        REQUIRE(tokens.at(i).type == Token::Type::String);
+        REQUIRE(tokens.at(i++).value == "str str");
+        REQUIRE(tokens.at(i++).type == Token::Type::Include);
+        REQUIRE(tokens.at(i).type == Token::Type::String);
+        REQUIRE(tokens.at(i++).value == "map");
+        REQUIRE(tokens.at(i++).type == Token::Type::HscppRequireSource);
+        REQUIRE(tokens.at(i++).type == Token::Type::HscppRequireIncludeDir);
+        REQUIRE(tokens.at(i++).type == Token::Type::HscppRequireLibrary);
+        REQUIRE(tokens.at(i++).type == Token::Type::HscppRequireLibraryDir);
+        REQUIRE(tokens.at(i++).type == Token::Type::HscppRequirePreprocessorDef);
+        REQUIRE(tokens.at(i++).type == Token::Type::HscppModule);
+        REQUIRE(tokens.at(i++).type == Token::Type::HscppIf);
+        REQUIRE(tokens.at(i++).type == Token::Type::HscppElif);
+        REQUIRE(tokens.at(i++).type == Token::Type::HscppElse);
+        REQUIRE(tokens.at(i++).type == Token::Type::HscppEnd);
+        REQUIRE(tokens.at(i++).type == Token::Type::Bool);
+        REQUIRE(tokens.at(i++).type == Token::Type::Bool);
     }
 
     TEST_CASE("Lexer can lex various identifiers.")
@@ -61,7 +72,7 @@ namespace hscpp { namespace test
         std::vector<Token> tokens;
 
         Lexer lexer;
-        REQUIRE( lexer.Parse(str, tokens) );
+        REQUIRE(lexer.Lex(str, tokens) );
 
         REQUIRE(tokens.at(0).type == Token::Type::Identifier);
         REQUIRE(tokens.at(0).value == "a");
@@ -86,7 +97,7 @@ namespace hscpp { namespace test
         std::vector<Token> tokens;
 
         Lexer lexer;
-        REQUIRE(lexer.Parse(str, tokens));
+        REQUIRE(lexer.Lex(str, tokens));
 
         REQUIRE(tokens.at(0).type == Token::Type::Number);
         REQUIRE(tokens.at(0).value == "0");
@@ -113,7 +124,7 @@ namespace hscpp { namespace test
         std::vector<Token> tokens;
 
         Lexer lexer;
-        REQUIRE(lexer.Parse(str, tokens));
+        REQUIRE(lexer.Lex(str, tokens));
 
         REQUIRE(tokens.at(0).type == Token::Type::String);
         REQUIRE(tokens.at(0).value == "Hello, World!");
@@ -141,7 +152,7 @@ namespace hscpp { namespace test
         std::vector<Token> tokens;
 
         Lexer lexer;
-        REQUIRE(lexer.Parse(str, tokens));
+        REQUIRE(lexer.Lex(str, tokens));
 
         REQUIRE(tokens.at(0).type == Token::Type::Include);
         REQUIRE(tokens.at(1).type == Token::Type::String);
@@ -168,16 +179,20 @@ namespace hscpp { namespace test
     {
         std::vector<Token> tokens;
 
+        std::string clangLexerStr = CALL(FileToString, CLANG_FILES_PATH / "Lexer.cpp");
+        std::string boostCrcStr = CALL(FileToString, BOOST_FILE_PATH / "crc.hpp");
+        std::string boostFutureStr = CALL(FileToString, BOOST_FILE_PATH / "future.hpp");
+
         Lexer lexer;
-        REQUIRE(lexer.Parse(CLANG_FILES_PATH / "Lexer.cpp", tokens));
+        REQUIRE(lexer.Lex(clangLexerStr, tokens));
         REQUIRE(tokens.size() > 1000);
 
         tokens.clear();
-        REQUIRE(lexer.Parse(BOOST_FILE_PATH / "crc.hpp", tokens));
+        REQUIRE(lexer.Lex(boostCrcStr, tokens));
         REQUIRE(tokens.size() > 1000);
 
         tokens.clear();
-        REQUIRE(lexer.Parse(BOOST_FILE_PATH / "future.hpp", tokens));
+        REQUIRE(lexer.Lex(boostFutureStr, tokens));
         REQUIRE(tokens.size() > 1000);
     }
 }}

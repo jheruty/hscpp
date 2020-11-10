@@ -8,6 +8,7 @@
 #include "hscpp/Hotswapper.h"
 #include "hscpp/Log.h"
 #include "hscpp/Util.h"
+#include "hscpp/preprocessor/Variant.h"
 
 namespace hscpp
 {
@@ -414,7 +415,17 @@ namespace hscpp
 
     void Hotswapper::SetVar(const std::string& name, const std::string& val)
     {
-        m_VarStore.SetVar(name, val);
+        m_VarStore.SetVar(name, Variant(val));
+    }
+
+    void Hotswapper::SetVar(const std::string& name, double val)
+    {
+        m_VarStore.SetVar(name, Variant(val));
+    }
+
+    void Hotswapper::SetVar(const std::string& name, bool val)
+    {
+        m_VarStore.SetVar(name, Variant(val));
     }
 
     bool Hotswapper::RemoveVar(const std::string& name)

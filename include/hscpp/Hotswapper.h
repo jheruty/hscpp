@@ -103,6 +103,8 @@ namespace hscpp
         void ClearLinkOptions();
 
         void SetVar(const std::string& name, const std::string& val);
+        void SetVar(const std::string& name, double val);
+        void SetVar(const std::string& name, bool val);
         bool RemoveVar(const std::string& name);
 
 #if defined(HSCPP_DISABLE)
