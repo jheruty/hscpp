@@ -6,7 +6,7 @@
 namespace hscpp
 {
 
-    const static std::unordered_map<LangError::Code, std::string> ERRORS = {
+    const static std::unordered_map<LangError::Code, std::string, LangErrorCodeHasher> ERRORS = {
         { LangError::Code::Success, "" },
 
         { LangError::Code::Lexer_UnterminatedString, "Unterminated string, expected a '$1'." },
@@ -20,17 +20,17 @@ namespace hscpp
         { LangError::Code::Parser_HscppIfStmtMissingHscppEnd, "$1 missing hscpp_end() at end of block." },
         { LangError::Code::Parser_HscppStmtMissingOpeningParen, "$1 missing opening '('." },
         { LangError::Code::Parser_HscppStmtMissingClosingParen, "$1 missing closing ')'." },
-        { LangError::Code::Parser_HscppStmtArgumentMustBeStringLiteral,                        "$1 argument must be a string literal." },
-        { LangError::Code::Parser_HscppRequireExpectedStringLiteralInArgumentList,             "$1 expected string literal in argument list." },
+        { LangError::Code::Parser_HscppStmtArgumentMustBeStringLiteral, "$1 argument must be a string literal." },
+        { LangError::Code::Parser_HscppRequireExpectedStringLiteralInArgumentList, "$1 expected string literal in argument list." },
         { LangError::Code::Parser_HscppRequireExpectedStringLiteralOrIdentifierInArgumentList, "$1 expected string literal or identifier in argument list." },
-        { LangError::Code::Parser_HscppRequireMissingCommaInArgumentList,                      "$1 missing comma in argument list." },
+        { LangError::Code::Parser_HscppRequireMissingCommaInArgumentList, "$1 missing comma in argument list." },
 
-        { LangError::Code::Interpreter_UnableToResolveName,                                    "Unable to resolve variable name '$1'."},
+        { LangError::Code::Interpreter_UnableToResolveName, "Unable to resolve variable name '$1'."},
 
-        { LangError::Code::Variant_OperandMustBeNumber,                                        "Operand of '$1' must be Number."},
-        { LangError::Code::Variant_OperandsDifferInType,                                       "Operands of '$1' differ in type ('$2' and '$3')."},
+        { LangError::Code::Variant_OperandMustBeNumber, "Operand of '$1' must be Number."},
+        { LangError::Code::Variant_OperandsDifferInType, "Operands of '$1' differ in type ('$2' and '$3')."},
 
-        { LangError::Code::InternalError,                                                      "Internal error."},
+        { LangError::Code::InternalError, "Internal error."},
     };
 
     LangError::LangError(Code errorCode)
@@ -122,4 +122,8 @@ namespace hscpp
         return m_Args.at(i);
     }
 
+    size_t LangErrorCodeHasher::operator()(LangError::Code errorCode) const
+    {
+        return static_cast<size_t>(errorCode);
+    }
 }

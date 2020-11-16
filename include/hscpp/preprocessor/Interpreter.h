@@ -7,7 +7,7 @@
 #include "hscpp/preprocessor/HscppRequire.h"
 #include "hscpp/preprocessor/Variant.h"
 #include "hscpp/preprocessor/LangError.h"
-#include "hscpp/VarStore.h"
+#include "hscpp/preprocessor/VarStore.h"
 
 namespace hscpp
 {

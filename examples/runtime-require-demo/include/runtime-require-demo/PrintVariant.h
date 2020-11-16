@@ -2,5 +2,5 @@
 
 #include "hscpp-example-utils/Variant.h"
 
-void Print(const Variant& v);
+void PrintVariant(const Variant& v);
 

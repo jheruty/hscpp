@@ -196,6 +196,9 @@ namespace hscpp
     void Hotswapper::SetVar(const std::string&, const std::string&)
     {}
 
+    void Hotswapper::SetVar(const std::string&, const char*)
+    {}
+
     bool Hotswapper::RemoveVar(const std::string&)
     {
         return false;

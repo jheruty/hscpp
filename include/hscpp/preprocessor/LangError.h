@@ -59,4 +59,10 @@ namespace hscpp
         std::vector<std::string> m_Args;
     };
 
+    class LangErrorCodeHasher
+    {
+    public:
+        size_t operator()(LangError::Code errorCode) const;
+    };
+
 }

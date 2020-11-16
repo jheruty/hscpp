@@ -1,6 +1,6 @@
 #include <algorithm>
 
-#include "hscpp/DependencyGraph.h"
+#include "hscpp/preprocessor/DependencyGraph.h"
 #include "hscpp/Util.h"
 
 namespace hscpp

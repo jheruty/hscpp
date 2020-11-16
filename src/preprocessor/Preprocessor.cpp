@@ -1,0 +1,269 @@
+#include <fstream>
+#include <sstream>
+#include <algorithm>
+#include <cassert>
+
+#include "hscpp/preprocessor/Preprocessor.h"
+#include "hscpp/preprocessor/Ast.h"
+#include "hscpp/Log.h"
+
+namespace hscpp
+{
+
+    bool Preprocessor::Preprocess(const std::vector<fs::path>& canonicalFilePaths, IPreprocessor::Output& output)
+    {
+        Reset(output);
+
+        std::unordered_set<fs::path, FsPathHasher> uniqueFilePaths(
+                canonicalFilePaths.begin(), canonicalFilePaths.end());
+
+        std::unordered_set<fs::path, FsPathHasher> processedFilePaths;
+
+        while (!uniqueFilePaths.empty())
+        {
+            if (!Preprocess(uniqueFilePaths))
+            {
+                return false;
+            }
+
+            processedFilePaths.insert(uniqueFilePaths.begin(), uniqueFilePaths.end());
+            uniqueFilePaths.clear();
+
+            for (const auto& filePath : m_AdditionalSourceFiles)
+            {
+                if (processedFilePaths.find(filePath) == processedFilePaths.end())
+                {
+                    uniqueFilePaths.insert(filePath);
+                }
+            }
+        }
+
+        CreateOutput(output);
+        return true;
+    }
+
+    void Preprocessor::SetVar(const std::string& name, const Variant& value)
+    {
+        m_VarStore.SetVar(name, value);
+    }
+
+    bool Preprocessor::RemoveVar(const std::string& name)
+    {
+        return m_VarStore.RemoveVar(name);
+    }
+
+    void Preprocessor::ClearDependencyGraph()
+    {
+        m_DependencyGraph.Clear();
+    }
+
+    void Preprocessor::UpdateDependencyGraph(const std::vector<fs::path>& canonicalModifiedFilePaths,
+            const std::vector<fs::path>& canonicalRemovedFilePaths,
+            const std::vector<fs::path>& includeDirectoryPaths)
+    {
+        for (const auto& filePath : canonicalRemovedFilePaths)
+        {
+            m_DependencyGraph.RemoveFile(filePath);
+        }
+
+        for (const auto& filePath : canonicalModifiedFilePaths)
+        {
+            Interpreter::Result result;
+            if (Process(filePath, result))
+            {
+                std::vector<fs::path> canonicalIncludePaths;
+
+                for (const auto& include : result.includePaths)
+                {
+                    fs::path includePath = fs::u8path(include);
+                    for (const auto& includeDirectoryPath : includeDirectoryPaths)
+                    {
+                        // For example, the includePath may be "MathUtil.h", but we want to find the
+                        // full path for creating the dependency graph. Iterate through our include
+                        // directories to find the folder that contains a matching include.
+                        fs::path fullIncludePath = includeDirectoryPath / includePath;
+                        if (fs::exists(fullIncludePath))
+                        {
+                            std::error_code error;
+                            fullIncludePath = fs::canonical(fullIncludePath, error);
+                            if (error.value() == HSCPP_ERROR_SUCCESS)
+                            {
+                                canonicalIncludePaths.push_back(fullIncludePath);
+                            }
+                        }
+                    }
+                }
+
+                m_DependencyGraph.SetLinkedModules(filePath, result.hscppModules);
+                m_DependencyGraph.SetFileDependencies(filePath, canonicalIncludePaths);
+            }
+        }
+    }
+
+    void Preprocessor::Reset(Output& output)
+    {
+        output = Output();
+
+        m_AdditionalSourceFiles.clear();
+        m_AdditionalIncludeDirectories.clear();
+        m_AdditionalLibraries.clear();
+        m_AdditionalLibraryDirectories.clear();
+        m_AdditionalPreprocessorDefinitions.clear();
+    }
+
+    void Preprocessor::CreateOutput(Output& output)
+    {
+        output.sourceFiles = std::vector<fs::path>(
+                m_AdditionalSourceFiles.begin(), m_AdditionalSourceFiles.end());
+        output.includeDirectories = std::vector<fs::path>(
+                m_AdditionalIncludeDirectories.begin(), m_AdditionalIncludeDirectories.end());
+        output.libraries = std::vector<fs::path>(
+                m_AdditionalLibraries.begin(), m_AdditionalLibraries.end());
+        output.libraryDirectories = std::vector<fs::path>(
+                m_AdditionalLibraryDirectories.begin(), m_AdditionalLibraryDirectories.end());
+        output.preprocessorDefinitions = std::vector<std::string>(
+                m_AdditionalPreprocessorDefinitions.begin(), m_AdditionalPreprocessorDefinitions.end());
+    }
+
+    bool Preprocessor::Preprocess(const std::unordered_set<fs::path, FsPathHasher>& filePaths)
+    {
+        for (const auto& filePath : filePaths)
+        {
+            Interpreter::Result result;
+            if (!Process(filePath, result))
+            {
+                log::Error() << HSCPP_LOG_PREFIX << "Failed to process file " << filePath << log::End(".");
+                return false;
+            }
+
+            for (const auto& hscppRequire : result.hscppRequires)
+            {
+                if (!AddHscppRequire(filePath, hscppRequire))
+                {
+                    log::Error() << HSCPP_LOG_PREFIX << "Failed to process " << hscppRequire.name
+                        << " in file " << filePath << ". (Line: " << hscppRequire.line << ")" << log::End();
+                    return false;
+                }
+            }
+
+            for (const auto& hscppMessage : result.hscppMessages)
+            {
+                log::Build() << HSCPP_LOG_PREFIX << hscppMessage << log::End();
+            }
+
+            std::vector<fs::path> dependentFilePaths = m_DependencyGraph.ResolveGraph(filePath);
+            dependentFilePaths.erase(std::remove_if(dependentFilePaths.begin(), dependentFilePaths.end(),
+                    [&filePath](const fs::path& dependentFilePath){ return filePath == dependentFilePath; })
+                            , dependentFilePaths.end());
+
+            m_AdditionalSourceFiles.insert(dependentFilePaths.begin(), dependentFilePaths.end());
+        }
+
+        return true;
+    }
+
+    bool Preprocessor::Process(const fs::path& filePath, Interpreter::Result& result)
+    {
+        std::ifstream ifs(filePath.u8string());
+        if (!ifs.is_open())
+        {
+            log::Error() << HSCPP_LOG_PREFIX << "Failed to open file "
+                << filePath << log::LastOsError() << log::End(".");
+            return false;
+        }
+
+        std::stringstream ss;
+        ss << ifs.rdbuf();
+
+        if (!m_Lexer.Lex(ss.str(), m_Tokens))
+        {
+            log::Error() << HSCPP_LOG_PREFIX << "Failed to lex " << filePath << log::End(".");
+            log::Error() << m_Lexer.GetLastError().ToString() << log::End();
+            return false;
+        }
+
+        std::unique_ptr<Stmt> pRootStmt;
+        if (!m_Parser.Parse(m_Tokens, pRootStmt))
+        {
+            log::Error() << HSCPP_LOG_PREFIX << "Failed to parse " << filePath << log::End(".");
+            log::Error() << m_Parser.GetLastError().ToString() << log::End();
+            return false;
+        }
+
+        if (!m_Interpreter.Evaluate(*pRootStmt, m_VarStore, result))
+        {
+            log::Error() << HSCPP_LOG_PREFIX << "Failed to interpret " << filePath << log::End(".");
+            log::Error() << m_Interpreter.GetLastError().ToString() << log::End();
+            return false;
+        }
+
+        return true;
+    }
+
+    bool Preprocessor::AddHscppRequire(const fs::path& sourceFilePath, const HscppRequire& hscppRequire)
+    {
+        for (const auto& value : hscppRequire.values)
+        {
+            switch (hscppRequire.type)
+            {
+                case HscppRequire::Type::Source:
+                case HscppRequire::Type::IncludeDir:
+                case HscppRequire::Type::Library:
+                case HscppRequire::Type::LibraryDir:
+                {
+                    // If path is relative, it should be relative to the path of the source file.
+                    fs::path path = fs::u8path(value);
+
+                    fs::path fullPath;
+                    if (path.is_relative())
+                    {
+                        fullPath = sourceFilePath.parent_path() / path;
+                    }
+                    else
+                    {
+                        fullPath = path;
+                    }
+
+                    std::error_code error;
+                    fs::path canonicalPath = fs::canonical(fullPath, error);
+
+                    if (error.value() != HSCPP_ERROR_SUCCESS)
+                    {
+                        log::Error() << HSCPP_LOG_PREFIX << "Unable to get canonical path of " << fullPath
+                            << " within " << hscppRequire.name << ". (Line: " << hscppRequire.line << ")" << log::End();
+                        return false;
+                    }
+
+                    switch (hscppRequire.type)
+                    {
+                        case HscppRequire::Type::Source:
+                            m_AdditionalSourceFiles.insert(canonicalPath);
+                            break;
+                        case HscppRequire::Type::IncludeDir:
+                            m_AdditionalIncludeDirectories.insert(canonicalPath);
+                            break;
+                        case HscppRequire::Type::Library:
+                            m_AdditionalLibraries.insert(canonicalPath);
+                            break;
+                        case HscppRequire::Type::LibraryDir:
+                            m_AdditionalLibraryDirectories.insert(canonicalPath);
+                            break;
+                        default:
+                            assert(false);
+                            return false;
+                    }
+                }
+                    break;
+                case HscppRequire::Type::PreprocessorDef:
+                    m_AdditionalPreprocessorDefinitions.insert(value);
+                    break;
+                default:
+                    assert(false);
+                    return false;
+            }
+        }
+
+        return true;
+    }
+
+}

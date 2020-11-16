@@ -1,7 +1,7 @@
 #include "catch/catch.hpp"
 #include "common/Common.h"
 
-#include "hscpp/DependencyGraph.h"
+#include "hscpp/preprocessor/DependencyGraph.h"
 
 namespace hscpp { namespace test {
 

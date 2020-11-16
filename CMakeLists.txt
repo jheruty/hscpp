@@ -21,23 +21,23 @@ list(APPEND SRC_FILES
     src/compiler/CompilerInitializeTask_gcc.cpp
     src/module/Module.cpp
     src/preprocessor/Ast.cpp
+    src/preprocessor/DependencyGraph.cpp
     src/preprocessor/Interpreter.cpp
     src/preprocessor/LangError.cpp
     src/preprocessor/Lexer.cpp
     src/preprocessor/Parser.cpp
+    src/preprocessor/Preprocessor.cpp
     src/preprocessor/Variant.cpp
+    src/preprocessor/VarStore.cpp
     src/Config.cpp
-    src/DependencyGraph.cpp
     src/Feature.cpp
     src/FeatureManager.cpp
-    src/FileParser.cpp
     src/FsPathHasher.cpp
     src/Log.cpp
     src/ModuleManager.cpp
     src/Platform.cpp
     src/ProtectedFunction.cpp
     src/Util.cpp
-    src/VarStore.cpp
 
     include/hscpp/cmd-shell/ICmdShell.h
     include/hscpp/cmd-shell/ICmdShellTask.h
@@ -60,18 +60,20 @@ list(APPEND SRC_FILES
     include/hscpp/module/SwapInfo.h
     include/hscpp/module/Tracker.h
     include/hscpp/preprocessor/Ast.h
+    include/hscpp/preprocessor/DependencyGraph.h
     include/hscpp/preprocessor/Interpreter.h
+    include/hscpp/preprocessor/IPreprocessor.h
     include/hscpp/preprocessor/LangError.h
     include/hscpp/preprocessor/Lexer.h
     include/hscpp/preprocessor/Parser.h
+    include/hscpp/preprocessor/Preprocessor.h
     include/hscpp/preprocessor/HscppRequire.h
     include/hscpp/preprocessor/Token.h
     include/hscpp/preprocessor/Variant.h
+    include/hscpp/preprocessor/VarStore.h
     include/hscpp/Callbacks.h
-    include/hscpp/DependencyGraph.h
     include/hscpp/Feature.h
     include/hscpp/FeatureManager.h
-    include/hscpp/FileParser.h
     include/hscpp/Filesystem.h
     include/hscpp/FsPathHasher.h
     include/hscpp/Hotswapper.h
@@ -80,7 +82,6 @@ list(APPEND SRC_FILES
     include/hscpp/Platform.h
     include/hscpp/ProtectedFunction.h
     include/hscpp/Util.h
-    include/hscpp/VarStore.h
 )
 
 # List of compile options in every configuration.

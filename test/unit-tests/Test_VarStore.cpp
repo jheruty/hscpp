@@ -1,6 +1,6 @@
 #include "catch/catch.hpp"
 
-#include "hscpp/VarStore.h"
+#include "hscpp/preprocessor/VarStore.h"
 
 namespace hscpp { namespace test
 {

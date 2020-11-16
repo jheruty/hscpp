@@ -141,10 +141,6 @@ namespace hscpp
                 case '*':
                     PushToken("*", Token::Type::Star);
                     break;
-                case '\n':
-                    m_Line++;
-                    m_Column = 0;
-                    break;
                 case '"':
                     LexString('"');
                     break;
@@ -381,8 +377,17 @@ namespace hscpp
     {
         if (!IsAtEnd())
         {
+            if (Peek() == '\n')
+            {
+                ++m_Line;
+                m_Column = 0;
+            }
+            else
+            {
+                ++m_Column;
+            }
+
             ++m_iChar;
-            ++m_Column;
         }
     }
 

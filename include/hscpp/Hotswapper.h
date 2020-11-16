@@ -11,14 +11,12 @@
 #include "hscpp/ModuleManager.h"
 #include "hscpp/module/AllocationResolver.h"
 #include "hscpp/Feature.h"
-#include "hscpp/FileParser.h"
 #include "hscpp/ProtectedFunction.h"
 #include "hscpp/Callbacks.h"
 #include "hscpp/FeatureManager.h"
 #include "hscpp/FsPathHasher.h"
 #include "hscpp/Config.h"
-#include "hscpp/VarStore.h"
-#include "hscpp/DependencyGraph.h"
+#include "hscpp/preprocessor/IPreprocessor.h"
 
 namespace hscpp
 {
@@ -39,7 +37,8 @@ namespace hscpp
         explicit Hotswapper(std::unique_ptr<Config> pConfig);
         Hotswapper(std::unique_ptr<Config> pConfig,
                    std::unique_ptr<IFileWatcher> pFileWatcher,
-                   std::unique_ptr<ICompiler> pCompiler);
+                   std::unique_ptr<ICompiler> pCompiler,
+                   std::unique_ptr<IPreprocessor> pPreprocessor);
 
         AllocationResolver* GetAllocationResolver();
 
@@ -103,6 +102,7 @@ namespace hscpp
         void ClearLinkOptions();
 
         void SetVar(const std::string& name, const std::string& val);
+        void SetVar(const std::string& name, const char* pVal); // Avoid calling bool overload with const char*
         void SetVar(const std::string& name, double val);
         void SetVar(const std::string& name, bool val);
         bool RemoveVar(const std::string& name);
@@ -146,11 +146,10 @@ namespace hscpp
         std::vector<IFileWatcher::Event> m_FileEvents;
 
         std::unique_ptr<ICompiler> m_pCompiler;
+        std::unique_ptr<IPreprocessor> m_pPreprocessor;
+
         ModuleManager m_ModuleManager;
         FeatureManager m_FeatureManager;
-        DependencyGraph m_DependencyGraph;
-        VarStore m_VarStore;
-        FileParser m_FileParser;
 
         bool m_bDependencyGraphNeedsRefresh = true;
 
@@ -159,8 +158,8 @@ namespace hscpp
 
         bool StartCompile(ICompiler::Input& compilerInput);
 
-        ICompiler::Input CreateCompilerInput(const std::vector<fs::path>& sourceFilePaths);
-        void Preprocess(ICompiler::Input& input);
+        bool CreateCompilerInput(const std::vector<fs::path>& sourceFilePaths, ICompiler::Input& compilerInput);
+        bool Preprocess(ICompiler::Input& compilerInput);
         void Deduplicate(ICompiler::Input& input);
 
         bool PerformRuntimeSwap();
@@ -168,7 +167,8 @@ namespace hscpp
         bool CreateHscppTempDirectory();
         bool CreateBuildDirectory();
 
-        void RemoveFromDependencyGraph(const std::vector<fs::path>& removedFilePaths);
+        void UpdateDependencyGraph(const std::vector<fs::path>& canonicalModifiedFilePaths,
+                const std::vector<fs::path>& canonicalRemovedFilePaths);
         void RefreshDependencyGraph();
         void AppendDirectoryFiles(const std::map<int, fs::path>& directoryPathsByHandle,
             std::unordered_set<fs::path, FsPathHasher>& sourceFilePaths);

@@ -1,4 +1,5 @@
 #include <stdexcept>
+#include <cassert>
 
 #include "hscpp/preprocessor/Interpreter.h"
 
@@ -73,6 +74,8 @@ namespace hscpp
     void Interpreter::Visit(const HscppRequireStmt& requireStmt)
     {
         HscppRequire hscppRequire;
+        hscppRequire.name = requireStmt.token.value;
+        hscppRequire.line = requireStmt.token.line;
 
         switch (requireStmt.token.type)
         {
@@ -93,6 +96,7 @@ namespace hscpp
                 break;
             default:
                 assert(false);
+                break;
         }
 
         for (const auto& parameter : requireStmt.parameters)
