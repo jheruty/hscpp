@@ -1,0 +1,100 @@
+name: build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  schedule:
+    - cron: "0 10 * * *" # 2AM PST
+
+env:
+  build_directory: "${{ github.workspace }}/../../build"
+  unit_test_directory: "${{ github.workspace }}/../../build/test/unit-tests"
+
+jobs:
+  Windows:
+    strategy:
+      matrix:
+        cxx_standard: ["-DCMAKE_CXX_STANDARD=11", "-DCMAKE_CXX_STANDARD=17"]
+        hscpp_disable: ["-DHSCPP_DISABLE=OFF", "-DHSCPP_DISABLE=ON"]
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: "Build on Windows"
+        uses: lukka/run-cmake@v2
+        with:
+          cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
+          buildDirectory: ${{env.build_directory}}
+          cmakeGenerator: VS16Win64
+          cmakeAppendedArgs: "${{matrix.cxx_standard}} ${{matrix.hscpp_disable}}"
+      - name: 'Run unit tests'
+        run: "${{env.unit_test_directory}}/Debug/unit-tests"
+        working-directory: "${{env.unit_test_directory}}/Debug"
+
+  Windows_clang:
+    strategy:
+      matrix:
+        cxx_standard: ["-DCMAKE_CXX_STANDARD=11", "-DCMAKE_CXX_STANDARD=17"]
+        hscpp_disable: ["-DHSCPP_DISABLE=OFF", "-DHSCPP_DISABLE=ON"]
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: "Build on Windows with clang-cl"
+        uses: lukka/run-cmake@v2
+        with:
+          cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
+          buildDirectory: ${{env.build_directory}}
+          cmakeAppendedArgs: "${{matrix.cxx_standard}} ${{matrix.hscpp_disable}} -T ClangCl"
+      - name: 'Run unit tests'
+        run: "${{env.unit_test_directory}}/Debug/unit-tests"
+        working-directory: "${{env.unit_test_directory}}/Debug"
+
+  macOS:
+    strategy:
+      matrix:
+        cxx_standard: ["-DCMAKE_CXX_STANDARD=11", "-DCMAKE_CXX_STANDARD=17"]
+        hscpp_disable: ["-DHSCPP_DISABLE=OFF", "-DHSCPP_DISABLE=ON"]
+        compiler: [g++, clang++]
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: "Build on macOS"
+        env:
+          CXX: ${{matrix.compiler}}
+        uses: lukka/run-cmake@v2
+        with:
+          cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
+          buildDirectory: ${{env.build_directory}}
+          cmakeAppendedArgs: "${{matrix.cxx_standard}} ${{matrix.hscpp_disable}}"
+      - name: 'Run unit tests'
+        run: "${{env.unit_test_directory}}/unit-tests"
+        working-directory: "${{env.unit_test_directory}}"
+
+  Ubuntu:
+    strategy:
+      matrix:
+        cxx_standard: [ "-DCMAKE_CXX_STANDARD=11", "-DCMAKE_CXX_STANDARD=17" ]
+        hscpp_disable: [ "-DHSCPP_DISABLE=OFF", "-DHSCPP_DISABLE=ON" ]
+        compiler: [ g++, clang++ ]
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: "Install dependencies"
+        run: sudo apt-get install -y libxrandr-dev
+          && sudo apt-get install -y libxinerama-dev
+          && sudo apt-get install -y libxcursor-dev
+          && sudo apt-get install -y libxi-dev
+          && sudo apt-get install -y libgl1-mesa-dev
+      - name: "Build on Ubuntu"
+        env:
+          CXX: ${{matrix.compiler}}
+        uses: lukka/run-cmake@v2
+        with:
+          cmakeListsOrSettingsJson: CMakeListsTxtAdvanced
+          buildDirectory: ${{env.build_directory}}
+          cmakeAppendedArgs: "${{matrix.cxx_standard}} ${{matrix.hscpp_disable}}"
+      - name: 'Run unit tests'
+        run: "${{env.unit_test_directory}}/unit-tests"
+        working-directory: "${{env.unit_test_directory}}"

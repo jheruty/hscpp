@@ -15,6 +15,8 @@ public:
     void Set(const std::string& name, Variant variant);
     void Enumerate(std::function<void(Variant&)> cb);
 
+    void PrintBaseState();
+
 private:
     std::unordered_map<std::string, Variant> m_State;
 };

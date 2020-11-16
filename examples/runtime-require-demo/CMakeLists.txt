@@ -2,12 +2,14 @@ cmake_minimum_required(VERSION 3.10.0)
 
 add_executable(runtime-require-demo
     src/BaseState.cpp
+    src/BaseStateUtil.cpp
     src/Main.cpp
     src/Printer.cpp
     src/PrintHello.cpp
     src/PrintVariant.cpp
 
     include/runtime-require-demo/BaseState.h
+    include/runtime-require-demo/BaseStateUtil.h
     include/runtime-require-demo/Printer.h
     include/runtime-require-demo/PrintHello.h
     include/runtime-require-demo/PrintVariant.h

@@ -17,7 +17,7 @@
 
 // Add a include directory with hscpp_require_include. All paths are relative to the path of the
 // file in which the macro is placed (absolute paths are also allowed).
-hscpp_require_include("../../hscpp-example-utils/include")
+hscpp_require_include_dir("../../hscpp-example-utils/include")
 
 // Add a source files with hscpp_require_source. All hscpp_require macros support comma separated
 // lists of dependencies.
@@ -25,12 +25,17 @@ hscpp_require_include("../../hscpp-example-utils/include")
 hscpp_require_source("./PrintVariant.cpp", "./PrintHello.cpp")
 #endif
 
-// Link in a library with hscpp_require_lib.
-// TODO fix configuration variable.
-hscpp_require_lib("../../../build/examples/hscpp-example-utils/hscpp-example-utils.lib")
+// Link in a library with hscpp_require_lib. Variables can be interpolated using ${VarName}.
+hscpp_if (os == "Windows")
+    hscpp_require_library("${libDirectory}/hscpp-example-utils.lib")
+hscpp_elif (os == "Posix")
+    hscpp_require_library("${libDirectory}/libhscpp-example-utils.a")
+hscpp_else()
+    hscpp_message("Unknown OS ${os}.")
+hscpp_end()
 
 // Add preprocessor definitions when this file is compiled. Definitions can be strings or identifiers.
-hscpp_preprocessor_definitions("PREPROCESSOR_PRINTER_DEMO1", PREPROCESSOR_PRINTER_DEMO2);
+hscpp_require_preprocessor_def("PREPROCESSOR_PRINTER_DEMO1", PREPROCESSOR_PRINTER_DEMO2);
 
 // hscpp_require in comments and strings is ignored.
 // hscpp_require_include("dummy")
@@ -45,8 +50,6 @@ Printer::Printer()
     Hscpp_SetSwapHandler([this](hscpp::SwapInfo& info) {
         BaseState::HandleSwap(info);
         });
-
-    //int bla = *(int*)nullptr;
 
     if (Hscpp_IsSwapping())
     {
@@ -65,8 +68,10 @@ void Printer::Update()
 
     // Enumerate from base class.
     Enumerate([](Variant& v) {
-        Print(v);
+        PrintVariant(v);
         });
+
+    PrintBaseState();
 
 #ifdef PREPROCESSOR_DEMO
     // This is defined in Main.cpp, with the AddPreprocessorDefinition function. This macro is

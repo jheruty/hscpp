@@ -3,7 +3,7 @@
 #include "catch/catch.hpp"
 #include "common/Common.h"
 
-#include "hscpp/ICmdShell.h"
+#include "hscpp/cmd-shell/ICmdShell.h"
 #include "hscpp/Platform.h"
 #include "hscpp/Util.h"
 
@@ -45,7 +45,7 @@ namespace hscpp { namespace test
         CALL(StartUpdateLoop, Milliseconds(5000), Milliseconds(10), cb);
     }
 
-    TEST_CASE("CmdShell can perform a basic echo.", "[CmdShell]")
+    TEST_CASE("CmdShell can perform a basic echo.")
     {
         std::unique_ptr<ICmdShell> pCmdShell = platform::CreateCmdShell();
         REQUIRE(pCmdShell->CreateCmdProcess());
@@ -158,7 +158,7 @@ namespace hscpp { namespace test
             return UpdateLoop::Running;
         };
 
-        CALL(StartUpdateLoop, Milliseconds(100), Milliseconds(10), cb);
+        CALL(StartUpdateLoop, Milliseconds(5000), Milliseconds(10), cb);
 
         REQUIRE(taskState == ICmdShell::TaskState::Cancelled);
     }

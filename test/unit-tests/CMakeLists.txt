@@ -4,8 +4,11 @@ add_executable(unit-tests
     Test_Compiler.cpp
     Test_DependencyGraph.cpp
     Test_FeatureManager.cpp
-    Test_FileParser.cpp
     Test_FileWatcher.cpp
+    Test_Interpreter.cpp
+    Test_Lexer.cpp
+    Test_Parser.cpp
+    Test_VarStore.cpp
 )
 
 target_link_libraries(unit-tests

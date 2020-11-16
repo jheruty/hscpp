@@ -8,6 +8,8 @@
 #include "hscpp/Hotswapper.h"
 #include "hscpp/Log.h"
 #include "hscpp/Util.h"
+#include "hscpp/preprocessor/Variant.h"
+#include "hscpp/preprocessor/Preprocessor.h"
 
 namespace hscpp
 {
@@ -15,16 +17,17 @@ namespace hscpp
     const static std::string HSCPP_TEMP_DIRECTORY_NAME = "HSCPP_7c9279ff-25af-488c-a634-b6aa68f47a65";
 
     Hotswapper::Hotswapper()
-        : Hotswapper(std::unique_ptr<Config>(new Config()), nullptr, nullptr)
+        : Hotswapper(std::unique_ptr<Config>(new Config()), nullptr, nullptr, nullptr)
     {}
 
     Hotswapper::Hotswapper(std::unique_ptr<Config> pConfig)
-        : Hotswapper(std::move(pConfig), nullptr, nullptr)
+        : Hotswapper(std::move(pConfig), nullptr, nullptr, nullptr)
     {}
 
     Hotswapper::Hotswapper(std::unique_ptr<Config> pConfig,
                            std::unique_ptr<IFileWatcher> pFileWatcher,
-                           std::unique_ptr<ICompiler> pCompiler)
+                           std::unique_ptr<ICompiler> pCompiler,
+                           std::unique_ptr<IPreprocessor> pPreprocessor)
        : m_pConfig(std::move(pConfig))
     {
         if (pFileWatcher != nullptr)
@@ -43,6 +46,15 @@ namespace hscpp
         else
         {
             m_pCompiler = platform::CreateCompiler(&m_pConfig->compiler);
+        }
+
+        if (pPreprocessor != nullptr)
+        {
+            m_pPreprocessor = std::move(pPreprocessor);
+        }
+        else
+        {
+            m_pPreprocessor = std::unique_ptr<IPreprocessor>(new Preprocessor());
         }
 
         if (!(m_pConfig->flags & Config::Flag::NoDefaultCompileOptions))
@@ -109,19 +121,21 @@ namespace hscpp
     {
         if (CreateBuildDirectory())
         {
-            ICompiler::Input compilerInput = CreateCompilerInput({});
-
-            if (StartCompile(compilerInput))
+            ICompiler::Input compilerInput;
+            if (CreateCompilerInput({}, compilerInput))
             {
-                while (m_pCompiler->IsCompiling())
+                if (StartCompile(compilerInput))
                 {
-                    m_pCompiler->Update();
-                    std::this_thread::sleep_for(std::chrono::milliseconds(10));
-                }
+                    while (m_pCompiler->IsCompiling())
+                    {
+                        m_pCompiler->Update();
+                        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+                    }
 
-                if (m_pCompiler->HasCompiledModule())
-                {
-                    PerformRuntimeSwap();
+                    if (m_pCompiler->HasCompiledModule())
+                    {
+                        PerformRuntimeSwap();
+                    }
                 }
             }
         }
@@ -163,17 +177,21 @@ namespace hscpp
         {
             if (CreateBuildDirectory())
             {
-                std::vector<fs::path> canonicalModifiedFiles;
-                std::vector<fs::path> canonicalRemovedFiles;
-                util::SortFileEvents(m_FileEvents, canonicalModifiedFiles, canonicalRemovedFiles);
+                std::vector<fs::path> canonicalModifiedFilePaths;
+                std::vector<fs::path> canonicalRemovedFilePaths;
 
-                RemoveFromDependencyGraph(canonicalRemovedFiles);
-                if (!canonicalModifiedFiles.empty())
+                util::SortFileEvents(m_FileEvents, canonicalModifiedFilePaths, canonicalRemovedFilePaths);
+                UpdateDependencyGraph(canonicalModifiedFilePaths, canonicalRemovedFilePaths);
+
+                if (!canonicalModifiedFilePaths.empty())
                 {
-                    ICompiler::Input compilerInput = CreateCompilerInput(canonicalModifiedFiles);
-                    if (StartCompile(compilerInput))
+                    ICompiler::Input compilerInput;
+                    if (CreateCompilerInput(canonicalModifiedFilePaths, compilerInput))
                     {
-                        return UpdateResult::StartedCompiling;
+                        if (StartCompile(compilerInput))
+                        {
+                            return UpdateResult::StartedCompiling;
+                        }
                     }
                 }
             }
@@ -414,12 +432,27 @@ namespace hscpp
 
     void Hotswapper::SetVar(const std::string& name, const std::string& val)
     {
-        m_VarManager.SetVar(name, val);
+        m_pPreprocessor->SetVar(name, Variant(val));
+    }
+
+    void Hotswapper::SetVar(const std::string& name, const char* pVal)
+    {
+        SetVar(name, std::string(pVal));
+    }
+
+    void Hotswapper::SetVar(const std::string& name, double val)
+    {
+        m_pPreprocessor->SetVar(name, Variant(val));
+    }
+
+    void Hotswapper::SetVar(const std::string& name, bool val)
+    {
+        m_pPreprocessor->SetVar(name, Variant(val));
     }
 
     bool Hotswapper::RemoveVar(const std::string& name)
     {
-        return m_VarManager.RemoveVar(name);
+        return m_pPreprocessor->RemoveVar(name);
     }
 
     //============================================================================
@@ -442,116 +475,57 @@ namespace hscpp
         return false;
     }
 
-    ICompiler::Input Hotswapper::CreateCompilerInput(const std::vector<fs::path>& sourceFilePaths)
+    bool Hotswapper::CreateCompilerInput(const std::vector<fs::path>& sourceFilePaths, ICompiler::Input& compilerInput)
     {
-        ICompiler::Input input;
-        input.buildDirectoryPath = m_BuildDirectoryPath;
-        input.sourceFilePaths = sourceFilePaths;
-        input.includeDirectoryPaths = AsVector(m_IncludeDirectoryPathsByHandle);
-        input.libraryDirectoryPaths = AsVector(m_LibraryDirectoryPathsByHandle);
-        input.libraryPaths = AsVector(m_LibraryPathsByHandle);
-        input.preprocessorDefinitions = AsVector(m_PreprocessorDefinitionsByHandle);
-        input.compileOptions = AsVector(m_CompileOptionsByHandle);
-        input.linkOptions = AsVector(m_LinkOptionsByHandle);
+        compilerInput.buildDirectoryPath = m_BuildDirectoryPath;
+        compilerInput.sourceFilePaths = sourceFilePaths;
+        compilerInput.includeDirectoryPaths = AsVector(m_IncludeDirectoryPathsByHandle);
+        compilerInput.libraryDirectoryPaths = AsVector(m_LibraryDirectoryPathsByHandle);
+        compilerInput.libraryPaths = AsVector(m_LibraryPathsByHandle);
+        compilerInput.preprocessorDefinitions = AsVector(m_PreprocessorDefinitionsByHandle);
+        compilerInput.compileOptions = AsVector(m_CompileOptionsByHandle);
+        compilerInput.linkOptions = AsVector(m_LinkOptionsByHandle);
 
         for (const auto& handle__filePath : m_ForceCompiledSourceFilePathsByHandle)
         {
-            input.sourceFilePaths.push_back(handle__filePath.second);
+            compilerInput.sourceFilePaths.push_back(handle__filePath.second);
         }
 
-        Deduplicate(input);
-        Preprocess(input);
-        Deduplicate(input);
+        Deduplicate(compilerInput);
+        if (!Preprocess(compilerInput))
+        {
+            return false;
+        }
 
-        return input;
+        Deduplicate(compilerInput);
+        return true;
     }
 
-    void Hotswapper::Preprocess(ICompiler::Input& input)
+    bool Hotswapper::Preprocess(ICompiler::Input& compilerInput)
     {
-        std::vector<fs::path> additionalSourceFilePaths;
-        std::vector<fs::path> additionalIncludeDirectoryPaths;
-        std::vector<fs::path> additionalLibraryDirectoryPaths;
-        std::vector<fs::path> additionalLibraryPaths;
-        std::vector<std::string> additionalPreprocessorDefinitions;
-
         if (IsFeatureEnabled(Feature::Preprocessor))
         {
-            std::vector<FileParser::ParseInfo> parseInfos = m_FileParser.Parse(input.sourceFilePaths);
-            for (const auto& parseInfo : parseInfos)
+            IPreprocessor::Output preprocessorOutput;
+
+            if (!m_pPreprocessor->Preprocess(compilerInput.sourceFilePaths, preprocessorOutput))
             {
-                for (const auto& require : parseInfo.requires)
-                {
-                    for (const auto& path : require.paths)
-                    {
-                        // If path is relative, it should be relative to the path of the parse source file.
-                        fs::path fullPath = path;
-                        if (path.is_relative())
-                        {
-                            fullPath = parseInfo.filePath.parent_path() / path;
-                        }
-
-                        // Interpolate vars (ex. ${VARIABLE_NAME}).
-                        fullPath = fs::u8path(m_VarManager.Interpolate(fullPath.u8string()));
-
-                        std::error_code error;
-                        fs::path canonicalPath = fs::canonical(fullPath, error);
-
-                        if (error.value() == HSCPP_ERROR_SUCCESS)
-                        {
-                            switch (require.type)
-                            {
-                                case FileParser::Require::Type::Source:
-                                    additionalSourceFilePaths.push_back(canonicalPath);
-                                    break;
-                                case FileParser::Require::Type::Include:
-                                    additionalIncludeDirectoryPaths.push_back(canonicalPath);
-                                    break;
-                                case FileParser::Require::Type::LibraryDirectory:
-                                    additionalLibraryDirectoryPaths.push_back(canonicalPath);
-                                    break;
-                                case FileParser::Require::Type::Library:
-                                    additionalLibraryPaths.push_back(canonicalPath);
-                                    break;
-                                default:
-                                    assert(false);
-                                    break;
-                            }
-                        }
-                        else
-                        {
-                            log::Error() << HSCPP_LOG_PREFIX << "Failed to get canonical path of "
-                                         << fullPath << ". " << log::OsError(error) << log::End();
-                        }
-                    }
-                }
-
-                for (const auto& preprocessorDefinition : parseInfo.preprocessorDefinitions)
-                {
-                    additionalPreprocessorDefinitions.push_back(preprocessorDefinition);
-                }
+                log::Error() << HSCPP_LOG_PREFIX << "Preprocessing failed. Compilation will be skipped." << log::End();
+                return false;
             }
 
-            if (IsFeatureEnabled(Feature::DependentCompilation))
-            {
-                for (const auto& sourceFilePath : input.sourceFilePaths)
-                {
-                    std::vector<fs::path> dependentFilePaths = m_DependencyGraph.ResolveGraph(sourceFilePath);
-                    additionalSourceFilePaths.insert(additionalSourceFilePaths.end(),
-                            dependentFilePaths.begin(), dependentFilePaths.end());
-                }
-            }
+            compilerInput.sourceFilePaths.insert(compilerInput.sourceFilePaths.end(),
+                    preprocessorOutput.sourceFiles.begin(), preprocessorOutput.sourceFiles.end());
+            compilerInput.includeDirectoryPaths.insert(compilerInput.includeDirectoryPaths.end(),
+                    preprocessorOutput.includeDirectories.begin(), preprocessorOutput.includeDirectories.end());
+            compilerInput.libraryPaths.insert(compilerInput.libraryPaths.end(),
+                    preprocessorOutput.libraries.begin(), preprocessorOutput.libraries.end());
+            compilerInput.libraryDirectoryPaths.insert(compilerInput.libraryDirectoryPaths.end(),
+                    preprocessorOutput.libraryDirectories.begin(), preprocessorOutput.libraryDirectories.end());
+            compilerInput.preprocessorDefinitions.insert(compilerInput.preprocessorDefinitions.end(),
+                    preprocessorOutput.preprocessorDefinitions.begin(), preprocessorOutput.preprocessorDefinitions.end());
         }
 
-        input.sourceFilePaths.insert(input.sourceFilePaths.end(),
-                additionalSourceFilePaths.begin(), additionalSourceFilePaths.end());
-        input.includeDirectoryPaths.insert(input.includeDirectoryPaths.end(),
-                additionalIncludeDirectoryPaths.begin(), additionalIncludeDirectoryPaths.end());
-        input.libraryDirectoryPaths.insert(input.libraryDirectoryPaths.end(),
-                additionalLibraryDirectoryPaths.begin(), additionalLibraryDirectoryPaths.end());
-        input.libraryPaths.insert(input.libraryPaths.end(),
-                additionalLibraryPaths.begin(), additionalLibraryPaths.end());
-        input.preprocessorDefinitions.insert(input.preprocessorDefinitions.end(),
-                additionalPreprocessorDefinitions.begin(), additionalPreprocessorDefinitions.end());
+        return true;
     }
 
     void Hotswapper::Deduplicate(ICompiler::Input& input)
@@ -632,14 +606,13 @@ namespace hscpp
         return true;
     }
 
-    void Hotswapper::RemoveFromDependencyGraph(const std::vector<fs::path>& removedFilePaths)
+    void Hotswapper::UpdateDependencyGraph(const std::vector<fs::path>& canonicalModifiedFilePaths,
+            const std::vector<fs::path>& canonicalRemovedFilePaths)
     {
         if (IsFeatureEnabled(Feature::DependentCompilation))
         {
-            for (const auto& removedFilePath : removedFilePaths)
-            {
-                m_DependencyGraph.RemoveFile(removedFilePath);
-            }
+            m_pPreprocessor->UpdateDependencyGraph(canonicalModifiedFilePaths, canonicalRemovedFilePaths,
+                    AsVector(m_IncludeDirectoryPathsByHandle));
         }
     }
 
@@ -647,51 +620,17 @@ namespace hscpp
     {
         if (IsFeatureEnabled(Feature::DependentCompilation))
         {
+            m_pPreprocessor->ClearDependencyGraph();
+
             // Header and source directories may overlap, so collect unique files using a set.
             std::unordered_set<fs::path, FsPathHasher> uniqueSourceFilePaths;
 
             AppendDirectoryFiles(m_SourceDirectoryPathsByHandle, uniqueSourceFilePaths);
             AppendDirectoryFiles(m_IncludeDirectoryPathsByHandle, uniqueSourceFilePaths);
 
-            m_DependencyGraph.Clear();
-
-            for (const auto& sourceFilePath : uniqueSourceFilePaths)
-            {
-                FileParser::ParseInfo parseInfo = m_FileParser.Parse(sourceFilePath);
-                std::error_code error;
-                fs::path canonicalFilePath = fs::canonical(parseInfo.filePath, error);
-
-                if (error.value() != HSCPP_ERROR_SUCCESS)
-                {
-                    log::Error() << HSCPP_LOG_PREFIX << "Failed to get canonical path of "
-                                 << canonicalFilePath << ". " << log::OsError(error) << log::End();
-                    return;
-                }
-
-                m_DependencyGraph.SetLinkedModules(canonicalFilePath, parseInfo.modules);
-
-                std::vector<fs::path> canonicalIncludePaths;
-                for (const auto& includePath : parseInfo.includePaths)
-                {
-                    for (const auto& includeDirectoryPath : AsVector(m_IncludeDirectoryPathsByHandle))
-                    {
-                        // For example, the includePath may be "MathUtil.h", but we want to find the full
-                        // for creating the dependency graph. Iterate through our include directories to
-                        // find the folder that contains a matching include.
-                        fs::path fullIncludePath = includeDirectoryPath / includePath;
-                        if (fs::exists(fullIncludePath))
-                        {
-                            fullIncludePath = fs::canonical(fullIncludePath, error);
-                            if (error.value() == HSCPP_ERROR_SUCCESS)
-                            {
-                                canonicalIncludePaths.push_back(fullIncludePath);
-                            }
-                        }
-                    }
-                }
-
-                m_DependencyGraph.SetFileDependencies(canonicalFilePath, canonicalIncludePaths);
-            }
+            m_pPreprocessor->UpdateDependencyGraph(
+                    std::vector<fs::path>(uniqueSourceFilePaths.begin(), uniqueSourceFilePaths.end()),
+                    {}, AsVector(m_IncludeDirectoryPathsByHandle));
         }
 
         m_bDependencyGraphNeedsRefresh = false;

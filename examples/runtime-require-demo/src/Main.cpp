@@ -29,13 +29,14 @@ int main()
     // The hscpp_require_ macros require enabling an optional feature.
     swapper.EnableFeature(hscpp::Feature::Preprocessor);
 
-    // We can set variables that will be interpolated with %VAR_NAME% in hscpp_require_ macros. Note
-    // that these will take precedence over environment variables of the same name.
-#ifdef _DEBUG
-    swapper.SetVar("PROJECT_CONFIGURATION", "Debug");
+    // We can set variables that will be interpolated with ${VarName} in hscpp_ macros.
+#ifdef _WIN32
+    swapper.SetVar("os", "Windows");
 #else
-    swapper.SetVar("PROJECT_CONFIGURATION", "Release");
+    swapper.SetVar("os", "Posix");
 #endif
+
+    swapper.SetVar("libDirectory", "../../../build/examples/hscpp-example-utils");
 
     swapper.AddPreprocessorDefinition("PREPROCESSOR_DEMO");
 

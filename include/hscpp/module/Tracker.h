@@ -150,8 +150,8 @@ static constexpr hscpp::compile_time::String<                                   
 /* Create Tracker to track instance of this class. */ \
 hscpp::Tracker<type, decltype(hscpp_ClassKey)> hscpp_ClassTracker = { this };
 
-#define Hscpp_SetSwapHandler(...) \
-hscpp_ClassTracker.SwapHandler = __VA_ARGS__;
+#define Hscpp_SetSwapHandler(cb) \
+hscpp_ClassTracker.SwapHandler = cb;
 
 #define Hscpp_IsSwapping() (*hscpp::ModuleSharedState::s_pbSwapping)
 
@@ -160,7 +160,7 @@ hscpp_ClassTracker.SwapHandler = __VA_ARGS__;
 #else
 
 #define HSCPP_TRACK(type, key)
-#define Hscpp_SetSwapHandler(...)
+#define Hscpp_SetSwapHandler(cb) (void)cb
 #define Hscpp_IsSwapping() false
 #define hscpp_virtual
 

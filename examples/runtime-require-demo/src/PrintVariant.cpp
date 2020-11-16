@@ -3,7 +3,7 @@
 
 #include "runtime-require-demo/PrintVariant.h"
 
-void Print(const Variant& v)
+void PrintVariant(const Variant& v)
 {
     switch (v.GetType())
     {

@@ -12,23 +12,25 @@
 
 // Add includes for platform-specific hscpp classes.
 #if defined(HSCPP_PLATFORM_WIN32)
-    #include "hscpp/FileWatcher_win32.h"
-    #include "hscpp/CmdShell_win32.h"
+    #include "hscpp/file-watcher/FileWatcher_win32.h"
+    #include "hscpp/cmd-shell/CmdShell_win32.h"
 #elif defined(HSCPP_PLATFORM_APPLE)
-    #include "hscpp/FileWatcher_apple.h"
-    #include "hscpp/CmdShell_unix.h"
+    #include "hscpp/file-watcher/FileWatcher_apple.h"
+    #include "hscpp/cmd-shell/CmdShell_unix.h"
 #elif defined(HSCPP_PLATFORM_UNIX)
-    #include "hscpp/FileWatcher_unix.h"
-    #include "hscpp/CmdShell_unix.h"
+    #include "hscpp/file-watcher/FileWatcher_unix.h"
+    #include "hscpp/cmd-shell/CmdShell_unix.h"
 #endif
 
-// Compiler code is cross-platform. For example, one may wish to run the clang compiler on Windows.
-// By default hscpp will choose the compiler that was used to compile this file.
-#include "hscpp/Compiler.h"
-#include "hscpp/CompilerInitializeTask_msvc.h"
-#include "hscpp/CompilerInitializeTask_gcc.h"
-#include "hscpp/CompilerCmdLine_msvc.h"
-#include "hscpp/CompilerCmdLine_gcc.h"
+// Compiler and GCC interface is cross-platform. MSVC interface is Win32-only.
+#include "hscpp/compiler/Compiler.h"
+#include "hscpp/compiler/CompilerInitializeTask_gcc.h"
+#include "hscpp/compiler/CompilerCmdLine_gcc.h"
+
+#if defined(HSCPP_PLATFORM_WIN32)
+    #include "hscpp/compiler/CompilerInitializeTask_msvc.h"
+    #include "hscpp/compiler/CompilerCmdLine_msvc.h"
+#endif
 
 namespace hscpp { namespace platform
 {
@@ -54,14 +56,12 @@ namespace hscpp { namespace platform
 #if defined(HSCPP_COMPILER_MSVC)
         pInitializeTask = std::unique_ptr<ICmdShellTask>(new CompilerInitializeTask_msvc());
         pCompilerCmdLine = std::unique_ptr<ICompilerCmdLine>(new CompilerCmdLine_msvc(pConfig));
-#elif defined(HSCPP_COMPILER_CLANG)
-    #if defined(HSCPP_PLATFORM_WIN32)
+#elif defined(HSCPP_COMPILER_CLANG_CL)
         pInitializeTask = std::unique_ptr<ICmdShellTask>(new CompilerInitializeTask_gcc(pConfig));
         pCompilerCmdLine = std::unique_ptr<ICompilerCmdLine>(new CompilerCmdLine_msvc(pConfig));
-    #else
+#elif defined(HSCPP_COMPILER_CLANG)
         pInitializeTask = std::unique_ptr<ICmdShellTask>(new CompilerInitializeTask_gcc(pConfig));
         pCompilerCmdLine = std::unique_ptr<ICompilerCmdLine>(new CompilerCmdLine_gcc(pConfig));
-    #endif
 #elif defined(HSCPP_COMPILER_GCC)
         pInitializeTask = std::unique_ptr<ICmdShellTask>(new CompilerInitializeTask_gcc(pConfig));
         pCompilerCmdLine = std::unique_ptr<ICompilerCmdLine>(new CompilerCmdLine_gcc(pConfig));
@@ -96,7 +96,7 @@ namespace hscpp { namespace platform
             "/Z7", // Add full debugging information.
             "/FC", // Print full filepath in diagnostic messages.
             "/EHsc", // Full support for standard C++ exception handling.
-#if !defined(HSCPP_COMPILER_CLANG)
+#if !defined(HSCPP_COMPILER_CLANG_CL)
             "/MP", // Build with multiple processes (not supported on clang-cl).
 #endif
 
@@ -149,12 +149,10 @@ namespace hscpp { namespace platform
 
 #if defined(HSCPP_COMPILER_MSVC)
         return GetDefaultCompileOptions_msvc(cppStandard);
-#elif defined(HSCPP_COMPILER_CLANG)
-    #if defined(HSCPP_PLATFORM_WIN32)
+#elif defined(HSCPP_COMPILER_CLANG_CL)
         return GetDefaultCompileOptions_msvc(cppStandard);
-    #else
+#elif defined(HSCPP_COMPILER_CLANG)
         return GetDefaultCompileOptions_gcc(cppStandard);
-    #endif
 #elif defined(HSCPP_COMPILER_GCC)
         return GetDefaultCompileOptions_gcc(cppStandard);
 #endif
@@ -194,20 +192,7 @@ namespace hscpp { namespace platform
 
     fs::path GetDefaultCompilerExecutable()
     {
-#if defined(HSCPP_COMPILER_MSVC)
-        return fs::path("cl");
-#elif defined(HSCPP_COMPILER_CLANG)
-    #if defined(HSCPP_PLATFORM_WIN32)
-        return fs::path("clang-cl");
-    #else
-        return fs::path("clang++");
-    #endif
-#elif defined(HSCPP_COMPILER_GCC)
-        return fs::path("g++");
-#endif
-        log::Warning() << HSCPP_LOG_PREFIX
-            << "Unable to deduce compiler executable. Defaulting to clang++." << log::End();
-        return fs::path("clang++");
+        return fs::path(HSCPP_COMPILER_PATH);
     }
 
     //============================================================================
@@ -247,6 +232,9 @@ namespace hscpp { namespace platform
         uuid_unparse(uuid, buf);
 
         return buf;
+#else
+        static_assert(false, "Unsupported platform.");
+        return "";
 #endif
 
     }
@@ -313,11 +301,9 @@ namespace hscpp { namespace platform
         return "dynlib";
 #elif defined(HSCPP_PLATFORM_UNIX)
         return "so";
+#else
+        static_assert(false, "Unsupported platform.");
 #endif
-
-        log::Warning() << HSCPP_LOG_PREFIX
-            << "Unable to deduce module extension, defaulting to 'so'." << log::End();
-        return "so";
     }
 
 
@@ -327,6 +313,9 @@ namespace hscpp { namespace platform
         return LoadLibraryW(modulePath.wstring().c_str());
 #elif defined(HSCPP_PLATFORM_UNIX)
         return dlopen(modulePath.string().c_str(), RTLD_NOW);
+#else
+        static_assert(false, "Unsupported platform.");
+        return nullptr;
 #endif
     }
 

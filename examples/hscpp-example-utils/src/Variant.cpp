@@ -1,3 +1,6 @@
+
+#include <hscpp/preprocessor/Variant.h>
+
 #include "hscpp-example-utils/Variant.h"
 
 Variant::Variant()

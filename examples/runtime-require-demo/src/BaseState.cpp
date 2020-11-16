@@ -1,4 +1,14 @@
+#include <iostream>
+
 #include "runtime-require-demo/BaseState.h"
+#include "runtime-require-demo/BaseStateUtil.h"
+#include "hscpp/module/PreprocessorMacros.h"
+
+// The Preprocessor will recursively evaluate files. If a source file uses
+// hscpp_require_source("./BaseState.cpp"), the hscpp_requires of BaseState.cpp will also be
+// evaluated. Modify Printer.cpp to see how BaseStateUtil.cpp is added to the compilation.
+hscpp_message("Processing BaseState.cpp!")
+hscpp_require_source("./BaseStateUtil.cpp")
 
 void BaseState::HandleSwap(hscpp::SwapInfo& info)
 {
@@ -27,4 +37,9 @@ void BaseState::Enumerate(std::function<void(Variant&)> cb)
     {
         cb(pair.second);
     }
+}
+
+void BaseState::PrintBaseState()
+{
+    std::cout << GetBaseStateString() << std::endl;
 }
