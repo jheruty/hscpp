@@ -11,7 +11,8 @@ namespace hscpp
         // hscpp_preprocessor_definitions, and hscpp_module.
         Preprocessor,
 
-        // #TODO
+        // When encountering a hscpp_module, compile all source files using the same module
+        // name. Then, walk the #include dependency graph to also compile dependent files.
         DependentCompilation,
 
         // Do not automatically trigger compilation on file changes. User must call the
