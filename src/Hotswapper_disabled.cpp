@@ -11,7 +11,8 @@ namespace hscpp
 
     Hotswapper::Hotswapper(std::unique_ptr<Config>,
             std::unique_ptr<IFileWatcher>,
-            std::unique_ptr<ICompiler>)
+            std::unique_ptr<ICompiler>,
+            std::unique_ptr<IPreprocessor>)
     {}
 
     AllocationResolver* Hotswapper::GetAllocationResolver()
