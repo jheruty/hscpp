@@ -124,4 +124,21 @@ namespace hscpp { namespace test
         CALL(ValidateUnorderedVector, output.sourceFiles, vectorPaths);
     }
 
+    TEST_CASE("Preprocessor can handle infinite recursion.")
+    {
+        // These files all add each other as hscpp_require_sources, validate that this does not
+        // cause an infinite loop.
+        fs::path assetsPath = TEST_FILES_PATH / "infinite-recursion-test";
+
+        Preprocessor preprocessor;
+
+        Preprocessor::Output output;
+        REQUIRE(preprocessor.Preprocess({ assetsPath / "File-a.cpp" }, output));
+
+        CALL(ValidateUnorderedVector, output.sourceFiles, {
+            assetsPath / "File-a.cpp",
+            assetsPath / "File-b.cpp",
+            assetsPath / "File-c.cpp",
+        });
+    }
 }}
