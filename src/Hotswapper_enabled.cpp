@@ -143,7 +143,7 @@ namespace hscpp
 
     Hotswapper::UpdateResult Hotswapper::Update()
     {
-        if (m_bDependencyGraphNeedsRefresh && IsFeatureEnabled(Feature::DependentCompilation))
+        if (m_bDependencyGraphNeedsRefresh)
         {
             RefreshDependencyGraph();
         }
