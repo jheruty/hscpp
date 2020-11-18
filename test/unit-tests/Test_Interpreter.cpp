@@ -49,6 +49,21 @@ namespace hscpp { namespace test
         REQUIRE(result.hscppMessages.at(0) == message);
     }
 
+    static void ValidateExpression(const std::string& expression, const std::string& expected, const VarStore& store)
+    {
+        std::string program = "hscpp_if((" + expression + ") == " + expected + ")\n"
+                + "hscpp_message(\"PASS\")\n"
+                + "hscpp_else()\n"
+                + "hscpp_message(\"FAIL\")\n"
+                + "hscpp_end()";
+
+        Interpreter::Result result = CALL(RunInterpreter, program, store);
+        REQUIRE(!result.hscppMessages.empty());
+
+        INFO("(" + expression + ") == (" + expected + ")")
+        REQUIRE(result.hscppMessages.at(0) == "PASS");
+    }
+
     TEST_CASE("Interpreter can evaluate a simple if chain.")
     {
         std::string program = R"(
@@ -77,6 +92,55 @@ namespace hscpp { namespace test
 
         result = CALL(RunInterpreter, program, store);
         CALL(ValidateSingleMessage, result, "else");
+    }
+
+    TEST_CASE("Interpreter can evaluate basic expressions.")
+    {
+        VarStore store;
+
+        store.SetVar("a", Variant(1.0));
+        CALL(ValidateExpression, "a", "1", store);
+        CALL(ValidateExpression, "-a", "-1", store);
+        CALL(ValidateExpression, "--a", "1", store); // negative negative a, decrement operator not supported
+
+        store.SetVar("a", Variant(1.5));
+        CALL(ValidateExpression, "a", "1.5", store);
+
+        store.SetVar("a", Variant(2.0));
+        store.SetVar("b", Variant(4.0));
+        store.SetVar("c", Variant(-22.0));
+        CALL(ValidateExpression, "a + b", "6", store);
+        CALL(ValidateExpression, "a + b", "6", store);
+        CALL(ValidateExpression, "-a - b * c", "86", store);
+        CALL(ValidateExpression, "-(a - b * c)", "-90", store);
+        CALL(ValidateExpression, "-((a - b) * c))", "-44", store);
+        CALL(ValidateExpression, "1 / 2", "0.5", store);
+
+        CALL(ValidateExpression, "1 == 1", "true", store);
+        CALL(ValidateExpression, "1 == 2", "false", store);
+        CALL(ValidateExpression, "1 != 2", "true", store);
+        CALL(ValidateExpression, "1 != 1", "false", store);
+        CALL(ValidateExpression, R"( "x" == "x" )", "true", store);
+        CALL(ValidateExpression, R"( "x" == "y" )", "false", store);
+        CALL(ValidateExpression, R"( "x" != "y" )", "true", store);
+        CALL(ValidateExpression, R"( "x" == "y" )", "false", store);
+        CALL(ValidateExpression, R"( true == true )", "true", store);
+        CALL(ValidateExpression, R"( true == false )", "false", store);
+
+        store.SetVar("a", Variant(100.0));
+        store.SetVar("b", Variant(200.0));
+        store.SetVar("c", Variant(100.0));
+        CALL(ValidateExpression, "a < b", "true", store);
+        CALL(ValidateExpression, "a > b", "false", store);
+        CALL(ValidateExpression, "a <= b", "true", store);
+        CALL(ValidateExpression, "a >= b", "false", store);
+        CALL(ValidateExpression, "a < c", "false", store);
+        CALL(ValidateExpression, "a <= c", "true", store);
+        CALL(ValidateExpression, "c < a", "false", store);
+        CALL(ValidateExpression, "c <= a", "true", store);
+        CALL(ValidateExpression, "c <= a && a < b", "true", store);
+        CALL(ValidateExpression, "c < a && a < b", "false", store);
+        CALL(ValidateExpression, "c < a || a < b", "true", store);
     }
 
 }}

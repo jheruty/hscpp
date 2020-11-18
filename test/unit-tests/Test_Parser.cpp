@@ -204,6 +204,14 @@ namespace hscpp { namespace test
         REQUIRE(astChecker.Format(astChecker.Str()) == astChecker.Format(expected));
     }
 
+    static void ValidateExpression(const std::string& expression, const std::string& expected)
+    {
+        std::string program = "hscpp_if(" + expression + ") hscpp_end()";
+        std::string fullExpected = "\n(block\n(hscpp_if " + expected + "\n(block\n)\n)\n)";
+
+        CALL(ValidateAst, program, fullExpected);
+    }
+
     TEST_CASE("AstChecker can format correctly.")
     {
         // Sanity check, formatter is very simple and simply trims all lines for easier comparison.
@@ -302,6 +310,23 @@ namespace hscpp { namespace test
             ))";
 
         CALL(ValidateAst, program, expected);
+    }
+
+    TEST_CASE("Parser can parse precedence correctly.")
+    {
+        CALL(ValidateExpression, "a + b * c - d / e", "(- (+ a (* b c)) (/ d e))");
+        CALL(ValidateExpression, "a * b / c", "(/ (* a b) c)");
+        CALL(ValidateExpression, "a + b - c", "(- (+ a b) c)");
+        CALL(ValidateExpression, "(a + b) * c", "(* (+ a b) c)");
+        CALL(ValidateExpression, "(a - b) / c", "(/ (- a b) c)");
+        CALL(ValidateExpression, "c < a && a < b", "(&& (< c a) (< a b))");
+        CALL(ValidateExpression, "c < a && a < b == true", "(&& (< c a) (== (< a b) true))");
+        CALL(ValidateExpression, "a || b && c || d && e", "(|| (|| a (&& b c)) (&& d e))");
+        CALL(ValidateExpression, "a && b || c && d || e", "(|| (|| (&& a b) (&& c d)) e)");
+        CALL(ValidateExpression, "a || b || c || d || e || f && g", "(|| (|| (|| (|| (|| a b) c) d) e) (&& f g))");
+        CALL(ValidateExpression, "a > b < c", "(< (> a b) c)");
+        CALL(ValidateExpression, "a >= b && c <= d || e + f * g == 22 && f != 2",
+                "(|| (&& (>= a b) (<= c d)) (&& (== (+ e (* f g)) 22) (!= f 2)))");
     }
 
 }}
