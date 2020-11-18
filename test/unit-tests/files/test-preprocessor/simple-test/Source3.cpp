@@ -1,0 +1,1 @@
+hscpp_require_preprocessor_def(SOURCE3)
