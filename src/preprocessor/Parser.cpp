@@ -63,6 +63,7 @@ namespace hscpp
             case Token::Type::Identifier:
                 return ParseNameExpr();
             case Token::Type::Minus:
+            case Token::Type::Exclamation:
                 return ParseUnaryExpr();
             default:
                 ThrowError(LangError(LangError::Code::Parser_FailedToParsePrefixExpression,

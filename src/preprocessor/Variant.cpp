@@ -343,12 +343,20 @@ namespace hscpp
         return true;
     }
 
+    static bool Not(const Variant& rhs, Variant& result)
+    {
+        result = Variant(!rhs.IsTruthy());
+        return true;
+    }
+
     bool UnaryOp(const Token& op, const Variant& rhs, Variant& result, LangError& error)
     {
         switch (op.type)
         {
             case Token::Type::Minus:
                 return Negate(op, rhs, result, error);
+            case Token::Type::Exclamation:
+                return Not(rhs, result);
             default:
                 assert(false);
                 return false;

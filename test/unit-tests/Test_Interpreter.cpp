@@ -102,6 +102,8 @@ namespace hscpp { namespace test
         CALL(ValidateExpression, "a", "1", store);
         CALL(ValidateExpression, "-a", "-1", store);
         CALL(ValidateExpression, "--a", "1", store); // negative negative a, decrement operator not supported
+        CALL(ValidateExpression, "!a", "false", store);
+        CALL(ValidateExpression, "!!a", "true", store);
 
         store.SetVar("a", Variant(1.5));
         CALL(ValidateExpression, "a", "1.5", store);
@@ -141,6 +143,7 @@ namespace hscpp { namespace test
         CALL(ValidateExpression, "c <= a && a < b", "true", store);
         CALL(ValidateExpression, "c < a && a < b", "false", store);
         CALL(ValidateExpression, "c < a || a < b", "true", store);
+        CALL(ValidateExpression, "!(c < a || a < b)", "false", store);
     }
 
 }}

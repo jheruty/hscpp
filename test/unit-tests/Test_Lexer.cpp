@@ -12,7 +12,7 @@ namespace hscpp { namespace test
     TEST_CASE("Lexer can lex all tokens.")
     {
         std::string str = R"(
-            ( ) , == != < <= > >= && || + - / * _identifier0 1.0 "str str" #include <map>
+            ( ) , == != < <= > >= && || + - / * ! _identifier0 1.0 "str str" #include <map>
             hscpp_require_source hscpp_require_include_dir /*comment*/ hscpp_require_library
             hscpp_require_library_dir hscpp_require_preprocessor_def //comment
             hscpp_module hscpp_if hscpp_elif hscpp_else hscpp_end
@@ -42,6 +42,7 @@ namespace hscpp { namespace test
         REQUIRE(tokens.at(i++).type == Token::Type::Minus);
         REQUIRE(tokens.at(i++).type == Token::Type::Slash);
         REQUIRE(tokens.at(i++).type == Token::Type::Star);
+        REQUIRE(tokens.at(i++).type == Token::Type::Exclamation);
         REQUIRE(tokens.at(i).type == Token::Type::Identifier);
         REQUIRE(tokens.at(i++).value == "_identifier0");
         REQUIRE(tokens.at(i).type == Token::Type::Number);

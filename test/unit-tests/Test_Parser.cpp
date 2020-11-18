@@ -327,6 +327,9 @@ namespace hscpp { namespace test
         CALL(ValidateExpression, "a > b < c", "(< (> a b) c)");
         CALL(ValidateExpression, "a >= b && c <= d || e + f * g == 22 && f != 2",
                 "(|| (&& (>= a b) (<= c d)) (&& (== (+ e (* f g)) 22) (!= f 2)))");
+        CALL(ValidateExpression, "---a", "(- (- (- a)))");
+        CALL(ValidateExpression, "!!!a", "(! (! (! a)))");
+        CALL(ValidateExpression, "-!!-a", "(- (! (! (- a))))");
     }
 
 }}

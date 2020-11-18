@@ -28,6 +28,7 @@ namespace hscpp
             Minus,              // -
             Slash,              // /
             Star,               // *
+            Exclamation,        // !
 
             Identifier,
             String,

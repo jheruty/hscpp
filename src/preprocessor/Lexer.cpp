@@ -85,6 +85,10 @@ namespace hscpp
                         Advance();
                         PushToken("!=", Token::Type::Inequivalent);
                     }
+                    else
+                    {
+                        PushToken("!", Token::Type::Exclamation);
+                    }
                     break;
                 case '<':
                     if (PeekNext() == '=')
