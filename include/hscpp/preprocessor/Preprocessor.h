@@ -39,11 +39,11 @@ namespace hscpp
         DependencyGraph m_DependencyGraph;
         VarStore m_VarStore;
 
-        std::unordered_set<fs::path, FsPathHasher> m_AdditionalSourceFiles;
-        std::unordered_set<fs::path, FsPathHasher> m_AdditionalIncludeDirectories;
-        std::unordered_set<fs::path, FsPathHasher> m_AdditionalLibraries;
-        std::unordered_set<fs::path, FsPathHasher> m_AdditionalLibraryDirectories;
-        std::unordered_set<std::string> m_AdditionalPreprocessorDefinitions;
+        std::unordered_set<fs::path, FsPathHasher> m_SourceFilePaths;
+        std::unordered_set<fs::path, FsPathHasher> m_IncludeDirectoryPaths;
+        std::unordered_set<fs::path, FsPathHasher> m_LibraryPaths;
+        std::unordered_set<fs::path, FsPathHasher> m_LibraryDirectoryPaths;
+        std::unordered_set<std::string> m_PreprocessorDefinitions;
 
         void Reset(Output& output);
         void CreateOutput(Output& output);
