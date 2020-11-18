@@ -8,9 +8,9 @@ namespace hscpp { namespace test
 
     const static fs::path TEST_FILES_PATH = util::GetHscppTestPath() / "unit-tests" / "files" / "test-preprocessor";
 
-    TEST_CASE("Preprocessor can process a simple C++ file.")
+    TEST_CASE("Preprocessor can process all hscpp_require types.")
     {
-        fs::path assetsPath = TEST_FILES_PATH / "simple-test";
+        fs::path assetsPath = TEST_FILES_PATH / "require-test";
 
         Preprocessor preprocessor;
         preprocessor.SetVar("num", Variant(2.0));
