@@ -44,6 +44,8 @@ namespace hscpp { namespace test
 
             true false
 
+            = & |
+
             ^ // Unknown token.
         )";
 
@@ -120,6 +122,12 @@ namespace hscpp { namespace test
         REQUIRE(tokens.at(i++).value == "true");
         REQUIRE(tokens.at(i).type == Token::Type::Bool);
         REQUIRE(tokens.at(i++).value == "false");
+        REQUIRE(tokens.at(i).type == Token::Type::Equal);
+        REQUIRE(tokens.at(i++).value == "=");
+        REQUIRE(tokens.at(i).type == Token::Type::BitwiseAnd);
+        REQUIRE(tokens.at(i++).value == "&");
+        REQUIRE(tokens.at(i).type == Token::Type::BitwiseOr);
+        REQUIRE(tokens.at(i++).value == "|");
         REQUIRE(tokens.at(i).type == Token::Type::Unknown);
         REQUIRE(tokens.at(i++).value == "^");
     }
