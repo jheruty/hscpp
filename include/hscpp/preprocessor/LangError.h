@@ -46,8 +46,7 @@ namespace hscpp
         LangError(Code errorCode, const std::vector<std::string>& args);
 
         Code ErrorCode() const;
-        bool IsSuccess() const;
-        bool IsFail() const;
+        size_t Line() const;
 
         std::string ToString() const;
         size_t NumArgs() const;

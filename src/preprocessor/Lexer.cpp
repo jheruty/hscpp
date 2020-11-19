@@ -163,6 +163,14 @@ namespace hscpp
                         }
                     }
                     break;
+                case ' ':
+                case '\t':
+                case '\n':
+                case '\v':
+                case '\f':
+                case '\r':
+                    SkipWhitespace();
+                    break;
                 default:
                     if (IsAlpha(Peek()) || Peek() == '_')
                     {
@@ -171,6 +179,10 @@ namespace hscpp
                     else if (IsDigit(Peek()))
                     {
                         LexNumber();
+                    }
+                    else
+                    {
+                        PushToken(std::string(1, Peek()), Token::Type::Unknown);
                     }
             }
 

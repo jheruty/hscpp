@@ -63,14 +63,9 @@ namespace hscpp
         return m_ErrorCode;
     }
 
-    bool LangError::IsSuccess() const
+    size_t LangError::Line() const
     {
-        return m_ErrorCode == Code::Success;
-    }
-
-    bool LangError::IsFail() const
-    {
-        return !IsSuccess();
+        return m_Line;
     }
 
     std::string LangError::ToString() const
