@@ -208,7 +208,7 @@ namespace hscpp
         if (Peek() != endChar)
         {
             ThrowError(LangError(LangError::Code::Lexer_UnterminatedString,
-                    m_Line, m_Column, { std::string(1, endChar), std::string(1, Peek()) }));
+                    m_Line, m_Column, { std::string(1, endChar) }));
         }
 
         Advance();

@@ -3,11 +3,27 @@
 #include "hscpp/Platform.h"
 #include "hscpp/Util.h"
 #include "hscpp/preprocessor/Lexer.h"
+#include "hscpp/preprocessor/LangError.h"
 
 namespace hscpp { namespace test
 {
     const static fs::path CLANG_FILES_PATH = util::GetHscppTestPath() / "unit-tests" / "files" / "clang-source";
     const static fs::path BOOST_FILE_PATH = util::GetHscppTestPath() / "unit-tests" / "files" / "boost-source";
+
+    static void ValidateError(const LangError& result,
+        const LangError::Code& expectedCode, const std::vector<std::string>& expectedArgs)
+    {
+        REQUIRE(result.ErrorCode() == expectedCode);
+        REQUIRE(result.NumArgs() == expectedArgs.size());
+
+        // $1, $2... etc are interpolated arguments. Validate they are fully replaced.
+        REQUIRE(result.ToString().find("$") == std::string::npos);
+
+        for (size_t i = 0; i < result.NumArgs(); ++i)
+        {
+            REQUIRE(result.GetArg(i) == expectedArgs.at(i));
+        }
+    }
 
     TEST_CASE("Lexer can lex all tokens.")
     {
@@ -196,4 +212,23 @@ namespace hscpp { namespace test
         REQUIRE(lexer.Lex(boostFutureStr, tokens));
         REQUIRE(tokens.size() > 1000);
     }
+
+    TEST_CASE("Lexer handles errors correctly.")
+    {
+        std::vector<Token> tokens;
+        Lexer lexer;
+
+        REQUIRE_FALSE(lexer.Lex("hscpp_include(\"unterminated string);", tokens));
+        REQUIRE(lexer.GetLastError().IsFail());
+        REQUIRE(!lexer.GetLastError().IsSuccess());
+        REQUIRE(lexer.GetLastError().ErrorCode() == LangError::Code::Lexer_UnterminatedString);
+
+        CALL(ValidateError, lexer.GetLastError(),
+            LangError::Code::Lexer_UnterminatedString, { "\"" });
+
+        REQUIRE_FALSE(lexer.Lex("#include \"Good.h\"\n#include <bad\nhscpp_module(\"module\")", tokens));
+        CALL(ValidateError, lexer.GetLastError(),
+            LangError::Code::Lexer_UnterminatedString, { ">" });
+    }
+
 }}

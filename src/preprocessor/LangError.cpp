@@ -58,17 +58,22 @@ namespace hscpp
         , m_Args(args)
     {}
 
-    bool LangError::IsSuccess()
+    LangError::Code LangError::ErrorCode() const
+    {
+        return m_ErrorCode;
+    }
+
+    bool LangError::IsSuccess() const
     {
         return m_ErrorCode == Code::Success;
     }
 
-    bool LangError::IsFail()
+    bool LangError::IsFail() const
     {
         return !IsSuccess();
     }
 
-    std::string LangError::ToString()
+    std::string LangError::ToString() const
     {
         auto errorIt = ERRORS.find(m_ErrorCode);
         if (errorIt == ERRORS.end())
@@ -117,7 +122,12 @@ namespace hscpp
         return interpolatedError;
     }
 
-    std::string LangError::GetArg(size_t i)
+    size_t LangError::NumArgs() const
+    {
+        return m_Args.size();
+    }
+
+    std::string LangError::GetArg(size_t i) const
     {
         return m_Args.at(i);
     }
