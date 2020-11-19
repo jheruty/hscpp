@@ -231,7 +231,11 @@ namespace hscpp
             case Token::Type::Slash:
             case Token::Type::Star:
                 return 6;
+            case Token::Type::Unknown:
+                // Unhandled infix operator, always evaluate it to force an error.
+                return (std::numeric_limits<int>::max)();
             default:
+                // Not an infix operator.
                 return -1;
         }
 

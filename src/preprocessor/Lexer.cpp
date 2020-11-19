@@ -85,7 +85,7 @@ namespace hscpp
                     else
                     {
                         Advance();
-                        PushToken("=", Token::Type::Equal);
+                        PushToken("=", Token::Type::Unknown);
                     }
                     break;
                 case '!':
@@ -137,7 +137,7 @@ namespace hscpp
                     else
                     {
                         Advance();
-                        PushToken("&", Token::Type::BitwiseAnd);
+                        PushToken("&", Token::Type::Unknown);
                     }
                     break;
                 case '|':
@@ -150,7 +150,7 @@ namespace hscpp
                     else
                     {
                         Advance();
-                        PushToken("|", Token::Type::BitwiseOr);
+                        PushToken("|", Token::Type::Unknown);
                     }
                     break;
                 case '+':
