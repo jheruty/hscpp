@@ -212,6 +212,39 @@ namespace hscpp { namespace test
         CALL(ValidateAst, program, fullExpected);
     }
 
+    static void ValidateError(const std::string& program,
+        const LangError::Code& expectedCode,
+        size_t expectedLine,
+        const std::vector<std::string>& expectedArgs)
+    {
+        Lexer lexer;
+        Parser parser;
+
+        std::vector<Token> tokens;
+        bool bResult = lexer.Lex(program, tokens);
+        if (!bResult)
+        {
+            FAIL(lexer.GetLastError().ToString());
+        }
+
+        std::unique_ptr<Stmt> pRootStmt;
+        parser.Parse(tokens, pRootStmt);
+
+        LangError lastError = parser.GetLastError();
+
+        REQUIRE(lastError.ErrorCode() == expectedCode);
+        REQUIRE(lastError.Line() == expectedLine);
+        REQUIRE(lastError.NumArgs() == expectedArgs.size());
+
+        // $1, $2... etc are interpolated arguments. Validate they are fully replaced.
+        REQUIRE(lastError.ToString().find("$") == std::string::npos);
+
+        for (size_t i = 0; i < lastError.NumArgs(); ++i)
+        {
+            REQUIRE(lastError.GetArg(i) == expectedArgs.at(i));
+        }
+    }
+
     TEST_CASE("AstChecker can format correctly.")
     {
         // Sanity check, formatter is very simple and simply trims all lines for easier comparison.
@@ -330,6 +363,53 @@ namespace hscpp { namespace test
         CALL(ValidateExpression, "---a", "(- (- (- a)))");
         CALL(ValidateExpression, "!!!a", "(! (! (! a)))");
         CALL(ValidateExpression, "-!!-a", "(- (! (! (- a))))");
+    }
+
+    TEST_CASE("Parser handles errors correctly.")
+    {
+        CALL(ValidateError, "\nhscpp_if(|a) hscpp_end()",
+            LangError::Code::Parser_FailedToParsePrefixExpression, 2, { "|" });
+        CALL(ValidateError, "\n\n\n\nhscpp_if((a + b) & c) hscpp_end()",
+            LangError::Code::Parser_FailedToParseInfixExpression, 5, { "&" });
+        // Skip Parser_FailedToParse number, since that should be caught in the Lexer.
+        CALL(ValidateError, "\n\nhscpp_if(999999989999999998798798918237598123798123501239502391579821378951329715329898512439871532983210521398598125609865019826398062109839801236509812365981623590862130958612309868921356981230509812365089123598012365891230568962569851239865369823568169802069832098662019388902136598102359801235089123659802316598062139580623108937987912310591273598162359816235986213985691236598231659826315986213598612398569128365982136598623159862139506123598123650912380918230981235)\nhscpp_end()",
+            LangError::Code::Parser_NumberIsOutOfRange, 3, { "999999989999999998798798918237598123798123501239502391579821378951329715329898512439871532983210521398598125609865019826398062109839801236509812365981623590862130958612309868921356981230509812365089123598012365891230568962569851239865369823568169802069832098662019388902136598102359801235089123659802316598062139580623108937987912310591273598162359816235986213985691236598231659826315986213598612398569128365982136598623159862139506123598123650912380918230981235" });
+        CALL(ValidateError, "\n\n\n\n\nhscpp_if((a * (b * c + d) hscpp_end()",
+            LangError::Code::Parser_GroupExpressionMissingClosingParen, 6, {});
+        CALL(ValidateError, "\n#include ",
+            LangError::Code::Parser_IncludeMissingPath, 2, {});
+        CALL(ValidateError, "\n\n\n\n\n\nhscpp_if(true)\nhscpp_elif(true)\n\n\n",
+            LangError::Code::Parser_HscppIfStmtMissingHscppEnd, 8, { "hscpp_elif" });
+        CALL(ValidateError, "hscpp_if a + 1) hscpp_end())",
+            LangError::Code::Parser_HscppStmtMissingOpeningParen, 1, { "hscpp_if" });
+        CALL(ValidateError, "hscpp_if(q / 498.5)\n\nhscpp_elif false) hscpp_end())",
+            LangError::Code::Parser_HscppStmtMissingOpeningParen, 3, { "hscpp_elif" });
+        CALL(ValidateError, "\n\nhscpp_require_include_dir \"test\")",
+            LangError::Code::Parser_HscppStmtMissingOpeningParen, 3, { "hscpp_require_include_dir" });
+        CALL(ValidateError, "\n\nhscpp_module \"test\")",
+            LangError::Code::Parser_HscppStmtMissingOpeningParen, 3, { "hscpp_module" });
+        CALL(ValidateError, "\nhscpp_message \"test\")",
+            LangError::Code::Parser_HscppStmtMissingOpeningParen, 2, { "hscpp_message" });
+        CALL(ValidateError, "hscpp_if(a + 1 hscpp_end()",
+            LangError::Code::Parser_HscppStmtMissingClosingParen, 1, { "hscpp_if" });
+        CALL(ValidateError, "hscpp_if(q / 498.5)\n\nhscpp_elif(false hscpp_end())",
+            LangError::Code::Parser_HscppStmtMissingClosingParen, 3, { "hscpp_elif" });
+        // Skipping closing ')' in hscpp_require statement, the error will be a missing comma
+        // in argument list.
+        CALL(ValidateError, "\n\nhscpp_module(\"test\"",
+            LangError::Code::Parser_HscppStmtMissingClosingParen, 3, { "hscpp_module" });
+        CALL(ValidateError, "\nhscpp_message(\"test\"",
+            LangError::Code::Parser_HscppStmtMissingClosingParen, 2, { "hscpp_message" });
+        CALL(ValidateError, "\n\n\n\nhscpp_module(not * a + string)",
+            LangError::Code::Parser_HscppStmtArgumentMustBeStringLiteral, 5, { "hscpp_module" });
+        CALL(ValidateError, "\n\n\nhscpp_message(still_not_a_string)",
+            LangError::Code::Parser_HscppStmtArgumentMustBeStringLiteral, 4, { "hscpp_message" });
+        CALL(ValidateError, "\nhscpp_require_include_dir(\"good/path/to/file\", bad/path/to/file)",
+            LangError::Code::Parser_HscppRequireExpectedStringLiteralInArgumentList, 2, { "hscpp_require_include_dir" });
+        CALL(ValidateError, "\nhscpp_require_preprocessor_def(\"DEF1\", DEF2, 1.0)",
+            LangError::Code::Parser_HscppRequireExpectedStringLiteralOrIdentifierInArgumentList, 2, { "hscpp_require_preprocessor_def" });
+        CALL(ValidateError, "\n\nhscpp_require_source(\"source1\" \"source2\")",
+            LangError::Code::Parser_HscppRequireMissingCommaInArgumentList, 3, { "hscpp_require_source" });
     }
 
 }}
