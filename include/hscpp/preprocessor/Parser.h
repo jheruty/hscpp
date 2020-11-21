@@ -23,6 +23,8 @@ namespace hscpp
 
         LangError m_Error = LangError(LangError::Code::Success);
 
+        Token m_DefaultToken;
+
         void Reset(const std::vector<Token>& tokens);
 
         std::unique_ptr<Expr> ParseExpr(int precedence = 0);
