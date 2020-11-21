@@ -41,5 +41,6 @@ void BaseState::Enumerate(std::function<void(Variant&)> cb)
 
 void BaseState::PrintBaseState()
 {
+    // From BaseStateUtil.
     std::cout << GetBaseStateString() << std::endl;
 }
