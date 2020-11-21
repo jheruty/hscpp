@@ -157,7 +157,7 @@ namespace hscpp { namespace test
 
         void Visit(const NameExpr& nameExpr) override
         {
-            m_Stream << nameExpr.value;
+            m_Stream << nameExpr.name.value;
         }
 
         void Visit(const StringLiteralExpr& stringLiteralExpr) override
@@ -228,21 +228,8 @@ namespace hscpp { namespace test
         }
 
         std::unique_ptr<Stmt> pRootStmt;
-        parser.Parse(tokens, pRootStmt);
-
-        LangError lastError = parser.GetLastError();
-
-        REQUIRE(lastError.ErrorCode() == expectedCode);
-        REQUIRE(lastError.Line() == expectedLine);
-        REQUIRE(lastError.NumArgs() == expectedArgs.size());
-
-        // $1, $2... etc are interpolated arguments. Validate they are fully replaced.
-        REQUIRE(lastError.ToString().find("$") == std::string::npos);
-
-        for (size_t i = 0; i < lastError.NumArgs(); ++i)
-        {
-            REQUIRE(lastError.GetArg(i) == expectedArgs.at(i));
-        }
+        REQUIRE_FALSE(parser.Parse(tokens, pRootStmt));
+        CALL(ValidateError, parser.GetLastError(), expectedCode, expectedLine, expectedArgs);
     }
 
     TEST_CASE("AstChecker can format correctly.")

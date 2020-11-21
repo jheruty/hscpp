@@ -154,9 +154,10 @@ namespace hscpp
     void Interpreter::Visit(const NameExpr& nameExpr)
     {
         Variant val;
-        if (!m_pVarStore->GetVar(nameExpr.value, val))
+        if (!m_pVarStore->GetVar(nameExpr.name.value, val))
         {
-            ThrowError(LangError(LangError::Code::Interpreter_UnableToResolveName, { nameExpr.value }));
+            ThrowError(LangError(LangError::Code::Interpreter_UnableToResolveName,
+                nameExpr.name.line, { nameExpr.name.value }));
         }
 
         m_VariantStack.push(val);

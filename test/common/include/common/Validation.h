@@ -6,6 +6,7 @@
 #include <algorithm>
 
 #include "catch/catch.hpp"
+#include "hscpp/preprocessor/LangError.h"
 
 namespace hscpp { namespace test {
 
@@ -52,5 +53,8 @@ namespace hscpp { namespace test {
         REQUIRE(expected.size() == result.size());
         REQUIRE(std::is_permutation(result.begin(), result.end(), expected.begin()));
     }
+
+    void ValidateError(const LangError& result,
+        const LangError::Code& expectedCode, size_t expectedLine, const std::vector<std::string>& expectedArgs);
 
 }}

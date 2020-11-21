@@ -177,7 +177,7 @@ namespace hscpp
     std::unique_ptr<Expr> Parser::ParseNameExpr()
     {
         auto pNameExpr = std::unique_ptr<NameExpr>(new NameExpr());
-        pNameExpr->value = Peek().value;
+        pNameExpr->name = Peek();
         Consume(); // identifier
 
         return pNameExpr;

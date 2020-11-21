@@ -19,19 +19,7 @@ namespace hscpp { namespace test
         Lexer lexer;
 
         REQUIRE_FALSE(lexer.Lex(program, tokens));
-        LangError lastError = lexer.GetLastError();
-
-        REQUIRE(lastError.ErrorCode() == expectedCode);
-        REQUIRE(lastError.Line() == expectedLine);
-        REQUIRE(lastError.NumArgs() == expectedArgs.size());
-
-        // $1, $2... etc are interpolated arguments. Validate they are fully replaced.
-        REQUIRE(lastError.ToString().find("$") == std::string::npos);
-
-        for (size_t i = 0; i < lastError.NumArgs(); ++i)
-        {
-            REQUIRE(lastError.GetArg(i) == expectedArgs.at(i));
-        }
+        CALL(ValidateError, lexer.GetLastError(), expectedCode, expectedLine, expectedArgs);
     }
 
     TEST_CASE("Lexer can lex all tokens.")

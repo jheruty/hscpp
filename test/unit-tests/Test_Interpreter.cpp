@@ -64,6 +64,35 @@ namespace hscpp { namespace test
         REQUIRE(result.hscppMessages.at(0) == "PASS");
     }
 
+    static void ValidateError(const std::string& program,
+        const VarStore& store,
+        const LangError::Code& expectedCode,
+        size_t expectedLine,
+        const std::vector<std::string>& expectedArgs)
+    {
+        Lexer lexer;
+        Parser parser;
+        Interpreter interpreter;
+
+        std::vector<Token> tokens;
+        bool bResult = lexer.Lex(program, tokens);
+        if (!bResult)
+        {
+            FAIL(lexer.GetLastError().ToString());
+        }
+
+        std::unique_ptr<Stmt> pRootStmt;
+        bResult = parser.Parse(tokens, pRootStmt);
+        if (!bResult)
+        {
+            FAIL(parser.GetLastError().ToString());
+        }
+
+        Interpreter::Result result;
+        REQUIRE_FALSE(interpreter.Evaluate(*pRootStmt, store, result));
+        CALL(ValidateError, interpreter.GetLastError(), expectedCode, expectedLine, expectedArgs);
+    }
+
     TEST_CASE("Interpreter can evaluate a simple if chain.")
     {
         std::string program = R"(
@@ -144,6 +173,36 @@ namespace hscpp { namespace test
         CALL(ValidateExpression, "c < a && a < b", "false", store);
         CALL(ValidateExpression, "c < a || a < b", "true", store);
         CALL(ValidateExpression, "!(c < a || a < b)", "false", store);
+    }
+
+    TEST_CASE("Interpreter handles errors correctly.")
+    {
+        VarStore store;
+        CALL(ValidateError, "\n\n\nhscpp_if(unknown_identifier > 2) hscpp_end()", store,
+            LangError::Code::Interpreter_UnableToResolveName, 4, { "unknown_identifier" });
+
+        store.SetVar("a", Variant(false));
+        store.SetVar("b", Variant("An ordinary string."));
+        CALL(ValidateError, "\nhscpp_if(a == b) hscpp_end()", store,
+            LangError::Code::Variant_OperandsDifferInType, 2, { "==", "Bool", "String" });
+        CALL(ValidateError, "\nhscpp_if(a != b) hscpp_end()", store,
+            LangError::Code::Variant_OperandsDifferInType, 2, { "!=", "Bool", "String" });
+        CALL(ValidateError, "\nhscpp_if(a < b) hscpp_end()", store,
+            LangError::Code::Variant_OperandMustBeNumber, 2, { "<" });
+        CALL(ValidateError, "\nhscpp_if(a > b) hscpp_end()", store,
+            LangError::Code::Variant_OperandMustBeNumber, 2, { ">" });
+        CALL(ValidateError, "\nhscpp_if(a <= b) hscpp_end()", store,
+            LangError::Code::Variant_OperandMustBeNumber, 2, { "<=" });
+        CALL(ValidateError, "\nhscpp_if(a >= b) hscpp_end()", store,
+            LangError::Code::Variant_OperandMustBeNumber, 2, { ">=" });
+        CALL(ValidateError, "\nhscpp_if(a + b) hscpp_end()", store,
+            LangError::Code::Variant_OperandMustBeNumber, 2, { "+" });
+        CALL(ValidateError, "\nhscpp_if(a - b) hscpp_end()", store,
+            LangError::Code::Variant_OperandMustBeNumber, 2, { "-" });
+        CALL(ValidateError, "\nhscpp_if(a * b) hscpp_end()", store,
+            LangError::Code::Variant_OperandMustBeNumber, 2, { "*" });
+        CALL(ValidateError, "\nhscpp_if(a / b) hscpp_end()", store,
+            LangError::Code::Variant_OperandMustBeNumber, 2, { "/" });
     }
 
 }}
