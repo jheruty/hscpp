@@ -1,8 +1,10 @@
 #pragma once
 
+#include <vector>
+
 #include "Printer.h"
 
 struct SimpleDemoData
 {
-    Printer* pInstances[2];
+    std::vector<Printer*> printers = { nullptr, nullptr };
 };
