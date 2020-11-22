@@ -184,7 +184,7 @@ namespace hscpp { namespace test
         }
     }
 
-    TEST_CASE("Preprocessor can handle dependent compilation with infinite recursion.")
+    TEST_CASE("Preprocessor can handle infinite recursion.")
     {
         // These files all add each other as hscpp_require_sources, validate that this does not
         // cause an infinite loop.

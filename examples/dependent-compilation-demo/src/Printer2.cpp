@@ -6,6 +6,7 @@
 
 Printer2::Printer2()
 {
+    // Saving this file will recompile both the "math" and "string" modules.
     std::cout << "Creating Printer2" << std::endl;
     std::cout << "MathUtil.h Add(1, 2): " << Add(1, 2) << std::endl;
     std::cout << "MathUtil.h Subtract(1, 2): " << Subtract(1, 2) << std::endl;
