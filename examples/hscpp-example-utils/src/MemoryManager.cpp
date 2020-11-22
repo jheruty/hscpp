@@ -55,7 +55,7 @@ hscpp::AllocationInfo MemoryManager::Hscpp_AllocateSwap(uint64_t previousId, uin
     return hscpp::AllocationInfo();
 }
 
-uint64_t MemoryManager::Hscpp_Free(uint8_t* pMemory)
+uint64_t MemoryManager::Hscpp_FreeSwap(uint8_t* pMemory)
 {
     // This will be called when an object instance is being swapped by hscpp. That is, pMemory will
     // contain a pointer to old object's memory to delete.

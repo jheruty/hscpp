@@ -23,8 +23,8 @@ namespace hscpp
         // to replace an old implementation.
         virtual AllocationInfo Hscpp_AllocateSwap(uint64_t previousId, uint64_t size) = 0;
 
-        // Called when an object is freed, and should return the object's id.
-        virtual uint64_t Hscpp_Free(uint8_t* pMemory) = 0;
+        // Called when an object is freed during a runtime swap, and should return the old object's id.
+        virtual uint64_t Hscpp_FreeSwap(uint8_t* pMemory) = 0;
     };
 
     template <typename T>

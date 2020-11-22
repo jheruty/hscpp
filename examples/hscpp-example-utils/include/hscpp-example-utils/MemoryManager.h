@@ -111,7 +111,7 @@ public:
     //============================================================================
     hscpp::AllocationInfo Hscpp_Allocate(uint64_t size) override;
     hscpp::AllocationInfo Hscpp_AllocateSwap(uint64_t previousId, uint64_t size) override;
-    uint64_t Hscpp_Free(uint8_t* pMemory) override;
+    uint64_t Hscpp_FreeSwap(uint8_t* pMemory) override;
 
 private:
     size_t TakeFirstFreeBlock(uint64_t size);
