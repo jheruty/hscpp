@@ -2,6 +2,7 @@
 
 #include <stdint.h>
 
+// Interface is needed here to avoid circular dependency between Ref and MemoryManager.
 class IMemoryManager
 {
 public:

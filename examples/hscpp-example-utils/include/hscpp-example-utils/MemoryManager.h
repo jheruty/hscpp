@@ -10,6 +10,7 @@
 #include "hscpp-example-utils/Ref.h"
 #include "IMemoryManager.h"
 
+// Allow the MemoryManager to return a Ref to itself, with a special id flag.
 const static uint64_t MEMORY_MANAGER_ID = (std::numeric_limits<uint64_t>::max)() - 1;
 
 // Memory allocator that is meant to map ids to memory addresses. Kept simple to better demonstrate
@@ -20,7 +21,6 @@ private:
     struct Block
     {
         bool bFree = false;
-        bool bExternallyOwned = false;
         uint64_t capacity = 0;
         uint8_t* pMemory = nullptr;
     };
@@ -44,6 +44,7 @@ public:
     {
         if (m_pHscppAllocationResolver == nullptr)
         {
+            // Hscpp is disabled, so we can allocate with 'new'.
             size_t size = sizeof(typename std::aligned_storage<sizeof(T)>::type);
             size_t iBlock = TakeFirstFreeBlock(size);
 
@@ -88,9 +89,9 @@ public:
     template <typename T>
     Ref<T> Place(T* pMemory)
     {
+        // Add memory to MemoryManager that has been allocated externally.
         Block block;
         block.bFree = false;
-        block.bExternallyOwned = true;
         block.pMemory = reinterpret_cast<uint8_t*>(pMemory);
 
         size_t iBlock = m_Blocks.size();
