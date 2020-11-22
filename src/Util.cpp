@@ -82,6 +82,16 @@ namespace hscpp { namespace util
         return fs::path(HSCPP_ROOT_PATH) / "test";
     }
 
+    fs::path GetHscppBuildPath()
+    {
+        return fs::path(HSCPP_BUILD_PATH);
+    }
+
+    fs::path GetHscppBuildExamplesPath()
+    {
+        return fs::path(HSCPP_BUILD_PATH) / "examples";
+    }
+
     void SortFileEvents(const std::vector<IFileWatcher::Event>& events,
                         std::vector<fs::path>& canonicalModifiedFilePaths,
                         std::vector<fs::path>& canonicalRemovedFilePaths)

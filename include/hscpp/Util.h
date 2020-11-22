@@ -22,6 +22,8 @@ namespace hscpp { namespace util
     fs::path GetHscppSourcePath();
     fs::path GetHscppExamplesPath();
     fs::path GetHscppTestPath();
+    fs::path GetHscppBuildPath();
+    fs::path GetHscppBuildExamplesPath();
 
     void SortFileEvents(const std::vector<IFileWatcher::Event>& events,
                         std::vector<fs::path>& canonicalModifiedFilePaths,
