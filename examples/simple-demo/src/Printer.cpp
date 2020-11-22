@@ -11,7 +11,7 @@ Printer::Printer()
         switch (info.Phase())
         {
         case hscpp::SwapPhase::BeforeSwap:
-            // This object is about to be deleted, serialize out its state. Any type can be
+            // This object is about to be deleted, so serialize out its state. Any type can be
             // serialized so long as it has a default constructor and is copyable.
             info.Serialize("Name", m_Name);
             info.Serialize("Index", m_Index);
@@ -21,22 +21,21 @@ Printer::Printer()
             info.Unserialize("Name", m_Name);
             info.Unserialize("Index", m_Index);
 
-            // This new object is in a new module, but it still has access to global data
+            // This new object is in a new dynamic library, but it still has access to global data
             // in GlobalUserData.
             SimpleDemoData* pDemoData = hscpp::GlobalUserData::GetAs<SimpleDemoData>();
 
-            // The instances currently in this array have been deleted. Replace the instance
-            // with the newly constructed object, so that the Update loop in main keeps working.
-            // The swapping process happens entirely within the hscpp::Hotswapper's Update
-            // method, so this is safe to do.
-            pDemoData->pInstances[m_Index] = this;
+            // After recompiling Printer.cpp, old instances of the Printer class will have been deleted,
+            // so the entries in the global printers array point to invalid data. Replace these instances
+            // with the newly constructed Printers.
+            pDemoData->printers.at(m_Index) = this;
             break;
         }
     };
 
     // Set the lambda callback. When HSCPP_DISABLE is defined, this macro evaluates to nothing. To avoid
     // creating a lambda in a shipped build, the lambda can be placed directly within the macro. However,
-    // this will make it more difficult to debug, as breakpoints can't be placed in a macro's arguments.
+    // this will make it more difficult to debug, as breakpoints can't be placed within a macro.
     Hscpp_SetSwapHandler(cb);
 }
 

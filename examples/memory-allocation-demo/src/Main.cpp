@@ -24,11 +24,12 @@ int main()
     swapper.AddIncludeDirectory(includePath);
 
     // After recompiling, the newly compiled module is capable of constructing new versions of of an
-    // object. However, only hscpp knows about this new constructor. The MemoryManager is given a
-    // reference to the hscpp::HotSwapper, so that it can use its Allocate<T>() method and choose the
-    // most up-to-date constructor.
-    hscpp::AllocationResolver* pAllocationResolver = swapper.GetAllocationResolver();
-    Ref<MemoryManager> memoryManager = MemoryManager::Create(pAllocationResolver);
+    // object. However, only hscpp knows about this new constructor. For this reason, all allocations
+    // should go through hscpp, such that the correct constructor is called.
+    //
+    // The Hotswapper's GetAllocationResolver method returns an hscpp::AllocationResolver, which can
+    // be used to allocate memory in a way that will work with hscpp.
+    Ref<MemoryManager> memoryManager = MemoryManager::Create(swapper.GetAllocationResolver());
 
     // You can optionally set a memory allocator. If provided, hscpp will call Allocate, AllocateSwap,
     // and Free, as per the hscpp::IAllocator interface. If no allocator is provided, hscpp uses
@@ -41,7 +42,8 @@ int main()
     // object's memory location. This allows an object to change location in memory without references
     // to the object breaking.
     //
-    // For Refs to work, a custom allocator must be provided, so that hscpp knows the object's id.
+    // For Refs to work, a custom allocator must be provided, which tracks object ids. See the
+    // MemoryManager class for details.
     Ref<TrackedPrinter> trackedPrinter = memoryManager->Allocate<TrackedPrinter>();
 
     int trackedCounter = 0;

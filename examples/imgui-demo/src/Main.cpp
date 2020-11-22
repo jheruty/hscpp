@@ -1,7 +1,3 @@
-// dear imgui: standalone example application for GLFW + OpenGL 3, using programmable pipeline
-// If you are new to dear imgui, see examples/README.txt and documentation at the top of imgui.cpp.
-// (GLFW is a cross-platform general purpose library for handling windows, inputs, OpenGL/Vulkan/Metal graphics context creation, etc.)
-
 #include <stdio.h>
 #include <fstream>
 
@@ -19,7 +15,9 @@
 #include "imgui-demo/Widget.h"
 #include "imgui-demo/Globals.h"
 
-const static hscpp::fs::path DEMO_PATH = hscpp::util::GetHscppExamplesPath() / "imgui-demo";
+const static hscpp::fs::path DEMO_CODE_PATH = hscpp::util::GetHscppExamplesPath() / "imgui-demo";
+const static hscpp::fs::path DEMO_BUILD_PATH = hscpp::util::GetHscppBuildExamplesPath() / "imgui-demo";
+const static hscpp::fs::path HSCPP_EXAMPLE_UTILS_BUILD_PATH = hscpp::util::GetHscppBuildExamplesPath() / "hscpp-example-utils";
 
 static bool SetupGlfw(GLFWwindow*& pWindow)
 {
@@ -80,30 +78,23 @@ int main(int, char**)
 {
     hscpp::Hotswapper swapper;
 
-    auto srcPath = DEMO_PATH / "src";
-    auto includePath = DEMO_PATH / "include";
+    auto srcPath = DEMO_CODE_PATH / "src";
+    auto includePath = DEMO_CODE_PATH / "include";
     auto exampleUtilsIncludePath = hscpp::util::GetHscppExamplesPath() / "hscpp-example-utils" / "include";
-    auto imguiIncludePath = DEMO_PATH  / "lib" / "imgui";
+    auto imguiIncludePath = DEMO_CODE_PATH / "lib" / "imgui";
+
+#ifdef _WIN32
+    auto imguiLibraryPath = DEMO_BUILD_PATH / "lib" / "imgui" / "imgui.lib";
+    auto exampleUtilsLibraryPath = HSCPP_EXAMPLE_UTILS_BUILD_PATH / "hscpp-example-utils.lib";
+#else
+    auto imguiLibraryPath = DEMO_BUILD_PATH / "lib" / "imgui" / "libimgui.a";
+    auto exampleUtilsLibraryPath = HSCPP_EXAMPLE_UTILS_BUILD_PATH / "libhscpp-example-utils.a";
+#endif
 
     swapper.AddSourceDirectory(srcPath);
     swapper.AddIncludeDirectory(includePath);
     swapper.AddIncludeDirectory(exampleUtilsIncludePath);
     swapper.AddIncludeDirectory(imguiIncludePath);
-
-//#ifdef _DEBUG
-//    std::string configuration = "Debug";
-//#else
-//    std::string configuration = "Release";
-//#endif
-
-    // TODO fix configuration
-
-    // We can link additional libraries.
-    auto imguiLibraryPath = hscpp::fs::current_path().parent_path()
-        / "lib" / "imgui" / "imgui.lib";
-    auto exampleUtilsLibraryPath = hscpp::fs::current_path().parent_path()
-        / "hscpp-example-utils" / "hscpp-example-utils.lib";
-    
     swapper.AddLibrary(imguiLibraryPath);
     swapper.AddLibrary(exampleUtilsLibraryPath);
 
@@ -139,8 +130,6 @@ int main(int, char**)
     // Statics and globals are per-module, hence we must make use of ModuleSharedState. To avoid
     // making the whole codebase dependent on hscpp, we can wrap our globals into a Globals class.
     Globals::Init(memoryManager, imguiContext);
-
-    // Globals is now shared as s_pGlobalUserData in ModuleSharedState.
     swapper.SetGlobalUserData(&Globals::Instance());
 
     Ref<Widget> widget = memoryManager->Allocate<Widget>();

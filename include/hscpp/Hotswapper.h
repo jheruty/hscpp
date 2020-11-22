@@ -17,6 +17,8 @@
 #include "hscpp/FsPathHasher.h"
 #include "hscpp/Config.h"
 #include "hscpp/preprocessor/IPreprocessor.h"
+#include "hscpp/Util.h"
+#include "hscpp/Log.h"
 
 namespace hscpp
 {
@@ -170,6 +172,8 @@ namespace hscpp
         void UpdateDependencyGraph(const std::vector<fs::path>& canonicalModifiedFilePaths,
                 const std::vector<fs::path>& canonicalRemovedFilePaths);
         void RefreshDependencyGraph();
+
+        template <typename T>
         void AppendDirectoryFiles(const std::map<int, fs::path>& directoryPathsByHandle,
             std::unordered_set<fs::path, FsPathHasher>& sourceFilePaths);
 
@@ -185,6 +189,36 @@ namespace hscpp
         template <typename T>
         std::vector<T> AsVector(std::map<int, T>& map);
     };
+
+    template <typename TDirectoryIterator>
+    void Hotswapper::AppendDirectoryFiles(const std::map<int, fs::path>& directoryPathsByHandle,
+        std::unordered_set<fs::path, FsPathHasher>& sourceFilePaths)
+    {
+        for (const auto& handle__directoryPath : directoryPathsByHandle)
+        {
+            std::error_code error;
+            auto directoryIterator = TDirectoryIterator(handle__directoryPath.second, error);
+
+            if (error.value() != HSCPP_ERROR_SUCCESS)
+            {
+                log::Error() << HSCPP_LOG_PREFIX << "Unable to iterate directory "
+                             << handle__directoryPath.second << log::End(".");
+                return;
+            }
+
+            for (const auto& filePath : fs::directory_iterator(handle__directoryPath.second))
+            {
+                if (util::IsSourceFile(filePath) || util::IsHeaderFile(filePath))
+                {
+                    fs::path canonicalFilePath = fs::canonical(filePath, error);
+                    if (error.value() == HSCPP_ERROR_SUCCESS)
+                    {
+                        sourceFilePaths.insert(filePath);
+                    }
+                }
+            }
+        }
+    }
 
     template <typename T>
     int Hotswapper::Add(const T& value, int& handle, std::map<int, T>& map)

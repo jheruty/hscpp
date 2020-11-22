@@ -6,8 +6,9 @@
 class UntrackedPrinter : public IUpdatable
 {
     // No HSCCP_TRACK by default. This class can still be allocated using
-    // swapper.Allocate<UntrackedPrinter>(), but changes to the class will not be reflected during
-    // runtime.
+    // swapper.GetAllocationResolver()->Allocate(), but changes to the class will not be
+    // reflected at runtime.
+    //
     // HSCPP_TRACK(UntrackedPrinter, "UntrackedPrinter");
 
 public:

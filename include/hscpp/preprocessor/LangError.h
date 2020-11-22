@@ -16,7 +16,7 @@ namespace hscpp
         {
             Success,                                                                //
                                                                                     //
-            Lexer_UnterminatedString,                                               // (expected, saw)
+            Lexer_UnterminatedString,                                               // (expected)
                                                                                     //
             Parser_FailedToParsePrefixExpression,                                   // (op)
             Parser_FailedToParseInfixExpression,                                    // (op)
@@ -45,11 +45,12 @@ namespace hscpp
         LangError(Code errorCode, size_t line, const std::vector<std::string>& args);
         LangError(Code errorCode, const std::vector<std::string>& args);
 
-        bool IsSuccess();
-        bool IsFail();
+        Code ErrorCode() const;
+        size_t Line() const;
 
-        std::string ToString();
-        std::string GetArg(size_t i);
+        std::string ToString() const;
+        size_t NumArgs() const;
+        std::string GetArg(size_t i) const;
 
     private:
         Code m_ErrorCode;

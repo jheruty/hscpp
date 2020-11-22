@@ -103,7 +103,7 @@ namespace hscpp
     {
         void Accept(IAstVisitor& visitor) const override;
 
-        std::string value;
+        Token name;
     };
 
     struct StringLiteralExpr : public Expr

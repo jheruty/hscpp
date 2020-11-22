@@ -1,0 +1,1 @@
+hscpp_require_source("File-b.cpp", "File-c.cpp")

@@ -8,6 +8,7 @@ add_executable(unit-tests
     Test_Interpreter.cpp
     Test_Lexer.cpp
     Test_Parser.cpp
+    Test_Preprocessor.cpp
     Test_VarStore.cpp
 )
 

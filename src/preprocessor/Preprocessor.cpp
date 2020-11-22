@@ -17,6 +17,12 @@ namespace hscpp
         std::unordered_set<fs::path, FsPathHasher> uniqueFilePaths(
                 canonicalFilePaths.begin(), canonicalFilePaths.end());
 
+        // Resolve dependency graph first. This should not be done recursively, as doing so may end
+        // up compiling unnecessary dependents.
+        AddDependentFilePaths(uniqueFilePaths);
+
+        m_SourceFilePaths = uniqueFilePaths;
+
         std::unordered_set<fs::path, FsPathHasher> processedFilePaths;
 
         while (!uniqueFilePaths.empty())
@@ -29,7 +35,7 @@ namespace hscpp
             processedFilePaths.insert(uniqueFilePaths.begin(), uniqueFilePaths.end());
             uniqueFilePaths.clear();
 
-            for (const auto& filePath : m_AdditionalSourceFiles)
+            for (const auto& filePath : m_SourceFilePaths)
             {
                 if (processedFilePaths.find(filePath) == processedFilePaths.end())
                 {
@@ -104,25 +110,37 @@ namespace hscpp
     {
         output = Output();
 
-        m_AdditionalSourceFiles.clear();
-        m_AdditionalIncludeDirectories.clear();
-        m_AdditionalLibraries.clear();
-        m_AdditionalLibraryDirectories.clear();
-        m_AdditionalPreprocessorDefinitions.clear();
+        m_SourceFilePaths.clear();
+        m_IncludeDirectoryPaths.clear();
+        m_LibraryPaths.clear();
+        m_LibraryDirectoryPaths.clear();
+        m_PreprocessorDefinitions.clear();
     }
 
     void Preprocessor::CreateOutput(Output& output)
     {
         output.sourceFiles = std::vector<fs::path>(
-                m_AdditionalSourceFiles.begin(), m_AdditionalSourceFiles.end());
+                m_SourceFilePaths.begin(), m_SourceFilePaths.end());
         output.includeDirectories = std::vector<fs::path>(
-                m_AdditionalIncludeDirectories.begin(), m_AdditionalIncludeDirectories.end());
+                m_IncludeDirectoryPaths.begin(), m_IncludeDirectoryPaths.end());
         output.libraries = std::vector<fs::path>(
-                m_AdditionalLibraries.begin(), m_AdditionalLibraries.end());
+                m_LibraryPaths.begin(), m_LibraryPaths.end());
         output.libraryDirectories = std::vector<fs::path>(
-                m_AdditionalLibraryDirectories.begin(), m_AdditionalLibraryDirectories.end());
+                m_LibraryDirectoryPaths.begin(), m_LibraryDirectoryPaths.end());
         output.preprocessorDefinitions = std::vector<std::string>(
-                m_AdditionalPreprocessorDefinitions.begin(), m_AdditionalPreprocessorDefinitions.end());
+                m_PreprocessorDefinitions.begin(), m_PreprocessorDefinitions.end());
+    }
+
+    void Preprocessor::AddDependentFilePaths(std::unordered_set<fs::path, FsPathHasher>& filePaths)
+    {
+        std::unordered_set<fs::path, FsPathHasher> dependentPaths;
+        for (const auto& filePath : filePaths)
+        {
+            std::vector<fs::path> dependentFilePaths = m_DependencyGraph.ResolveGraph(filePath);
+            dependentPaths.insert(dependentFilePaths.begin(), dependentFilePaths.end());
+        }
+
+        filePaths.insert(dependentPaths.begin(), dependentPaths.end());
     }
 
     bool Preprocessor::Preprocess(const std::unordered_set<fs::path, FsPathHasher>& filePaths)
@@ -150,13 +168,6 @@ namespace hscpp
             {
                 log::Build() << HSCPP_LOG_PREFIX << hscppMessage << log::End();
             }
-
-            std::vector<fs::path> dependentFilePaths = m_DependencyGraph.ResolveGraph(filePath);
-            dependentFilePaths.erase(std::remove_if(dependentFilePaths.begin(), dependentFilePaths.end(),
-                    [&filePath](const fs::path& dependentFilePath){ return filePath == dependentFilePath; })
-                            , dependentFilePaths.end());
-
-            m_AdditionalSourceFiles.insert(dependentFilePaths.begin(), dependentFilePaths.end());
         }
 
         return true;
@@ -237,16 +248,16 @@ namespace hscpp
                     switch (hscppRequire.type)
                     {
                         case HscppRequire::Type::Source:
-                            m_AdditionalSourceFiles.insert(canonicalPath);
+                            m_SourceFilePaths.insert(canonicalPath);
                             break;
                         case HscppRequire::Type::IncludeDir:
-                            m_AdditionalIncludeDirectories.insert(canonicalPath);
+                            m_IncludeDirectoryPaths.insert(canonicalPath);
                             break;
                         case HscppRequire::Type::Library:
-                            m_AdditionalLibraries.insert(canonicalPath);
+                            m_LibraryPaths.insert(canonicalPath);
                             break;
                         case HscppRequire::Type::LibraryDir:
-                            m_AdditionalLibraryDirectories.insert(canonicalPath);
+                            m_LibraryDirectoryPaths.insert(canonicalPath);
                             break;
                         default:
                             assert(false);
@@ -255,7 +266,7 @@ namespace hscpp
                 }
                     break;
                 case HscppRequire::Type::PreprocessorDef:
-                    m_AdditionalPreprocessorDefinitions.insert(value);
+                    m_PreprocessorDefinitions.insert(value);
                     break;
                 default:
                     assert(false);

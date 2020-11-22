@@ -65,6 +65,82 @@ namespace hscpp { namespace test {
         });
     }
 
+    TEST_CASE("DependencyGraph can handle tall graph.")
+    {
+        DependencyGraph graph;
+
+        fs::path childCpp = "child.cpp";
+        fs::path parentCpp = "parent.cpp";
+        fs::path grandparentCpp = "grandparent.cpp";
+        fs::path greatGrandparentCpp = "great-grandparent.cpp";
+
+        fs::path parentH = "parent.h";
+        fs::path grandparentH = "grandparent.h";
+        fs::path greatGrandparentH = "great-grandparent.h";
+
+        graph.SetLinkedModules(parentCpp, { "parent" });
+        graph.SetLinkedModules(parentH, { "parent" });
+
+        graph.SetLinkedModules(grandparentCpp, { "grandparent" });
+        graph.SetLinkedModules(grandparentH, { "grandparent" });
+
+        graph.SetLinkedModules(greatGrandparentCpp, { "great-grandparent" });
+        graph.SetLinkedModules(greatGrandparentH, { "great-grandparent" });
+
+        graph.SetFileDependencies(childCpp, { parentH });
+        graph.SetFileDependencies(parentCpp, { grandparentH });
+        graph.SetFileDependencies(grandparentCpp, { greatGrandparentH });
+
+        std::vector<fs::path> expected = {
+            childCpp,
+            parentCpp,
+            grandparentCpp,
+            greatGrandparentCpp,
+        };
+
+        CALL(ValidateUnorderedVector, graph.ResolveGraph(childCpp), expected);
+        CALL(ValidateUnorderedVector, graph.ResolveGraph(parentCpp), expected);
+        CALL(ValidateUnorderedVector, graph.ResolveGraph(grandparentCpp), expected);
+        CALL(ValidateUnorderedVector, graph.ResolveGraph(greatGrandparentCpp), expected);
+
+        // Add an additional branch.
+        fs::path branchCpp = "branch.cpp";
+        fs::path branchH = "branch.h";
+
+        graph.SetLinkedModules(branchCpp, { "branch" });
+        graph.SetLinkedModules(branchH, { "branch" });
+
+        graph.SetFileDependencies(grandparentCpp, { greatGrandparentH, branchH });
+
+        expected = {
+            childCpp,
+            parentCpp,
+            grandparentCpp,
+            greatGrandparentCpp,
+            branchCpp,
+        };
+
+        CALL(ValidateUnorderedVector, graph.ResolveGraph(childCpp), expected);
+        CALL(ValidateUnorderedVector, graph.ResolveGraph(parentCpp), expected);
+        CALL(ValidateUnorderedVector, graph.ResolveGraph(grandparentCpp), expected);
+        CALL(ValidateUnorderedVector, graph.ResolveGraph(greatGrandparentCpp), expected);
+        CALL(ValidateUnorderedVector, graph.ResolveGraph(branchCpp), expected);
+
+        // Remove parent, splitting graph.
+        graph.RemoveFile(parentCpp);
+
+        CALL(ValidateUnorderedVector, graph.ResolveGraph(childCpp), { childCpp });
+
+        expected = {
+            grandparentCpp,
+            greatGrandparentCpp,
+            branchCpp,
+        };
+
+        CALL(ValidateUnorderedVector, graph.ResolveGraph(greatGrandparentCpp), expected);
+        CALL(ValidateUnorderedVector, graph.ResolveGraph(branchCpp), expected);
+    }
+
     TEST_CASE("DependencyGraph can handle circular dependencies.")
     {
         DependencyGraph graph;

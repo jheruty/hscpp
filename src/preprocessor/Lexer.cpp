@@ -64,36 +64,53 @@ namespace hscpp
             switch (Peek())
             {
                 case '(':
+                    Advance();
                     PushToken("(", Token::Type::LeftParen);
                     break;
                 case ')':
+                    Advance();
                     PushToken(")", Token::Type::RightParen);
                     break;
                 case ',':
+                    Advance();
                     PushToken(",", Token::Type::Comma);
                     break;
                 case '=':
                     if (PeekNext() == '=')
                     {
                         Advance();
+                        Advance();
                         PushToken("==", Token::Type::Equivalent);
+                    }
+                    else
+                    {
+                        Advance();
+                        PushToken("=", Token::Type::Unknown);
                     }
                     break;
                 case '!':
                     if (PeekNext() == '=')
                     {
                         Advance();
+                        Advance();
                         PushToken("!=", Token::Type::Inequivalent);
+                    }
+                    else
+                    {
+                        Advance();
+                        PushToken("!", Token::Type::Exclamation);
                     }
                     break;
                 case '<':
                     if (PeekNext() == '=')
                     {
                         Advance();
+                        Advance();
                         PushToken("<=", Token::Type::LessThanOrEqual);
                     }
                     else
                     {
+                        Advance();
                         PushToken("<", Token::Type::LessThan);
                     }
                     break;
@@ -101,10 +118,12 @@ namespace hscpp
                     if (PeekNext() == '=')
                     {
                         Advance();
+                        Advance();
                         PushToken(">=", Token::Type::GreaterThanOrEqual);
                     }
                     else
                     {
+                        Advance();
                         PushToken(">", Token::Type::GreaterThan);
                     }
                     break;
@@ -112,20 +131,34 @@ namespace hscpp
                     if (PeekNext() == '&')
                     {
                         Advance();
+                        Advance();
                         PushToken("&&", Token::Type::LogicalAnd);
+                    }
+                    else
+                    {
+                        Advance();
+                        PushToken("&", Token::Type::Unknown);
                     }
                     break;
                 case '|':
                     if (PeekNext() == '|')
                     {
                         Advance();
+                        Advance();
                         PushToken("||", Token::Type::LogicalOr);
+                    }
+                    else
+                    {
+                        Advance();
+                        PushToken("|", Token::Type::Unknown);
                     }
                     break;
                 case '+':
+                    Advance();
                     PushToken("+", Token::Type::Plus);
                     break;
                 case '-':
+                    Advance();
                     PushToken("-", Token::Type::Minus);
                     break;
                 case '/':
@@ -135,10 +168,12 @@ namespace hscpp
                     }
                     else
                     {
+                        Advance();
                         PushToken("/", Token::Type::Slash);
                     }
                     break;
                 case '*':
+                    Advance();
                     PushToken("*", Token::Type::Star);
                     break;
                 case '"':
@@ -159,6 +194,14 @@ namespace hscpp
                         }
                     }
                     break;
+                case ' ':
+                case '\t':
+                case '\n':
+                case '\v':
+                case '\f':
+                case '\r':
+                    SkipWhitespace();
+                    break;
                 default:
                     if (IsAlpha(Peek()) || Peek() == '_')
                     {
@@ -168,12 +211,23 @@ namespace hscpp
                     {
                         LexNumber();
                     }
+                    else
+                    {
+                        PushToken(std::string(1, Peek()), Token::Type::Unknown);
+                        Advance();
+                    }
             }
 
             if (m_iChar == iStartChar)
             {
+                // The above switch statement should cause the lexer to advance for any input.
+                // Just in case, check if a manual advancement is needed, to avoid an infinite
+                // loop due to a Lexer bug.
+                log::Warning() << HSCPP_LOG_PREFIX
+                    << "Lexer failed to advance. Forcing advancement." << log::End();
                 Advance();
             }
+
         }
 
         return true;
@@ -204,7 +258,7 @@ namespace hscpp
         if (Peek() != endChar)
         {
             ThrowError(LangError(LangError::Code::Lexer_UnterminatedString,
-                    m_Line, m_Column, { std::string(1, endChar), std::string(1, Peek()) }));
+                    m_Line, m_Column, { std::string(1, endChar) }));
         }
 
         Advance();

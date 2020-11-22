@@ -143,7 +143,7 @@ namespace hscpp
 
     Hotswapper::UpdateResult Hotswapper::Update()
     {
-        if (m_bDependencyGraphNeedsRefresh && IsFeatureEnabled(Feature::DependentCompilation))
+        if (m_bDependencyGraphNeedsRefresh)
         {
             RefreshDependencyGraph();
         }
@@ -625,8 +625,15 @@ namespace hscpp
             // Header and source directories may overlap, so collect unique files using a set.
             std::unordered_set<fs::path, FsPathHasher> uniqueSourceFilePaths;
 
-            AppendDirectoryFiles(m_SourceDirectoryPathsByHandle, uniqueSourceFilePaths);
-            AppendDirectoryFiles(m_IncludeDirectoryPathsByHandle, uniqueSourceFilePaths);
+            // Source files are added non-recursively, since files that are not directly in the source
+            // directory folder should not be compiled.
+            // Include directories are added recursively. It is common for header files in <library_name>
+            // to be structured </include/<library_name>, but to only add /include to the header search
+            // path.
+            AppendDirectoryFiles<fs::directory_iterator>(
+                m_SourceDirectoryPathsByHandle, uniqueSourceFilePaths);
+            AppendDirectoryFiles<fs::recursive_directory_iterator>(
+                m_IncludeDirectoryPathsByHandle, uniqueSourceFilePaths);
 
             m_pPreprocessor->UpdateDependencyGraph(
                     std::vector<fs::path>(uniqueSourceFilePaths.begin(), uniqueSourceFilePaths.end()),
@@ -634,35 +641,6 @@ namespace hscpp
         }
 
         m_bDependencyGraphNeedsRefresh = false;
-    }
-
-    void Hotswapper::AppendDirectoryFiles(const std::map<int, fs::path>& directoryPathsByHandle,
-        std::unordered_set<fs::path, FsPathHasher>& sourceFilePaths)
-    {
-        for (const auto& handle__directoryPath : directoryPathsByHandle)
-        {
-            std::error_code error;
-            auto directoryIterator = fs::directory_iterator(handle__directoryPath.second, error);
-
-            if (error.value() != HSCPP_ERROR_SUCCESS)
-            {
-                log::Error() << HSCPP_LOG_PREFIX << "Unable to iterate directory "
-                    << handle__directoryPath.second << log::End(".");
-                return;
-            }
-
-            for (const auto& filePath : fs::directory_iterator(handle__directoryPath.second))
-            {
-                if (util::IsSourceFile(filePath) || util::IsHeaderFile(filePath))
-                {
-                    fs::path canonicalFilePath = fs::canonical(filePath, error);
-                    if (error.value() == HSCPP_ERROR_SUCCESS)
-                    {
-                        sourceFilePaths.insert(filePath);
-                    }
-                }
-            }
-        }
     }
 
 }

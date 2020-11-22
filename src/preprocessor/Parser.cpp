@@ -8,8 +8,6 @@
 namespace hscpp
 {
 
-    const static Token UNKNOWN_TOKEN;
-
     bool Parser::Parse(const std::vector<Token>& tokens, std::unique_ptr<Stmt>& pRootStmt)
     {
         Reset(tokens);
@@ -35,6 +33,14 @@ namespace hscpp
         m_iToken = 0;
 
         m_Scopes = std::stack<std::unique_ptr<BlockStmt>>();
+
+        // Last token contains the highest line number in the program. If Peek() returns the default
+        // token, make the line number be set to the end of the program.
+        m_DefaultToken = Token();
+        if (!tokens.empty())
+        {
+            m_DefaultToken.line = tokens.back().line;
+        }
     }
 
     std::unique_ptr<Expr> Parser::ParseExpr(int precedence /* = 0 */)
@@ -63,6 +69,7 @@ namespace hscpp
             case Token::Type::Identifier:
                 return ParseNameExpr();
             case Token::Type::Minus:
+            case Token::Type::Exclamation:
                 return ParseUnaryExpr();
             default:
                 ThrowError(LangError(LangError::Code::Parser_FailedToParsePrefixExpression,
@@ -170,7 +177,7 @@ namespace hscpp
     std::unique_ptr<Expr> Parser::ParseNameExpr()
     {
         auto pNameExpr = std::unique_ptr<NameExpr>(new NameExpr());
-        pNameExpr->value = Peek().value;
+        pNameExpr->name = Peek();
         Consume(); // identifier
 
         return pNameExpr;
@@ -230,7 +237,11 @@ namespace hscpp
             case Token::Type::Slash:
             case Token::Type::Star:
                 return 6;
+            case Token::Type::Unknown:
+                // Unhandled infix operator, always evaluate it to force an error.
+                return (std::numeric_limits<int>::max)();
             default:
+                // Not an infix operator.
                 return -1;
         }
 
@@ -453,17 +464,17 @@ namespace hscpp
             return m_pTokens->at(m_iToken);
         }
 
-        return UNKNOWN_TOKEN;
+        return m_DefaultToken;
     }
 
     const Token& Parser::Prev()
     {
-        if (m_iToken > 0 && m_iToken < m_pTokens->size())
+        if (m_iToken > 0 && m_iToken <= m_pTokens->size())
         {
             return m_pTokens->at(m_iToken - 1);
         }
 
-        return UNKNOWN_TOKEN;
+        return m_DefaultToken;
     }
 
     void Parser::Consume()
