@@ -16,6 +16,11 @@ namespace hscpp
 
         std::unordered_set<fs::path, FsPathHasher> uniqueFilePaths(
                 canonicalFilePaths.begin(), canonicalFilePaths.end());
+
+        // Resolve dependency graph first. This should not be done recursively, as doing so may end
+        // up compiling unnecessary dependents.
+        AddDependentFilePaths(uniqueFilePaths);
+
         m_SourceFilePaths = uniqueFilePaths;
 
         std::unordered_set<fs::path, FsPathHasher> processedFilePaths;
@@ -126,6 +131,18 @@ namespace hscpp
                 m_PreprocessorDefinitions.begin(), m_PreprocessorDefinitions.end());
     }
 
+    void Preprocessor::AddDependentFilePaths(std::unordered_set<fs::path, FsPathHasher>& filePaths)
+    {
+        std::unordered_set<fs::path, FsPathHasher> dependentPaths;
+        for (const auto& filePath : filePaths)
+        {
+            std::vector<fs::path> dependentFilePaths = m_DependencyGraph.ResolveGraph(filePath);
+            dependentPaths.insert(dependentFilePaths.begin(), dependentFilePaths.end());
+        }
+
+        filePaths.insert(dependentPaths.begin(), dependentPaths.end());
+    }
+
     bool Preprocessor::Preprocess(const std::unordered_set<fs::path, FsPathHasher>& filePaths)
     {
         for (const auto& filePath : filePaths)
@@ -151,9 +168,6 @@ namespace hscpp
             {
                 log::Build() << HSCPP_LOG_PREFIX << hscppMessage << log::End();
             }
-
-            std::vector<fs::path> dependentFilePaths = m_DependencyGraph.ResolveGraph(filePath);
-            m_SourceFilePaths.insert(dependentFilePaths.begin(), dependentFilePaths.end());
         }
 
         return true;

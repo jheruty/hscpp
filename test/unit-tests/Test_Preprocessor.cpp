@@ -47,9 +47,12 @@ namespace hscpp { namespace test
     TEST_CASE("Preprocessor can handle dependent compilation.")
     {
         fs::path assetsPath = TEST_FILES_PATH / "dependent-compilation-test";
-
+        Preprocessor::Output output;
         Preprocessor preprocessor;
-        preprocessor.UpdateDependencyGraph({
+
+        SECTION("Dependent compilation works with separated modules.")
+        {
+            preprocessor.UpdateDependencyGraph({
                 assetsPath / "Math.cpp",
                 assetsPath / "Math.h",
                 assetsPath / "MathDependency.cpp",
@@ -58,73 +61,130 @@ namespace hscpp { namespace test
                 assetsPath / "VectorDependency.cpp",
             }, {}, { assetsPath });
 
-        Preprocessor::Output output;
-
-        std::vector<fs::path> mathPaths = {
+            std::vector<fs::path> mathPaths = {
                 assetsPath / "Math.cpp",
                 assetsPath / "MathDependency.cpp",
-        };
+            };
 
-        REQUIRE(preprocessor.Preprocess({ assetsPath / "MathDependency.cpp" }, output));
-        CALL(ValidateUnorderedVector, output.sourceFiles, mathPaths);
-        REQUIRE(preprocessor.Preprocess({ assetsPath / "Math.cpp" }, output));
-        CALL(ValidateUnorderedVector, output.sourceFiles, mathPaths);
+            std::vector<fs::path> vectorPaths = {
+                assetsPath / "Vector.cpp",
+                assetsPath / "VectorDependency.cpp",
+            };
 
-        std::vector<fs::path> vectorPaths = {
-            assetsPath / "Vector.cpp",
-            assetsPath / "VectorDependency.cpp",
-        };
+            REQUIRE(preprocessor.Preprocess({ assetsPath / "MathDependency.cpp" }, output));
+            CALL(ValidateUnorderedVector, output.sourceFiles, mathPaths);
+            REQUIRE(preprocessor.Preprocess({ assetsPath / "Math.cpp" }, output));
+            CALL(ValidateUnorderedVector, output.sourceFiles, mathPaths);
+            REQUIRE(preprocessor.Preprocess({ assetsPath / "VectorDependency.cpp" }, output));
+            CALL(ValidateUnorderedVector, output.sourceFiles, vectorPaths);
+            REQUIRE(preprocessor.Preprocess({ assetsPath / "Vector.cpp" }, output));
+            CALL(ValidateUnorderedVector, output.sourceFiles, vectorPaths);
 
-        REQUIRE(preprocessor.Preprocess({ assetsPath / "VectorDependency.cpp" }, output));
-        CALL(ValidateUnorderedVector, output.sourceFiles, vectorPaths);
-        REQUIRE(preprocessor.Preprocess({ assetsPath / "Vector.cpp" }, output));
-        CALL(ValidateUnorderedVector, output.sourceFiles, vectorPaths);
+            // Add a dependency of both Math.h and Vector.h.
+            preprocessor.UpdateDependencyGraph({
+                assetsPath / "VectorAndMathDependency.cpp",
+            }, {}, { assetsPath });
 
-        // This "links" together Vector and Math libraries. In other words, compiling anything in
-        // Math requires compilation of everything in Vector.
-        preprocessor.UpdateDependencyGraph({
-            assetsPath / "VectorAndMathDependency.cpp",
-            assetsPath / "VectorMath.cpp",
-            assetsPath / "VectorMath.h",
-        }, {}, { assetsPath });
+            std::vector<fs::path> vectorAndMathPaths = {
+                assetsPath / "Vector.cpp",
+                assetsPath / "Math.cpp",
+                assetsPath / "VectorAndMathDependency.cpp",
+            };
 
-        std::vector<fs::path> vectorMathPaths = {
-            assetsPath / "Math.cpp",
-            assetsPath / "Vector.cpp",
-            assetsPath / "VectorMath.cpp",
-            assetsPath / "VectorAndMathDependency.cpp",
-            assetsPath / "VectorDependency.cpp",
-            assetsPath / "MathDependency.cpp",
-        };
+            REQUIRE(preprocessor.Preprocess({ assetsPath / "VectorAndMathDependency.cpp" }, output));
+            CALL(ValidateUnorderedVector, output.sourceFiles, vectorAndMathPaths);
+            REQUIRE(preprocessor.Preprocess({ assetsPath / "VectorDependency.cpp" }, output));
+            CALL(ValidateUnorderedVector, output.sourceFiles, vectorPaths);
+            REQUIRE(preprocessor.Preprocess({ assetsPath / "MathDependency.cpp" }, output));
+            CALL(ValidateUnorderedVector, output.sourceFiles, mathPaths);
 
-        REQUIRE(preprocessor.Preprocess({ assetsPath / "VectorAndMathDependency.cpp" }, output));
-        CALL(ValidateUnorderedVector, output.sourceFiles, vectorMathPaths);
-        REQUIRE(preprocessor.Preprocess({ assetsPath / "VectorMath.cpp" }, output));
-        CALL(ValidateUnorderedVector, output.sourceFiles, vectorMathPaths);
-        REQUIRE(preprocessor.Preprocess({ assetsPath / "Math.cpp" }, output));
-        CALL(ValidateUnorderedVector, output.sourceFiles, vectorMathPaths);
-        REQUIRE(preprocessor.Preprocess({ assetsPath / "Vector.cpp" }, output));
-        CALL(ValidateUnorderedVector, output.sourceFiles, vectorMathPaths);
+            REQUIRE(preprocessor.Preprocess({ assetsPath / "MathDependency.cpp", assetsPath / "VectorDependency.cpp" }, output));
+            CALL(ValidateUnorderedVector, output.sourceFiles, {
+                assetsPath / "Vector.cpp",
+                assetsPath / "VectorDependency.cpp",
+                assetsPath / "Math.cpp",
+                assetsPath / "MathDependency.cpp",
+            });
 
-        // Remove VectorMath.
-        preprocessor.UpdateDependencyGraph({}, {
-            assetsPath / "VectorAndMathDependency.cpp",
-            assetsPath / "VectorMath.cpp",
-            assetsPath / "VectorMath.h",
-        }, { assetsPath });
+            REQUIRE(preprocessor.Preprocess({ assetsPath / "MathDependency.cpp", assetsPath / "VectorAndMathDependency.cpp" }, output));
+            CALL(ValidateUnorderedVector, output.sourceFiles, {
+                assetsPath / "Vector.cpp",
+                assetsPath / "VectorAndMathDependency.cpp",
+                assetsPath / "Math.cpp",
+                assetsPath / "MathDependency.cpp",
+            });
+        }
 
-        REQUIRE(preprocessor.Preprocess({ assetsPath / "MathDependency.cpp" }, output));
-        CALL(ValidateUnorderedVector, output.sourceFiles, mathPaths);
-        REQUIRE(preprocessor.Preprocess({ assetsPath / "Math.cpp" }, output));
-        CALL(ValidateUnorderedVector, output.sourceFiles, mathPaths);
+        SECTION("Dependent compilation works with interleaved modules.")
+        {
+            preprocessor.UpdateDependencyGraph({
+                assetsPath / "Math.cpp",
+                assetsPath / "Math.h",
+                assetsPath / "MathDependency.cpp",
+                assetsPath / "Vector.cpp",
+                assetsPath / "Vector.h",
+                assetsPath / "VectorDependency.cpp",
+                assetsPath / "VectorMath.cpp",
+                assetsPath / "VectorMath.h",
+                assetsPath / "VectorAndMathDependency.cpp",
+                assetsPath / "VectorMathDependency.cpp",
+            }, {}, { assetsPath });
 
-        REQUIRE(preprocessor.Preprocess({ assetsPath / "VectorDependency.cpp" }, output));
-        CALL(ValidateUnorderedVector, output.sourceFiles, vectorPaths);
-        REQUIRE(preprocessor.Preprocess({ assetsPath / "Vector.cpp" }, output));
-        CALL(ValidateUnorderedVector, output.sourceFiles, vectorPaths);
+            REQUIRE(preprocessor.Preprocess( { assetsPath / "Math.cpp" }, output ));
+            CALL(ValidateUnorderedVector, output.sourceFiles, {
+                assetsPath / "Math.cpp",
+                assetsPath / "MathDependency.cpp",
+                assetsPath / "Vector.cpp",
+                assetsPath / "VectorMath.cpp",
+                assetsPath / "VectorAndMathDependency.cpp",
+                assetsPath / "VectorMathDependency.cpp",
+            });
+
+            REQUIRE(preprocessor.Preprocess( { assetsPath / "Vector.cpp" }, output ));
+            CALL(ValidateUnorderedVector, output.sourceFiles, {
+                assetsPath / "Math.cpp",
+                assetsPath / "Vector.cpp",
+                assetsPath / "VectorDependency.cpp",
+                assetsPath / "VectorMath.cpp",
+                assetsPath / "VectorAndMathDependency.cpp",
+                assetsPath / "VectorMathDependency.cpp",
+            });
+
+            REQUIRE(preprocessor.Preprocess( { assetsPath / "MathDependency.cpp" }, output ));
+            CALL(ValidateUnorderedVector, output.sourceFiles, {
+                assetsPath / "MathDependency.cpp",
+                assetsPath / "Math.cpp",
+                assetsPath / "Vector.cpp",
+                assetsPath / "VectorMath.cpp",
+            });
+
+            REQUIRE(preprocessor.Preprocess( { assetsPath / "VectorDependency.cpp" }, output ));
+            CALL(ValidateUnorderedVector, output.sourceFiles, {
+                assetsPath / "VectorDependency.cpp",
+                assetsPath / "Math.cpp",
+                assetsPath / "Vector.cpp",
+                assetsPath / "VectorMath.cpp",
+            });
+
+            REQUIRE(preprocessor.Preprocess( { assetsPath / "VectorMathDependency.cpp" }, output ));
+            CALL(ValidateUnorderedVector, output.sourceFiles, {
+                assetsPath / "VectorMathDependency.cpp",
+                assetsPath / "Math.cpp",
+                assetsPath / "Vector.cpp",
+                assetsPath / "VectorMath.cpp",
+            });
+
+            REQUIRE(preprocessor.Preprocess( { assetsPath / "VectorAndMathDependency.cpp" }, output ));
+            CALL(ValidateUnorderedVector, output.sourceFiles, {
+                assetsPath / "VectorAndMathDependency.cpp",
+                assetsPath / "Math.cpp",
+                assetsPath / "Vector.cpp",
+                assetsPath / "VectorMath.cpp",
+            });
+        }
     }
 
-    TEST_CASE("Preprocessor can handle infinite recursion.")
+    TEST_CASE("Preprocessor can handle dependent compilation with infinite recursion.")
     {
         // These files all add each other as hscpp_require_sources, validate that this does not
         // cause an infinite loop.

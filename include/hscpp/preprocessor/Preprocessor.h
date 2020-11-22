@@ -48,6 +48,8 @@ namespace hscpp
         void Reset(Output& output);
         void CreateOutput(Output& output);
 
+        void AddDependentFilePaths(std::unordered_set<fs::path, FsPathHasher>& filePaths);
+
         bool Preprocess(const std::unordered_set<fs::path, FsPathHasher>& filePaths);
         bool Process(const fs::path& filePath, Interpreter::Result& result);
 
