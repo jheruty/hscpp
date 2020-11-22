@@ -3,7 +3,7 @@
 namespace hscpp { namespace test
 {
 
-        void test::ValidateError(const LangError& result,
+        void ValidateError(const LangError& result,
             const LangError::Code& expectedCode, size_t expectedLine, const std::vector<std::string>& expectedArgs)
         {
             REQUIRE(result.ErrorCode() == expectedCode);
