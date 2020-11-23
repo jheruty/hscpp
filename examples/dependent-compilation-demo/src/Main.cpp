@@ -26,8 +26,8 @@ int main()
     // hscpp::Preprocessor feature.
     swapper.EnableFeature(hscpp::Feature::DependentCompilation);
 
-    swapper.GetAllocationResolver()->Allocate<Printer1>();
-    swapper.GetAllocationResolver()->Allocate<Printer2>();
+    swapper.Allocate<Printer1>();
+    swapper.Allocate<Printer2>();
 
     // To create a dependency graph, hscpp will parse all files in the directories provided within
     // the hscpp::Hotswapper's AddIncludeDirectory and AddSourceDirectory functions. #includes in

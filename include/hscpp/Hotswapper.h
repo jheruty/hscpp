@@ -59,6 +59,9 @@ namespace hscpp
         void SetCallbacks(const Callbacks& callbacks);
         void DoProtectedCall(const std::function<void()>& cb);
 
+        template <typename T>
+        T* Allocate();
+
         //============================================================================
         // Add & Remove Functions
         //============================================================================
@@ -189,6 +192,12 @@ namespace hscpp
         template <typename T>
         std::vector<T> AsVector(std::map<int, T>& map);
     };
+
+    template<typename T>
+    T* Hotswapper::Allocate()
+    {
+        return reinterpret_cast<T*>(m_AllocationResolver.Allocate<T>().pMemory);
+    }
 
     template <typename TDirectoryIterator>
     void Hotswapper::AppendDirectoryFiles(const std::map<int, fs::path>& directoryPathsByHandle,

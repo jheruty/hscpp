@@ -39,8 +39,7 @@ Printer::Printer()
     Hscpp_SetSwapHandler(cb);
 }
 
-Printer::Printer(const std::string& name, int index)
-    : Printer() // Call the default constructor, to setup the swap handler.
+void Printer::Init(const std::string& name, int index)
 {
     m_Name = name;
     m_Index = index;

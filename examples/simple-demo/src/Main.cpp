@@ -28,8 +28,11 @@ int main()
     swapper.SetGlobalUserData(&data);
 
     // Create a couple of new Printers, and let them know their index.
-    data.printers.at(0) = new Printer("PrinterA", 0);
-    data.printers.at(1) = new Printer("PrinterB", 1);
+    data.printers.at(0) = swapper.Allocate<Printer>();
+    data.printers.at(1) = swapper.Allocate<Printer>();
+
+    data.printers.at(0)->Init("PrinterA", 0);
+    data.printers.at(1)->Init("PrinterB", 1);
 
     while (true)
     {
