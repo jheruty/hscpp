@@ -40,7 +40,7 @@ namespace hscpp { namespace test
         SECTION("Modifying a file triggers event.")
         {
             CALL(ModifyFile, testFilePath, {
-                { "Body", "int main() {}" },
+                { "body", "int main() {}" },
             });
 
             CALL(StartUpdateLoop, Milliseconds(2000), Milliseconds(10), cb);

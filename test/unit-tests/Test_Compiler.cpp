@@ -48,7 +48,7 @@ namespace hscpp { namespace test
             return UpdateLoop::Running;
         };
 
-        CALL(StartUpdateLoop, Milliseconds(10000), Milliseconds(10), cb);
+        CALL(StartUpdateLoop, Milliseconds(15000), Milliseconds(10), cb);
 
         REQUIRE(pCompiler->IsInitialized());
     }
@@ -66,7 +66,7 @@ namespace hscpp { namespace test
             return UpdateLoop::Running;
         };
 
-        CALL(StartUpdateLoop, Milliseconds(10000), Milliseconds(10), cb);
+        CALL(StartUpdateLoop, Milliseconds(30000), Milliseconds(10), cb);
 
         REQUIRE(pCompiler->HasCompiledModule());
 

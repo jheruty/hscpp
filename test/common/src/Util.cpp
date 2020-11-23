@@ -14,8 +14,7 @@ namespace hscpp { namespace test
 
     fs::path CreateSandboxDirectory()
     {
-        fs::path rootDirectoryPath = util::GetHscppTestPath();
-        fs::path sandboxPath = rootDirectoryPath / "sandbox";
+        fs::path sandboxPath = util::GetHscppTestPath() / "sandbox";
 
         REQUIRE_NOTHROW(fs::remove_all(sandboxPath));
         REQUIRE(fs::create_directory(sandboxPath));
@@ -49,21 +48,23 @@ namespace hscpp { namespace test
     {
         std::string content = FileToString(filePath);
 
-        // Replace all (ex.) ${Body} with the values of the key Body in replacements.
+        // Replace contents within:
+        // // <tag>
+        // // </tag>
+        // Where tag is the key in replacements, with the value in replacements.
         for (const auto& pattern__replacement : replacements)
         {
-            std::string pattern = "${" + pattern__replacement.first + "}";
-            std::string replacement = pattern__replacement.second;
+            std::string tagOpen = "// <" + pattern__replacement.first + ">";
+            std::string tagClose = "// </" + pattern__replacement.first + ">";
+            std::string replacement = "\n" + pattern__replacement.second + "\n";
 
-            size_t iPos = 0;
-            do
-            {
-                iPos = content.find(pattern, iPos);
-                if (iPos != std::string::npos)
-                {
-                    content.replace(iPos, pattern.size(), replacement);
-                }
-            } while (iPos != std::string::npos);
+            size_t iTagOpen = content.find(tagOpen);
+            REQUIRE(iTagOpen != std::string::npos);
+
+            size_t iTagClose = content.find(tagClose);
+            REQUIRE(iTagClose != std::string::npos);
+
+            content.replace(iTagOpen + tagOpen.size(), iTagClose - (iTagOpen + tagOpen.size()), replacement);
         }
 
         std::ofstream outFile(filePath.c_str());
