@@ -54,6 +54,13 @@ namespace hscpp
         return false;
     }
 
+    bool Hotswapper::IsCompilerInitialized()
+    {
+        // Return true, so that if user waits on compiler initialization, it will immediately succeed
+        // when hscpp is disabled.
+        return true;
+    }
+
     void Hotswapper::SetCallbacks(const Callbacks&)
     {}
 

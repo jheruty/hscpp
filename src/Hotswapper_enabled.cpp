@@ -205,6 +205,11 @@ namespace hscpp
         return m_pCompiler->IsCompiling();
     }
 
+    bool Hotswapper::IsCompilerInitialized()
+    {
+        return m_pCompiler->IsInitialized();
+    }
+
     void Hotswapper::SetCallbacks(const Callbacks& callbacks)
     {
         m_Callbacks = callbacks;

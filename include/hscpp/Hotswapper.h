@@ -55,6 +55,7 @@ namespace hscpp
 
         UpdateResult Update();
         bool IsCompiling();
+        bool IsCompilerInitialized();
 
         void SetCallbacks(const Callbacks& callbacks);
         void DoProtectedCall(const std::function<void()>& cb);
