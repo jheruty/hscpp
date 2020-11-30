@@ -92,6 +92,11 @@ namespace hscpp { namespace util
         return fs::path(HSCPP_BUILD_PATH) / "examples";
     }
 
+    fs::path GetHscppBuildTestPath()
+    {
+        return fs::path(HSCPP_BUILD_PATH) / "test";
+    }
+
     void SortFileEvents(const std::vector<IFileWatcher::Event>& events,
                         std::vector<fs::path>& canonicalModifiedFilePaths,
                         std::vector<fs::path>& canonicalRemovedFilePaths)
@@ -125,8 +130,12 @@ namespace hscpp { namespace util
 
             if (fs::exists(canonicalFilePath))
             {
-                // Had a file event and the file exists; it must have been added or modified.
-                dedupedModifiedFilePaths.insert(canonicalFilePath);
+                // Make sure this isn't a directory.
+                if (fs::is_regular_file(canonicalFilePath))
+                {
+                    // Had a file event and the file exists; it must have been added or modified.
+                    dedupedModifiedFilePaths.insert(canonicalFilePath);
+                }
             }
             else
             {

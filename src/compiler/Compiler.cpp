@@ -25,7 +25,7 @@ namespace hscpp
             return;
         }
 
-        m_pInitializeTask->Start(m_pCmdShell.get(), std::chrono::milliseconds(5000),
+        m_pInitializeTask->Start(m_pCmdShell.get(), m_pConfig->initializeTimeout,
                 [&](ICmdShellTask::Result result){
             switch (result)
             {

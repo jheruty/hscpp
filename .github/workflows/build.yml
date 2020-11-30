@@ -12,6 +12,7 @@ on:
 env:
   build_directory: "${{ github.workspace }}/../../build"
   unit_test_directory: "${{ github.workspace }}/../../build/test/unit-tests"
+  integration_test_directory: "${{ github.workspace }}/../../build/test/integration-tests"
 
 jobs:
   Windows:
@@ -32,6 +33,9 @@ jobs:
       - name: 'Run unit tests'
         run: "${{env.unit_test_directory}}/Debug/unit-tests"
         working-directory: "${{env.unit_test_directory}}/Debug"
+      - name: 'Run integration tests'
+        run: "${{env.integration_test_directory}}/Debug/integration-tests --configuration Debug"
+        working-directory: "${{env.integration_test_directory}}/Debug"
 
   Windows_clang:
     strategy:
@@ -50,13 +54,16 @@ jobs:
       - name: 'Run unit tests'
         run: "${{env.unit_test_directory}}/Debug/unit-tests"
         working-directory: "${{env.unit_test_directory}}/Debug"
+      - name: 'Run integration tests'
+        run: "${{env.integration_test_directory}}/Debug/integration-tests --configuration Debug"
+        working-directory: "${{env.integration_test_directory}}/Debug"
 
   macOS:
     strategy:
       matrix:
         cxx_standard: ["-DCMAKE_CXX_STANDARD=11", "-DCMAKE_CXX_STANDARD=17"]
         hscpp_disable: ["-DHSCPP_DISABLE=OFF", "-DHSCPP_DISABLE=ON"]
-        compiler: [g++, clang++]
+        compiler: [g++, /usr/local/opt/llvm/bin/clang++]
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
@@ -71,6 +78,9 @@ jobs:
       - name: 'Run unit tests'
         run: "${{env.unit_test_directory}}/unit-tests"
         working-directory: "${{env.unit_test_directory}}"
+      - name: 'Run integration tests'
+        run: "${{env.integration_test_directory}}/integration-tests"
+        working-directory: "${{env.integration_test_directory}}"
 
   Ubuntu:
     strategy:
@@ -98,3 +108,6 @@ jobs:
       - name: 'Run unit tests'
         run: "${{env.unit_test_directory}}/unit-tests"
         working-directory: "${{env.unit_test_directory}}"
+      - name: 'Run integration tests'
+        run: "${{env.integration_test_directory}}/integration-tests"
+        working-directory: "${{env.integration_test_directory}}"

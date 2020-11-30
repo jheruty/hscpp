@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <stdint.h>
 
+// Simple class to be used by examples.
 class Variant
 {
 public:

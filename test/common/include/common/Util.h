@@ -11,7 +11,6 @@ namespace hscpp { namespace test
 {
 
     fs::path CreateSandboxDirectory();
-
     fs::path InitializeSandbox(const fs::path& assetsPath);
 
     void NewFile(const fs::path& filePath, const std::string& content);

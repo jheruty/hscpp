@@ -8,14 +8,15 @@
 #include "hscpp-example-utils/MemoryManager.h"
 #include "runtime-require-demo/Printer.h"
 
-const static hscpp::fs::path DEMO_PATH = hscpp::util::GetHscppExamplesPath() / "runtime-require-demo";
+const static hscpp::fs::path DEMO_CODE_PATH = hscpp::util::GetHscppExamplesPath() / "runtime-require-demo";
+const static hscpp::fs::path HSCPP_EXAMPLE_UTILS_BUILD_PATH = hscpp::util::GetHscppBuildExamplesPath() / "hscpp-example-utils";
 
 int main()
 {
     hscpp::Hotswapper swapper;
 
-    auto srcPath = DEMO_PATH / "src";
-    auto includePath = DEMO_PATH / "include";
+    auto srcPath = DEMO_CODE_PATH / "src";
+    auto includePath = DEMO_CODE_PATH / "include";
 
     swapper.AddSourceDirectory(srcPath);
     swapper.AddIncludeDirectory(includePath);
@@ -39,7 +40,7 @@ int main()
     swapper.SetVar("os", "Posix");
 #endif
 
-    swapper.SetVar("libDirectory", "../../../build/examples/hscpp-example-utils");
+    swapper.SetVar("libDirectory", HSCPP_EXAMPLE_UTILS_BUILD_PATH.u8string());
 
     // This definition is defined in this projects CMakeLists.txt. We must also add it to the
     // hscpp::Hotswapper if we want newly compiled modules to use the definition.

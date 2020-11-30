@@ -14,6 +14,7 @@ namespace hscpp
         CompilerConfig();
 
         int cppStandard = HSCPP_CXX_STANDARD;
+        std::chrono::milliseconds initializeTimeout = std::chrono::milliseconds(10000);
 
         fs::path executable;
     };

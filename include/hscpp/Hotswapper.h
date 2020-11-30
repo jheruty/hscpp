@@ -55,9 +55,16 @@ namespace hscpp
 
         UpdateResult Update();
         bool IsCompiling();
+        bool IsCompilerInitialized();
 
         void SetCallbacks(const Callbacks& callbacks);
         void DoProtectedCall(const std::function<void()>& cb);
+
+        template<typename T>
+        T* Allocate()
+        {
+            return reinterpret_cast<T*>(m_AllocationResolver.Allocate<T>().pMemory);
+        }
 
         //============================================================================
         // Add & Remove Functions

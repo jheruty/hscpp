@@ -84,7 +84,7 @@ namespace hscpp
             else
             {
                 m_pTrackedObj->~T();
-                return ModuleSharedState::s_pAllocator->Hscpp_Free(reinterpret_cast<uint8_t*>(m_pTrackedObj));
+                return ModuleSharedState::s_pAllocator->Hscpp_FreeSwap(reinterpret_cast<uint8_t*>(m_pTrackedObj));
             }
         }
 

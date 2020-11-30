@@ -17,7 +17,8 @@ public:
 
     // A default constructor is required.
     Printer();
-    Printer(const std::string& name, int index);
+
+    void Init(const std::string& name, int index);
 
     // Functions must be virtual in order for a swapped object to call the new implementation.
     // The "hscpp_virtual" macro evaluates to "virtual" if HSCPP_DISABLE is not defined. If
