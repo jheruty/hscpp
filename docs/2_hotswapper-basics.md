@@ -56,9 +56,16 @@ Note that the update frequency can be relatively relaxed; here we are only updat
 ## Allocating memory
 As mentioned in the [how it works section](./1_how-it-works.md), all memory should be allocated via hscpp. For example, to allocate a class called `HotSwapObject`, we would use:
 ```cpp
-HotSwapObject* pObj = swapper.Allocate<HotSwapObject>();
+HotSwapObject* pObj = swapper.GetAllocationResolver()->Allocate<HotSwapObject>();
 ```
 
-The object will be allocated with `new` and can be freed normally with `delete`. Alternatively, one can provide a custom memory allocator.
+The object will be allocated with `new` and can be freed normally with `delete`. Alternatively, one can provide a [custom memory allocator](./6_custom-memory-allocator.md).
+
+The `AllocationResolver` can be stored directly as a pointer:
+```cpp
+hscpp::AllocationResolver* pAllocationResolver = swapper.GetAllocationResolver();
+```
+
+This allows it to be passed around your system for memory allocations in hot-swappable classes. Due to the way hscpp is structured, a reference to the `Hotswapper` will cause a runtime compilation failure if used in hot-swappable classes.
 
 [Next, lets look at how to create a hot-swappable class.](./3_simple-hotswappable-class.md)

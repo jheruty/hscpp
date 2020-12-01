@@ -51,8 +51,8 @@ namespace hscpp
     {
     public:
         template <typename T>
-        typename std::enable_if<IsTracked<T>::yes, AllocationInfo>::type
-        Allocate()
+        typename std::enable_if<IsTracked<T>::yes, void>::type
+        Allocate(AllocationInfo& info)
         {
             // This type has an hscpp_ClassTracker member, and it is assumed it has been registered
             // with HSCPP_TRACK. Allocate it using an hscpp Constructor.
@@ -61,31 +61,40 @@ namespace hscpp
             auto constructorIt = ModuleSharedState::s_pConstructorsByKey->find(pKey);
             if (constructorIt != ModuleSharedState::s_pConstructorsByKey->end())
             {
-                return constructorIt->second->Allocate();
+                info = constructorIt->second->Allocate();
             }
-
-            return AllocationInfo();
+            else
+            {
+                info = AllocationInfo();
+            }
         }
 
         template <typename T>
-        typename std::enable_if<IsTracked<T>::no, AllocationInfo>::type
-        Allocate()
+        typename std::enable_if<IsTracked<T>::no, void>::type
+        Allocate(AllocationInfo& info)
         {
             // This is a non-tracked type. Perform a normal allocation.
             if (ModuleSharedState::s_pAllocator != nullptr)
             {
                 uint64_t size = sizeof(typename std::aligned_storage<sizeof(T)>::type);
 
-                AllocationInfo info = ModuleSharedState::s_pAllocator->Hscpp_Allocate(size);
+                info = ModuleSharedState::s_pAllocator->Hscpp_Allocate(size);
                 new (info.pMemory) T;
-
-                return info;
             }
+            else
+            {
+                info = AllocationInfo();
+                info.pMemory = reinterpret_cast<uint8_t*>(new T());
+            }
+        }
 
+        template <typename T>
+        T* Allocate()
+        {
             AllocationInfo info;
-            info.pMemory = reinterpret_cast<uint8_t*>(new T());
-            
-            return info;
+            Allocate<T>(info);
+
+            return reinterpret_cast<T*>(info.pMemory);
         }
     };
 

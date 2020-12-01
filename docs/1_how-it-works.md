@@ -8,7 +8,7 @@ When a file is modified, hscpp will recompile that file into a shared library. I
 
 The most important thing to note here is that the new shared library is separate from the original code. This means that one cannot share ordinary statics and globals across the program and expect hot-swapping to continue to work (linker errors would ensue). As a workaround, hscpp provides the `GlobalUserData` class for sharing data across all modules.
 
-Another important note is that, even after swapping, the old code is still present in the executable. Only hscpp knows how to map a new object instance to its most recently added constructor. For this reason, one must perform all memory allocations through hscpp, via the `Hotswapper::Allocate<T>` method.
+Another important note is that, even after swapping, the old code is still present in the executable. Only hscpp knows how to map a new object instance to its most recently added constructor. For this reason, one must perform all memory allocations through hscpp, via the `AllocationResolver::Allocate<T>` method.
 
 Finally, after swapping, only virtual methods will be able to call into the newly compiled code. This is because normal function calls will have their address baked into the binary, as opposed to virtual calls which will consult the class' vtable at runtime.
 

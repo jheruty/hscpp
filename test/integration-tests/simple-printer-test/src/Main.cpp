@@ -22,7 +22,7 @@ int main()
     GlobalData data;
     swapper.SetGlobalUserData(&data);
 
-    data.pInstance = swapper.Allocate<Printer>();
+    data.pInstance = swapper.GetAllocationResolver()->Allocate<Printer>();
 
     LOG_INFO("Waiting for compiler to initialize.");
 

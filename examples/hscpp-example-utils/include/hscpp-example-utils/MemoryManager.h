@@ -60,7 +60,8 @@ public:
         {
             // If hscpp is enabled, we always want to allocate through the hscpp::Hotswapper, as it
             // will use the latest constructor for a given type.
-            hscpp::AllocationInfo info = m_pHscppAllocationResolver->Allocate<T>();
+            hscpp::AllocationInfo info;
+            m_pHscppAllocationResolver->Allocate<T>(info);
 
             Ref<T> ref;
             ref.id = info.id;
