@@ -20,10 +20,8 @@ To make a custom memory allocator, the custom allocator must inherit from hscpp'
 
 ## The AllocationResolver
 
-Previously, we saw how to allocate memory with `swapper.Allocate<T>()`. Internally, this refers the allocation to the `AllocationResolver` class.
-
 When creating a custom memory allocator, the custom allocator *must* use hscpp's AllocationResolver to ensure the correct constructors are called. The `Hotswapper` provides a `GetAllocationResolver` method to get a pointer to the `AllocationResolver`, allowing it to be passed into a custom memory manager.
 
-Like the `Hotswapper`, the `AllocationResolver` contains an `Allocate<T>()` method.
+The `AllocationResolver` contains an `Allocate<T>()` method, which will always construct a class with its most recently compiled constructor.
 
 [Next we will look at how to specify dependencies with the hscpp preprocessor.](7_preprocessor-requires.md)
