@@ -11,6 +11,7 @@
 **/Release/**
 **/Debug/**
 **/build*/*
+**/cmake-build-debug/**
 **/out/**
 test/sandbox/**
 test/test-module-builds/**
