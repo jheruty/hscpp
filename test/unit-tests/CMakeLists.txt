@@ -1,4 +1,4 @@
-add_executable(unit-tests
+list(APPEND HSCPP_UNIT_TEST_SRC_FILES
     Main.cpp
     Test_CmdShell.cpp
     Test_Compiler.cpp
@@ -12,8 +12,16 @@ add_executable(unit-tests
     Test_VarStore.cpp
 )
 
-target_link_libraries(unit-tests
+list(APPEND HSCPP_UNIT_TEST_LINK_LIBRARIES
     catch
     common
     hscpp
 )
+
+if (HSCPP_BUILD_EXTENSION_MEM)
+    list(APPEND HSCPP_UNIT_TEST_SRC_FILES extensions/mem/Test_MemoryManager.cpp)
+    list(APPEND HSCPP_UNIT_TEST_LINK_LIBRARIES hscpp-mem)
+endif()
+
+add_executable(unit-tests ${HSCPP_UNIT_TEST_SRC_FILES})
+target_link_libraries(unit-tests ${HSCPP_UNIT_TEST_LINK_LIBRARIES})
