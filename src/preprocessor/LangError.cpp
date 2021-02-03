@@ -21,9 +21,11 @@ namespace hscpp
         { LangError::Code::Parser_HscppStmtMissingOpeningParen, "$1 missing opening '('." },
         { LangError::Code::Parser_HscppStmtMissingClosingParen, "$1 missing closing ')'." },
         { LangError::Code::Parser_HscppStmtArgumentMustBeStringLiteral, "$1 argument must be a string literal." },
-        { LangError::Code::Parser_HscppRequireExpectedStringLiteralInArgumentList, "$1 expected string literal in argument list." },
-        { LangError::Code::Parser_HscppRequireExpectedStringLiteralOrIdentifierInArgumentList, "$1 expected string literal or identifier in argument list." },
-        { LangError::Code::Parser_HscppRequireMissingCommaInArgumentList, "$1 missing comma in argument list." },
+        { LangError::Code::Parser_HscppStmtMissingCommaInArgumentList, "$1 missing comma in argument list." },
+        { LangError::Code::Parser_HscppStmtExpectedStringLiteralInArgumentList, "$1 expected string literal in argument list." },
+        { LangError::Code::Parser_HscppStmtExpectedStringLiteralOrIdentifierInArgumentList, "$1 expected string literal or identifier in argument list." },
+        { LangError::Code::Parser_HscppTrackMissingIdentifier, "HSCPP_TRACK expects first argument to be an identifier." },
+        { LangError::Code::Parser_HscppTrackMissingString, "HSCPP_TRACK expects second argument to be a unique string literal." },
 
         { LangError::Code::Interpreter_UnableToResolveName, "Unable to resolve variable name '$1'."},
 

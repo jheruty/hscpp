@@ -48,6 +48,8 @@ namespace hscpp
             HscppElif,
             HscppElse,
             HscppEnd,
+
+            HscppTrack,
         };
 
         Type type = Type::Unknown;

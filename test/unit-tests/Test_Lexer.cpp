@@ -30,6 +30,8 @@ namespace hscpp { namespace test
             hscpp_require_library_dir hscpp_require_preprocessor_def //comment
             hscpp_module hscpp_if hscpp_elif hscpp_else hscpp_end
 
+            HSCPP_TRACK
+
             true false
 
             = & |
@@ -106,6 +108,8 @@ namespace hscpp { namespace test
         REQUIRE(tokens.at(i++).value == "hscpp_else");
         REQUIRE(tokens.at(i).type == Token::Type::HscppEnd);
         REQUIRE(tokens.at(i++).value == "hscpp_end");
+        REQUIRE(tokens.at(i).type == Token::Type::HscppTrack);
+        REQUIRE(tokens.at(i++).value == "HSCPP_TRACK");
         REQUIRE(tokens.at(i).type == Token::Type::Bool);
         REQUIRE(tokens.at(i++).value == "true");
         REQUIRE(tokens.at(i).type == Token::Type::Bool);

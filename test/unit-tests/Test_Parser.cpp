@@ -255,6 +255,11 @@ namespace hscpp { namespace test
                 #include <unordered_map>
                 #include "MyHeader.hpp"
 
+                class RuntimeObject
+                {
+                    HSCPP_TRACK(RuntimeObject, "RuntimeObject");
+                };
+
                 hscpp_require_source("source.cpp", "AnotherSource.cpp")
                 hscpp_require_include_dir("path/to/include", "another-Path/Include")
                 hscpp_require_library("lib.so", "lib.a")
@@ -286,6 +291,7 @@ namespace hscpp { namespace test
                     (block
                         (include "unordered_map")
                         (include "MyHeader.hpp")
+                        (hscpp_module "@RuntimeObject")
                         (hscpp_require_source "source.cpp" "AnotherSource.cpp")
                         (hscpp_require_include_dir "path/to/include" "another-Path/Include")
                         (hscpp_require_library "lib.so" "lib.a")
@@ -392,11 +398,19 @@ namespace hscpp { namespace test
         CALL(ValidateError, "\n\n\nhscpp_message(still_not_a_string)",
             LangError::Code::Parser_HscppStmtArgumentMustBeStringLiteral, 4, { "hscpp_message" });
         CALL(ValidateError, "\nhscpp_require_include_dir(\"good/path/to/file\", bad/path/to/file)",
-            LangError::Code::Parser_HscppRequireExpectedStringLiteralInArgumentList, 2, { "hscpp_require_include_dir" });
+            LangError::Code::Parser_HscppStmtExpectedStringLiteralInArgumentList, 2, { "hscpp_require_include_dir" });
         CALL(ValidateError, "\nhscpp_require_preprocessor_def(\"DEF1\", DEF2, 1.0)",
-            LangError::Code::Parser_HscppRequireExpectedStringLiteralOrIdentifierInArgumentList, 2, { "hscpp_require_preprocessor_def" });
+            LangError::Code::Parser_HscppStmtExpectedStringLiteralOrIdentifierInArgumentList, 2, { "hscpp_require_preprocessor_def" });
         CALL(ValidateError, "\n\nhscpp_require_source(\"source1\" \"source2\")",
-            LangError::Code::Parser_HscppRequireMissingCommaInArgumentList, 3, { "hscpp_require_source" });
+            LangError::Code::Parser_HscppStmtMissingCommaInArgumentList, 3, { "hscpp_require_source" });
+        CALL(ValidateError, "HSCPP_TRACK",
+            LangError::Code::Parser_HscppStmtMissingOpeningParen, 1, { "HSCPP_TRACK" });
+        CALL(ValidateError, "\n\nHSCPP_TRACK(\"Hello\"",
+            LangError::Code::Parser_HscppTrackMissingIdentifier, 3, {});
+        CALL(ValidateError, "\nHSCPP_TRACK(Identifier1, Identifier2)",
+            LangError::Code::Parser_HscppTrackMissingString, 2, {});
+        CALL(ValidateError, "\n\n\nHSCPP_TRACK(Intentifer, \"String\"",
+            LangError::Code::Parser_HscppStmtMissingClosingParen, 4, { "HSCPP_TRACK" });
     }
 
 }}
