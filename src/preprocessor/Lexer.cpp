@@ -19,6 +19,7 @@ namespace hscpp
         { "hscpp_elif", Token::Type::HscppElif },
         { "hscpp_else", Token::Type::HscppElse },
         { "hscpp_end", Token::Type::HscppEnd },
+        { "HSCPP_TRACK", Token::Type::HscppTrack },
         { "true", Token::Type::Bool },
         { "false", Token::Type::Bool },
     };

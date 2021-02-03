@@ -28,9 +28,11 @@ namespace hscpp
             Parser_HscppStmtMissingOpeningParen,                                    // (stmt_type)
             Parser_HscppStmtMissingClosingParen,                                    // (stmt_type)
             Parser_HscppStmtArgumentMustBeStringLiteral,                            // (stmt_type)
-            Parser_HscppRequireExpectedStringLiteralInArgumentList,                 // (require_type)
-            Parser_HscppRequireExpectedStringLiteralOrIdentifierInArgumentList,     // (stmt_type)
-            Parser_HscppRequireMissingCommaInArgumentList,                          // (require_type)
+            Parser_HscppStmtMissingCommaInArgumentList,                             // (stmt_type)
+            Parser_HscppStmtExpectedStringLiteralInArgumentList,                    // (stmt_type)
+            Parser_HscppStmtExpectedStringLiteralOrIdentifierInArgumentList,        // (stmt_type)
+            Parser_HscppTrackMissingIdentifier,                                     //
+            Parser_HscppTrackMissingString,                                         //
                                                                                     //
             Interpreter_UnableToResolveName,                                        // (name)
                                                                                     //
