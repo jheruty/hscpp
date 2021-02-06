@@ -52,6 +52,24 @@ For truthiness:
 - Number 0 is false, anything else is true.
 - Bool is either true or false.
 
+## Return statement
+
+The `hscpp_return` statement can be used to immediately stop the Preprocessor. Statements that have already been evaluated will be processed as normal.
+
+For example:
+
+```cpp
+hscpp_require_source("source1")
+
+hscpp_if (var)
+    hscpp_return()
+hscpp_end()
+
+hscpp_require_source("source2")
+```
+
+In the above, if `var` is truthy, only source1 will be added to the compilation list.
+
 ## String interpolation
 
 Variables can also be interpolated within hscpp_require macros, using `${VarName}`.

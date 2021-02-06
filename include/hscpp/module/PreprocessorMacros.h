@@ -13,3 +13,4 @@
 #define hscpp_elif(...)
 #define hscpp_else()
 #define hscpp_end()
+#define hscpp_return()

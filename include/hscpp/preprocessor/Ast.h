@@ -13,6 +13,7 @@ namespace hscpp
     struct BlockStmt;
     struct IncludeStmt;
     struct HscppIfStmt;
+    struct HscppReturnStmt;
     struct HscppRequireStmt;
     struct HscppModuleStmt;
     struct HscppMessageStmt;
@@ -29,8 +30,9 @@ namespace hscpp
         virtual ~IAstVisitor() = default;
 
         virtual void Visit(const BlockStmt& blockStmt) = 0;
-        virtual void Visit(const HscppIfStmt& ifStmt) = 0;
         virtual void Visit(const IncludeStmt& includeStmt) = 0;
+        virtual void Visit(const HscppIfStmt& ifStmt) = 0;
+        virtual void Visit(const HscppReturnStmt& ifStmt) = 0;
         virtual void Visit(const HscppRequireStmt& requireStmt) = 0;
         virtual void Visit(const HscppModuleStmt& moduleStmt) = 0;
         virtual void Visit(const HscppMessageStmt& messageStmt) = 0;
@@ -69,6 +71,11 @@ namespace hscpp
         std::vector<std::unique_ptr<Expr>> conditions;
         std::vector<std::unique_ptr<BlockStmt>> conditionalBlocks;
         std::unique_ptr<BlockStmt> pElseBlock;
+    };
+
+    struct HscppReturnStmt : public Stmt
+    {
+        void Accept(IAstVisitor& visitor) const override;
     };
 
     struct HscppRequireStmt : public Stmt

@@ -48,6 +48,7 @@ namespace hscpp
             HscppElif,
             HscppElse,
             HscppEnd,
+            HscppReturn,
 
             HscppTrack,
         };

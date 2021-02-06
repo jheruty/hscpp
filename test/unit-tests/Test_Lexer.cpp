@@ -28,7 +28,7 @@ namespace hscpp { namespace test
             ( ) , == != < <= > >= && || + - / * ! _identifier0 1.0 "str str" #include <map>
             hscpp_require_source hscpp_require_include_dir /*comment*/ hscpp_require_library
             hscpp_require_library_dir hscpp_require_preprocessor_def //comment
-            hscpp_module hscpp_if hscpp_elif hscpp_else hscpp_end
+            hscpp_module hscpp_if hscpp_elif hscpp_else hscpp_end hscpp_return
 
             HSCPP_TRACK
 
@@ -108,6 +108,8 @@ namespace hscpp { namespace test
         REQUIRE(tokens.at(i++).value == "hscpp_else");
         REQUIRE(tokens.at(i).type == Token::Type::HscppEnd);
         REQUIRE(tokens.at(i++).value == "hscpp_end");
+        REQUIRE(tokens.at(i).type == Token::Type::HscppReturn);
+        REQUIRE(tokens.at(i++).value == "hscpp_return");
         REQUIRE(tokens.at(i).type == Token::Type::HscppTrack);
         REQUIRE(tokens.at(i++).value == "HSCPP_TRACK");
         REQUIRE(tokens.at(i).type == Token::Type::Bool);

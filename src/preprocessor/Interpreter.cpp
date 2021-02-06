@@ -2,6 +2,7 @@
 #include <cassert>
 
 #include "hscpp/preprocessor/Interpreter.h"
+#include "hscpp/Platform.h"
 
 namespace hscpp
 {
@@ -13,6 +14,11 @@ namespace hscpp
         try
         {
             rootStmt.Accept(*this);
+        }
+        catch (ReturnFromInterpreter&)
+        {
+            // hscpp_return encountered, exit successfully.
+            return true;
         }
         catch (std::runtime_error&)
         {
@@ -45,6 +51,11 @@ namespace hscpp
         }
     }
 
+    void Interpreter::Visit(const IncludeStmt& includeStmt)
+    {
+        m_pResult->includePaths.push_back(includeStmt.path);
+    }
+
     void Interpreter::Visit(const HscppIfStmt& ifStmt)
     {
         bool bMatchedCondition = false;
@@ -66,9 +77,10 @@ namespace hscpp
         }
     }
 
-    void Interpreter::Visit(const IncludeStmt& includeStmt)
+    void Interpreter::Visit(const HscppReturnStmt& returnStmt)
     {
-        m_pResult->includePaths.push_back(includeStmt.path);
+        HSCPP_UNUSED_PARAM(returnStmt);
+        throw ReturnFromInterpreter();
     }
 
     void Interpreter::Visit(const HscppRequireStmt& requireStmt)

@@ -56,6 +56,11 @@ namespace hscpp { namespace test
             m_Stream << "\n)";
         }
 
+        void Visit(const IncludeStmt& includeStmt) override
+        {
+            m_Stream << "\n(include \"" << includeStmt.path << "\")";
+        }
+
         void Visit(const HscppIfStmt& ifStmt) override
         {
             if (ifStmt.conditions.size() > 0)
@@ -85,9 +90,10 @@ namespace hscpp { namespace test
             }
         }
 
-        void Visit(const IncludeStmt& includeStmt) override
+        void Visit(const HscppReturnStmt& returnStmt) override
         {
-            m_Stream << "\n(include \"" << includeStmt.path << "\")";
+            HSCPP_UNUSED_PARAM(returnStmt);
+            m_Stream << "\n(hscpp_return)";
         }
 
         void Visit(const HscppRequireStmt& requireStmt) override
@@ -267,6 +273,7 @@ namespace hscpp { namespace test
                 hscpp_require_preprocessor_def("Hello", Goodbye);
                 // hscpp_require_source("commented out")
                 /* hscpp_require_source("commented out") */
+                hscpp_return()
 
                 IDENTIFIER_TO_IGNORE      "StringToIgnore"
 
@@ -297,6 +304,7 @@ namespace hscpp { namespace test
                         (hscpp_require_library "lib.so" "lib.a")
                         (hscpp_require_library_dir "path/to/lib_dir" "PATH/T-o/DIR/")
                         (hscpp_require_preprocessor_def "Hello" "Goodbye")
+                        (hscpp_return)
                         (hscpp_if false
                             (block
                                 (hscpp_module "MyModule")
@@ -387,8 +395,14 @@ namespace hscpp { namespace test
             LangError::Code::Parser_HscppStmtMissingClosingParen, 1, { "hscpp_if" });
         CALL(ValidateError, "hscpp_if(q / 498.5)\n\nhscpp_elif(false hscpp_end())",
             LangError::Code::Parser_HscppStmtMissingClosingParen, 3, { "hscpp_elif" });
-        // Skipping closing ')' in hscpp_require statement, the error will be a missing comma
-        // in argument list.
+        CALL(ValidateError, "hscpp_if(true) hscpp_end)",
+            LangError::Code::Parser_HscppStmtMissingOpeningParen, 1, { "hscpp_end" });
+        CALL(ValidateError, "\nhscpp_if(true) hscpp_end(",
+            LangError::Code::Parser_HscppStmtMissingClosingParen, 2, { "hscpp_end" });
+        CALL(ValidateError, "\n\n\nhscpp_return",
+            LangError::Code::Parser_HscppStmtMissingOpeningParen, 4, { "hscpp_return" });
+        CALL(ValidateError, "\n\nhscpp_return(",
+            LangError::Code::Parser_HscppStmtMissingClosingParen, 3, { "hscpp_return" });
         CALL(ValidateError, "\n\nhscpp_module(\"test\"",
             LangError::Code::Parser_HscppStmtMissingClosingParen, 3, { "hscpp_module" });
         CALL(ValidateError, "\nhscpp_message(\"test\"",

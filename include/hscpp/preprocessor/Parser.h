@@ -45,6 +45,7 @@ namespace hscpp
         std::unique_ptr<BlockStmt> ParseBlockStmt();
         std::unique_ptr<Stmt> ParseIncludeStmt();
         std::unique_ptr<Stmt> ParseHscppIfStmt();
+        std::unique_ptr<Stmt> ParseHscppReturnStmt();
         std::unique_ptr<Stmt> ParseHscppRequireStmt();
         std::unique_ptr<Stmt> ParseHscppModuleStmt();
         std::unique_ptr<Stmt> ParseHscppMessageStmt();
