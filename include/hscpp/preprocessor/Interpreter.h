@@ -27,6 +27,10 @@ namespace hscpp
         LangError GetLastError();
 
     private:
+        // Thrown to immediately stop interpreter.
+        struct ReturnFromInterpreter
+        {};
+
         const VarStore* m_pVarStore = nullptr;
         Result* m_pResult = nullptr;
 
@@ -37,8 +41,9 @@ namespace hscpp
         void Reset(const VarStore& varStore, Result& result);
 
         void Visit(const BlockStmt& blockStmt) override;
-        void Visit(const HscppIfStmt& ifStmt) override;
         void Visit(const IncludeStmt& includeStmt) override;
+        void Visit(const HscppIfStmt& ifStmt) override;
+        void Visit(const HscppReturnStmt& returnStmt) override;
         void Visit(const HscppRequireStmt& requireStmt) override;
         void Visit(const HscppModuleStmt& moduleStmt) override;
         void Visit(const HscppMessageStmt& messageStmt) override;

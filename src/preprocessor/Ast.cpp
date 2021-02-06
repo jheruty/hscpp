@@ -18,6 +18,11 @@ namespace hscpp
         visitor.Visit(*this);
     }
 
+    void HscppReturnStmt::Accept(IAstVisitor& visitor) const
+    {
+        visitor.Visit(*this);
+    }
+
     void HscppRequireStmt::Accept(IAstVisitor& visitor) const
     {
         visitor.Visit(*this);

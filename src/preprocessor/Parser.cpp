@@ -262,6 +262,9 @@ namespace hscpp
                 case Token::Type::HscppIf:
                     pBlockStmt->statements.push_back(ParseHscppIfStmt());
                     break;
+                case Token::Type::HscppReturn:
+                    pBlockStmt->statements.push_back(ParseHscppReturnStmt());
+                    break;
                 case Token::Type::HscppElif:
                 case Token::Type::HscppElse:
                 case Token::Type::HscppEnd:
@@ -360,6 +363,23 @@ namespace hscpp
         Consume(); // ')'
 
         return pIf;
+    }
+
+    std::unique_ptr<Stmt> Parser::ParseHscppReturnStmt()
+    {
+        auto pReturn = std::unique_ptr<HscppReturnStmt>(new HscppReturnStmt());
+
+        Consume(); // hscpp_return
+
+        Expect(Token::Type::LeftParen, LangError(LangError::Code::Parser_HscppStmtMissingOpeningParen,
+            Peek().line, { "hscpp_return" }));
+        Consume(); // '('
+
+        Expect(Token::Type::RightParen, LangError(LangError::Code::Parser_HscppStmtMissingClosingParen,
+            Peek().line, { "hscpp_return" }));
+        Consume(); // ')'
+
+        return pReturn;
     }
 
     std::unique_ptr<Stmt> Parser::ParseHscppRequireStmt()
