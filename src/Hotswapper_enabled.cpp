@@ -247,19 +247,11 @@ namespace hscpp
     int Hotswapper::AddIncludeDirectory(const fs::path& directoryPath)
     {
         m_bDependencyGraphNeedsRefresh = true;
-
-        m_pFileWatcher->AddWatch(directoryPath);
         return Add(directoryPath, m_NextIncludeDirectoryHandle, m_IncludeDirectoryPathsByHandle);
     }
 
     bool Hotswapper::RemoveIncludeDirectory(int handle)
     {
-        auto it = m_IncludeDirectoryPathsByHandle.find(handle);
-        if (it != m_IncludeDirectoryPathsByHandle.end())
-        {
-            m_pFileWatcher->RemoveWatch(it->second);
-        }
-
         bool bRemoved = Remove(handle, m_IncludeDirectoryPathsByHandle);
         if (bRemoved)
         {

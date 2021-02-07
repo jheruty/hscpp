@@ -21,7 +21,7 @@ The `Hotswapper` needs to be told where a project's source files are located, vi
 }
 ```
 
-This will cause hscpp to watch the "path/to/src" and "path/to/include" directories for file changes. If a file within one of these directories is modified, hscpp will trigger a recompile.
+This will cause hscpp to watch the "path/to/src" directory for file changes, and search for headers in "path/to/include". If a file within "path/to/src" is changed, a recompilation will be triggered. Note that directories passed to `AddIncludeDirectory` are not monitored for changes. If header file changes should also trigger recompilation, the header folder should additionally be added as a source directory.
 
 In addition to `AddSourceDirectory` and `AddIncludeDirectory`, one can add:
 - `AddLibraryDirectory`
