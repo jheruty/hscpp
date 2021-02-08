@@ -101,7 +101,7 @@ namespace hscpp { namespace mem {
                 if (pSelf != nullptr)
                 {
                     pSelf->~T();
-                    this->m_pMemoryManager->FreeBlock(this->m_Id);
+                    this->m_pMemoryManager->FreeBlock(this->m_Id, true);
                 }
             }
 

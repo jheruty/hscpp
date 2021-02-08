@@ -37,7 +37,7 @@ namespace hscpp { namespace mem {
         }
     }
 
-    void MemoryManager::FreeBlock(uint64_t iBlock)
+    void MemoryManager::FreeBlock(uint64_t iBlock, bool bReleaseReservation)
     {
         switch (iBlock)
         {
@@ -49,21 +49,25 @@ namespace hscpp { namespace mem {
                 m_FreeCb(m_Blocks.at(iBlock).pMemory - sizeof(BlockHeader));
                 m_Blocks.at(iBlock).pMemory = nullptr;
 
-                // Get the index of the last Block that is not free, in the free Block list.
-                size_t iLastUsedBlock = m_FreeBlockIndices.at(m_iFreeBlocksBegin - 1);
+                if (bReleaseReservation)
+                {
+                    // Get the index of the last Block that is not free, in the free Block list.
+                    size_t iLastUsedBlock = m_FreeBlockIndices.at(m_iFreeBlocksBegin - 1);
 
-                // Map the Block index to the free Block list.
-                size_t iFreeBlock = m_FreeBlockIndexByBlock.at(iBlock);
+                    // Map the Block index to the free Block list.
+                    size_t iFreeBlock = m_FreeBlockIndexByBlock.at(iBlock);
 
-                // Swap freed Block with last taken Block before the free Blocks. Since the
-                // number of free Blocks will be decremented, this will push the freed Block
-                // into the free list.
-                std::swap(m_FreeBlockIndices.at(iFreeBlock), m_FreeBlockIndices.at(m_iFreeBlocksBegin - 1));
+                    // Swap freed Block with last taken Block before the free Blocks. Since the
+                    // number of free Blocks will be decremented, this will push the freed Block
+                    // into the free list.
+                    std::swap(m_FreeBlockIndices.at(iFreeBlock), m_FreeBlockIndices.at(m_iFreeBlocksBegin - 1));
 
-                // Update the free Block list mapping.
-                std::swap(m_FreeBlockIndexByBlock.at(iBlock), m_FreeBlockIndexByBlock.at(iLastUsedBlock));
+                    // Update the free Block list mapping.
+                    std::swap(m_FreeBlockIndexByBlock.at(iBlock), m_FreeBlockIndexByBlock.at(iLastUsedBlock));
 
-                m_iFreeBlocksBegin--;
+                    m_iFreeBlocksBegin--;
+                }
+
                 break;
         }
     }
@@ -98,9 +102,10 @@ namespace hscpp { namespace mem {
     uint64_t MemoryManager::Hscpp_FreeSwap(uint8_t* pMemory)
     {
         // Performing a free during a runtime swap. Return the old object id so that
-        // HscppAllocateSwap knows the previous id of the deleted object.
+        // HscppAllocateSwap knows the previous id of the deleted object. The Block's
+        // memory will be freed, but its id will still be reserved.
         uint64_t iBlock = reinterpret_cast<BlockHeader*>(pMemory - sizeof(BlockHeader))->iBlock;
-        FreeBlock(iBlock);
+        FreeBlock(iBlock, false);
 
         return iBlock;
     }
