@@ -47,13 +47,42 @@ namespace hscpp
         template <typename T>
         void Serialize(const std::string& name, const T& val)
         {
-            m_Serializer.Serialize(name, val);
+            m_Serializer.SerializeCopy(name, val);
         }
 
         template <typename T>
         bool Unserialize(const std::string& name, T& val)
         {
-            return m_Serializer.Unserialize(name, val);
+            return m_Serializer.UnserializeCopy(name, val);
+        }
+
+        template <typename T>
+        void SaveMove(const std::string& name, T&& val)
+        {
+            switch (m_Phase)
+            {
+                case SwapPhase::BeforeSwap:
+                    SerializeMove(name, std::move(val));
+                    break;
+                case SwapPhase::AfterSwap:
+                    Unserialize(name, val);
+                    break;
+                default:
+                    assert(false);
+                    break;
+            }
+        }
+
+        template <typename T>
+        void SerializeMove(const std::string& name, T&& val)
+        {
+            m_Serializer.SerializeMove(name, std::move(val));
+        }
+
+        template <typename T>
+        bool UnserializeMove(const std::string& name, T& val)
+        {
+            return m_Serializer.UnserializeMove(name, val);
         }
 
     private:
