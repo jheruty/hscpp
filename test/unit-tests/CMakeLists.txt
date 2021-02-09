@@ -9,6 +9,7 @@ list(APPEND HSCPP_UNIT_TEST_SRC_FILES
     Test_Lexer.cpp
     Test_Parser.cpp
     Test_Preprocessor.cpp
+    Test_SwapInfo.cpp
     Test_VarStore.cpp
 )
 

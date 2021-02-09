@@ -14,7 +14,7 @@ namespace hscpp { namespace mem {
 
         virtual ~IMemoryManager() = default;
         virtual uint8_t* GetMemory(uint64_t id) = 0;
-        virtual void FreeBlock(uint64_t id) = 0;
+        virtual void FreeBlock(uint64_t id, bool bReleaseReservation) = 0;
     };
 
 }}

@@ -70,7 +70,7 @@ namespace hscpp { namespace mem {
         // Used by Ref to get underlying memory for a given id. Note that the returned pointer
         // may change for the same id, should a runtime swap take place.
         uint8_t* GetMemory(uint64_t id) override;
-        void FreeBlock(uint64_t iBlock) override;
+        void FreeBlock(uint64_t iBlock, bool bReleaseReservation) override;
 
         // hscpp::IAllocator
         AllocationInfo Hscpp_Allocate(uint64_t size) override;
