@@ -494,6 +494,16 @@ namespace hscpp
             return false;
         }
 
+        // It is important to treat header files as "source files" for the purposes of preprocessing.
+        // For example, header files may contain hscpp_require macros that should be parsed. The
+        // compiler, however, should ultimately only operate on source files.
+        compilerInput.sourceFilePaths.erase(
+            std::remove_if(compilerInput.sourceFilePaths.begin(),
+                compilerInput.sourceFilePaths.end(),
+                [](const fs::path& filePath){
+                    return !util::IsSourceFile(filePath);
+        }), compilerInput.sourceFilePaths.end());
+
         Deduplicate(compilerInput);
         return true;
     }
