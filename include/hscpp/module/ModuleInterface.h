@@ -124,6 +124,7 @@ namespace hscpp
 
                         swapInfos.at(i).m_Phase = SwapPhase::AfterSwap;
                         pTracker->CallSwapHandler(swapInfos.at(i));
+                        swapInfos.at(i).TriggerInitCb();
                     }
                 }
             }

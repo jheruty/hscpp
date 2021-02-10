@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <assert.h>
 #include <limits>
+#include <functional>
 
 #include "hscpp/module/Serializer.h"
 
@@ -25,6 +26,11 @@ namespace hscpp
         uint64_t Id() const
         {
             return m_Id;
+        }
+
+        void SetInitCb(const std::function<void()>& cb)
+        {
+            m_InitCb = cb;
         }
 
         template <typename T>
@@ -92,6 +98,16 @@ namespace hscpp
         SwapPhase m_Phase = {};
         uint64_t m_Id = (std::numeric_limits<uint64_t>::max)();
         Serializer m_Serializer;
+        std::function<void()> m_InitCb;
+
+        // ModuleInterface will call this on newly created class.
+        void TriggerInitCb()
+        {
+            if (m_InitCb != nullptr)
+            {
+                m_InitCb();
+            }
+        }
     };
 
 }
