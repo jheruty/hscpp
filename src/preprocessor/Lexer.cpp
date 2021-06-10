@@ -250,8 +250,16 @@ namespace hscpp
                 Advance();
                 str += '"';
             }
+            else if (Peek() == '\\' && PeekNext() == '\\')
+            {
+                // Escaped slash.
+                Advance();
+                Advance();
+                str += '\\';
+            }
             else
             {
+                // Not handling other escape sequences (ex. \n).
                 str += Peek();
                 Advance();
             }

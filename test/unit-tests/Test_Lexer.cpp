@@ -179,7 +179,7 @@ namespace hscpp { namespace test
     TEST_CASE("Lexer can lex various strings.")
     {
         std::string str = R"(
-            "Hello, World!" "" "F" "@!(*$&"
+            "Hello, World!" "" "F" "@!(*$&"  "\\"
         )";
 
         std::vector<Token> tokens;
@@ -198,6 +198,9 @@ namespace hscpp { namespace test
 
         REQUIRE(tokens.at(3).type == Token::Type::String);
         REQUIRE(tokens.at(3).value == "@!(*$&");
+
+        REQUIRE(tokens.at(4).type == Token::Type::String);
+        REQUIRE(tokens.at(4).value == "\\");
     }
 
     TEST_CASE("Lexer can lex various includes.")
