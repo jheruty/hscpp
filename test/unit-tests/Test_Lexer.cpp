@@ -263,13 +263,20 @@ namespace hscpp { namespace test
     TEST_CASE("Lexer handles errors correctly.")
     {
         std::vector<Token> tokens;
-        Lexer lexer;
 
         CALL(ValidateError, "\n\n\nhscpp_include(\"unterminated string);",
-            LangError::Code::Lexer_UnterminatedString, 4, { "\"" });
+            LangError::Code::Lexer_UnterminatedString, 4, { "\"", "4", "unterminat" });
 
+        // Adding a raw newline.
         CALL(ValidateError, "#include \"Good.h\"\n#include <bad\nhscpp_module(\"module\")",
-            LangError::Code::Lexer_UnterminatedString, 3, { ">" });
+            LangError::Code::Lexer_UnterminatedString, 3, { ">", "2", "bad\nhscpp_" });
+
+        // Currently, only \" and \\ escape sequences are handled.
+        CALL(ValidateError, R"("\n\n\"\\)",
+            LangError::Code::Lexer_UnterminatedString, 1, { "\"", "1", R"(\n\n"\)" });
+
+        CALL(ValidateError, "\"",
+            LangError::Code::Lexer_UnterminatedString, 1, { "\"", "1", "" });
     }
 
 }}

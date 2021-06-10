@@ -9,7 +9,7 @@ namespace hscpp
     const static std::unordered_map<LangError::Code, std::string, LangErrorCodeHasher> ERRORS = {
         { LangError::Code::Success, "" },
 
-        { LangError::Code::Lexer_UnterminatedString, "Unterminated string, expected a '$1'." },
+        { LangError::Code::Lexer_UnterminatedString, "Unterminated string, expected a '$1'. String opens on line $2, beginning with '$3'." },
 
         { LangError::Code::Parser_FailedToParsePrefixExpression, "'$1' is not a supported unary operator." },
         { LangError::Code::Parser_FailedToParseInfixExpression, "'$1' is not a supported binary operator." },

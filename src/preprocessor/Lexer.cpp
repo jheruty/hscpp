@@ -237,6 +237,7 @@ namespace hscpp
 
     void Lexer::LexString(char endChar)
     {
+        size_t startLine = m_Line;
         std::string str;
 
         Advance(); // Skip opening '"' or '<'.
@@ -267,8 +268,10 @@ namespace hscpp
 
         if (Peek() != endChar)
         {
+            // Note that error includes start line and beginning of string, to make it easier to
+            // determine the problematic string (m_Line and m_Column will point to end of file).
             ThrowError(LangError(LangError::Code::Lexer_UnterminatedString,
-                    m_Line, m_Column, { std::string(1, endChar) }));
+                    m_Line, m_Column, { std::string(1, endChar), std::to_string(startLine), str.substr(0, 10) }));
         }
 
         Advance();
