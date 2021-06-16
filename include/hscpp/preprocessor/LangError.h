@@ -16,7 +16,7 @@ namespace hscpp
         {
             Success,                                                                //
                                                                                     //
-            Lexer_UnterminatedString,                                               // (expected)
+            Lexer_UnterminatedString,                                               // (expected, start_line, beginning_of_string)
                                                                                     //
             Parser_FailedToParsePrefixExpression,                                   // (op)
             Parser_FailedToParseInfixExpression,                                    // (op)
