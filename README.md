@@ -1,8 +1,6 @@
 # hscpp: A library to hot-reload C++ at runtime
 hotswap-cpp (hscpp) is a library that allows C++ to be reloaded at runtime. This can greatly decrease iteration time where small changes are common, such as during game scripting or UI development.
 
-https://youtu.be/pjGngeKgni8
-
 ## Demonstration Video
 
 This video discusses how hscpp works, and runs through the demos included in the [examples](./examples) folder.
