@@ -12,6 +12,7 @@ namespace hscpp { namespace util
 
     bool IsWhitespace(const std::string& str);
     std::string Trim(const std::string& str);
+    std::string Quote(const std::string& str);
 
     std::string UnixSlashes(const std::string& str);
 

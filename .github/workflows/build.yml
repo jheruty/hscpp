@@ -7,7 +7,7 @@ on:
   pull_request:
     branches: [ master ]
   schedule:
-    - cron: "0 10 * * *" # 2AM PST
+    - cron: "0 10 1 * *" # 2AM PST, on 1st of every month.
 
 env:
   build_directory: "${{ github.workspace }}/../../build"

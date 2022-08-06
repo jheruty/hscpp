@@ -25,12 +25,14 @@ namespace hscpp
             return;
         }
 
+        log::Info() << HSCPP_LOG_PREFIX << "Initializing compiler." << log::End();
         m_pInitializeTask->Start(m_pCmdShell.get(), m_pConfig->initializeTimeout,
                 [&](ICmdShellTask::Result result){
             switch (result)
             {
                 case ICmdShellTask::Result::Success:
                     m_bInitialized = true;
+                    log::Info() << HSCPP_LOG_PREFIX << "Compiler has been initialized successfully." << log::End();
                     break;
                 case ICmdShellTask::Result::Failure:
                     m_bInitializationFailed = true;

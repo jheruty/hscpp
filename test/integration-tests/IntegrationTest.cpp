@@ -23,7 +23,7 @@ namespace hscpp { namespace test
         m_pCmdShell = platform::CreateCmdShell();
         REQUIRE(m_pCmdShell->CreateCmdProcess());
 
-        std::string task = fs::path(TEST_BUILD_PATH / testName / configuration / testName).u8string();
+        std::string task = util::Quote(fs::path(TEST_BUILD_PATH / testName / configuration / testName).u8string());
         m_pCmdShell->StartTask(task, 0);
 
         WaitForLog("[LOADED]:");
