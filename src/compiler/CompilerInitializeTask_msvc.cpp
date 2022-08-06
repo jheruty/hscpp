@@ -71,8 +71,8 @@ namespace hscpp
     void CompilerInitializeTask_msvc::StartVsPathTask()
     {
         // https://docs.microsoft.com/en-us/cpp/preprocessor/predefined-macros?view=vs-2019
-        // Find the matching compiler version. Versions supported: VS2015, VS2017, VS2019
-        std::string compilerVersion = "16.0";
+        // Find the matching compiler version. Versions supported: VS2015, VS2017, VS2019, VS2022
+        std::string compilerVersion = "17.0";
 
         switch (_MSC_VER)
         {
@@ -97,7 +97,13 @@ namespace hscpp
             case 1926:
             case 1927:
             case 1928:
+            case 1929:
                 compilerVersion = "16.0";
+                break;
+            case 1930:
+            case 1931:
+            case 1932:
+                compilerVersion = "17.0";
                 break;
             default:
                 log::Warning() << HSCPP_LOG_PREFIX << "Unknown compiler version, using default version '"
