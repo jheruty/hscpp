@@ -146,6 +146,14 @@ namespace hscpp
             return;
         }
 
+        if (nBytesTransferred == 0)
+        {
+            // Most likely related to:
+            // https://stackoverflow.com/questions/43664998/readdirectorychangesw-and-getoverlappedresult
+            // The data is not ready yet. Just return quietly.
+            return;
+        }
+
         FILE_NOTIFY_INFORMATION* pNotify = nullptr;
         DirectoryWatch* pWatch = reinterpret_cast<DirectoryWatch*>(overlapped);
 
