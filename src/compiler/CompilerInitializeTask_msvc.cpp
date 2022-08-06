@@ -76,13 +76,13 @@ namespace hscpp
 
         switch (_MSC_VER)
         {
-			case 1900:
-				compilerVersion = "14.0";
-				break;
-			case 1910:
-			case 1911:
-			case 1912:
-			case 1913:
+            case 1900:
+                compilerVersion = "14.0";
+                break;
+            case 1910:
+            case 1911:
+            case 1912:
+            case 1913:
             case 1914:
             case 1915:
             case 1916:
@@ -96,7 +96,7 @@ namespace hscpp
             case 1925:
             case 1926:
             case 1927:
-			case 1928:
+            case 1928:
                 compilerVersion = "16.0";
                 break;
             default:
@@ -105,80 +105,80 @@ namespace hscpp
                 break;
         }
 
-		if (compilerVersion == "14.0")
-		{
-			// VS2015 stores installation path in registry key.
-			HKEY registryKey;
-			std::string registryName = "SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VS7";
-			
-			LSTATUS result = RegOpenKeyEx(HKEY_LOCAL_MACHINE,
-				registryName.c_str(), 0, KEY_READ | KEY_WOW64_32KEY, &registryKey);
+        if (compilerVersion == "14.0")
+        {
+            // VS2015 stores installation path in registry key.
+            HKEY registryKey;
+            std::string registryName = "SOFTWARE\\Microsoft\\VisualStudio\\SxS\\VS7";
+            
+            LSTATUS result = RegOpenKeyEx(HKEY_LOCAL_MACHINE,
+                registryName.c_str(), 0, KEY_READ | KEY_WOW64_32KEY, &registryKey);
 
-			if (result != HSCPP_ERROR_SUCCESS)
-			{
-				log::Error() << HSCPP_LOG_PREFIX << "Failed to open registry key '"
-					<< registryName << "'." << log::OsError(result) << log::End();
-				return;
-			}
+            if (result != HSCPP_ERROR_SUCCESS)
+            {
+                log::Error() << HSCPP_LOG_PREFIX << "Failed to open registry key '"
+                    << registryName << "'." << log::OsError(result) << log::End();
+                return;
+            }
 
-			char vsPath[MAX_PATH];
-			DWORD size = sizeof(vsPath);
-			
-			result = RegQueryValueEx(registryKey, "14.0", nullptr, nullptr, reinterpret_cast<LPBYTE>(vsPath), &size);
-			if (result != HSCPP_ERROR_SUCCESS)
-			{
-				log::Error() << HSCPP_LOG_PREFIX << "Failed to read registry key value."
-					<< log::OsError(result) << log::End();
-				return;
-			}
+            char vsPath[MAX_PATH];
+            DWORD size = sizeof(vsPath);
+            
+            result = RegQueryValueEx(registryKey, "14.0", nullptr, nullptr, reinterpret_cast<LPBYTE>(vsPath), &size);
+            if (result != HSCPP_ERROR_SUCCESS)
+            {
+                log::Error() << HSCPP_LOG_PREFIX << "Failed to read registry key value."
+                    << log::OsError(result) << log::End();
+                return;
+            }
 
-			if (!StartVcVarsAllTask(vsPath, "VC"))
-			{
-				log::Error() << HSCPP_LOG_PREFIX << "Failed to start vcvarsall task." << log::End();
-				return;
-			}
-		}
-		else
-		{
-			// VS2017 and up ships with vswhere.exe, which can be used to find the Visual Studio install path.
-			std::string query = "\"%ProgramFiles(x86)%\\Microsoft Visual Studio\\Installer\\vswhere\""
-				" -version " + compilerVersion +
-				" -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
-				" -property installationPath";
+            if (!StartVcVarsAllTask(vsPath, "VC"))
+            {
+                log::Error() << HSCPP_LOG_PREFIX << "Failed to start vcvarsall task." << log::End();
+                return;
+            }
+        }
+        else
+        {
+            // VS2017 and up ships with vswhere.exe, which can be used to find the Visual Studio install path.
+            std::string query = "\"%ProgramFiles(x86)%\\Microsoft Visual Studio\\Installer\\vswhere\""
+                " -version " + compilerVersion +
+                " -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64"
+                " -property installationPath";
 
-			m_pCmdShell->StartTask(query, static_cast<int>(CompilerTask::GetVsPath));
-		}
+            m_pCmdShell->StartTask(query, static_cast<int>(CompilerTask::GetVsPath));
+        }
     }
 
-	bool CompilerInitializeTask_msvc::StartVcVarsAllTask(const fs::path& vsPath, const fs::path& vcVarsAllDirectoryPath)
-	{
-		fs::path vcVarsAllPath = vsPath / vcVarsAllDirectoryPath / "vcvarsall.bat";
-		if (!fs::exists(vcVarsAllPath))
-		{
-			log::Error() << HSCPP_LOG_PREFIX
-				<< "Could not find vcvarsall.bat in path " << vcVarsAllPath << log::End(".");
-			return false;
-		}
+    bool CompilerInitializeTask_msvc::StartVcVarsAllTask(const fs::path& vsPath, const fs::path& vcVarsAllDirectoryPath)
+    {
+        fs::path vcVarsAllPath = vsPath / vcVarsAllDirectoryPath / "vcvarsall.bat";
+        if (!fs::exists(vcVarsAllPath))
+        {
+            log::Error() << HSCPP_LOG_PREFIX
+                << "Could not find vcvarsall.bat in path " << vcVarsAllPath << log::End(".");
+            return false;
+        }
 
-		std::string command = "\"" + vcVarsAllPath.string() + "\"";
+        std::string command = "\"" + vcVarsAllPath.string() + "\"";
 
-		// Determine whether we are running in 32 or 64 bit.
-		switch (sizeof(void*))
-		{
-		case 4:
-			command += " x86";
-			break;
-		case 8:
-			command += " x86_amd64";
-			break;
-		default:
-			assert(false); // It must be the future!
-			break;
-		}
+        // Determine whether we are running in 32 or 64 bit.
+        switch (sizeof(void*))
+        {
+        case 4:
+            command += " x86";
+            break;
+        case 8:
+            command += " x86_amd64";
+            break;
+        default:
+            assert(false); // It must be the future!
+            break;
+        }
 
-		m_pCmdShell->StartTask(command, static_cast<int>(CompilerTask::SetVcVarsAll));
-		return true;
-	}
+        m_pCmdShell->StartTask(command, static_cast<int>(CompilerTask::SetVcVarsAll));
+        return true;
+    }
 
     void CompilerInitializeTask_msvc::HandleTaskComplete(CompilerTask task)
     {
@@ -229,13 +229,13 @@ namespace hscpp
             return;
         }
 
-		if (!StartVcVarsAllTask(bestVsPath, "VC/Auxiliary/Build"))
-		{
-			log::Error() << HSCPP_LOG_PREFIX << "Failed to start vcvarsall task." << log::End();
+        if (!StartVcVarsAllTask(bestVsPath, "VC/Auxiliary/Build"))
+        {
+            log::Error() << HSCPP_LOG_PREFIX << "Failed to start vcvarsall task." << log::End();
 
             TriggerDoneCb(Result::Failure);
             return;
-		}
+        }
     }
 
     void CompilerInitializeTask_msvc::HandleSetVcVarsAllTaskComplete(
