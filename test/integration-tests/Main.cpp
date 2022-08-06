@@ -40,7 +40,7 @@ namespace hscpp { namespace test {
     TEST_CASE("Integration test 'simple-printer-test' passes.")
     {
         IntegrationTest test;
-        CALL(test.Init, "simple-printer-test", configuration, Milliseconds(30000));
+        CALL(test.Init, "simple-printer-test", configuration, Milliseconds(60000));
 
         CALL(test.VerifyResult, "Printer update - original code. Count: 0");
         CALL(test.VerifyResult, "Printer update - original code. Count: 1");

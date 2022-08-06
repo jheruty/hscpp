@@ -42,6 +42,11 @@ namespace hscpp { namespace util
         return "";
     }
 
+    std::string Quote(const std::string& str)
+    {
+        return "\"" + str + "\"";
+    }
+
     std::string UnixSlashes(const std::string& str)
     {
         std::string replacedStr = str;
