@@ -199,10 +199,10 @@ namespace hscpp { namespace platform
     // Utilities
     //============================================================================
 
-    void WriteDebugString(const std::wstring& str)
+    void WriteDebugString(const std::string& str)
     {
 #if defined(HSCPP_PLATFORM_WIN32)
-        OutputDebugStringW(str.c_str());
+        OutputDebugString(str.c_str());
 #else
         HSCPP_UNUSED_PARAM(str);
 #endif
@@ -241,24 +241,24 @@ namespace hscpp { namespace platform
 
 #if defined(HSCPP_PLATFORM_WIN32)
 
-    std::wstring GetErrorString(TOsError error)
+    std::string GetErrorString(TOsError error)
     {
         if (error == ERROR_SUCCESS)
         {
-            return L""; // No error.
+            return ""; // No error.
         }
 
-        LPWSTR buffer = nullptr;
-        size_t size = FormatMessageW(
+        LPVOID buffer = nullptr;
+        size_t size = FormatMessage(
             FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
             NULL,
             error,
             MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-            reinterpret_cast<LPWSTR>(&buffer),
+            reinterpret_cast<LPTSTR>(&buffer),
             0,
             NULL);
 
-        std::wstring message(buffer, size);
+        std::string message(static_cast<char*>(buffer), size);
         LocalFree(buffer);
 
         // Remove trailing '\r\n'.
@@ -273,20 +273,19 @@ namespace hscpp { namespace platform
         return message;
     }
 
-    std::wstring GetLastErrorString()
+    std::string GetLastErrorString()
     {
         return GetErrorString(GetLastError());
     }
 
 #elif defined(HSCPP_PLATFORM_UNIX)
 
-    std::wstring GetErrorString(TOsError error)
+    std::string GetErrorString(TOsError error)
     {
-        std::string errorStr = strerror(error);
-        return std::wstring(errorStr.begin(), errorStr.end());
+        return strerror(error);
     }
 
-    std::wstring GetLastErrorString()
+    std::string GetLastErrorString()
     {
         return GetErrorString(errno);
     }

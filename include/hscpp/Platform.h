@@ -49,16 +49,16 @@ typedef int TOsError;
         std::vector<std::string> GetDefaultPreprocessorDefinitions();
         fs::path GetDefaultCompilerExecutable();
 
-        void WriteDebugString(const std::wstring& str);
+        void WriteDebugString(const std::string& str);
         std::string CreateGuid();
 
 #if defined(HSCPP_PLATFORM_WIN32)
-        std::wstring GetErrorString(TOsError error);
-        std::wstring GetLastErrorString();
+        std::string GetErrorString(TOsError error);
+        std::string GetLastErrorString();
 
 #elif defined(HSCPP_PLATFORM_UNIX)
-        std::wstring GetErrorString(TOsError error);
-        std::wstring GetLastErrorString();
+        std::string GetErrorString(TOsError error);
+        std::string GetLastErrorString();
 #endif
 
         std::string GetSharedLibraryExtension();

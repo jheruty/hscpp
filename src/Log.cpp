@@ -30,7 +30,7 @@ namespace hscpp { namespace log
         return m_ErrorCode;
     }
 
-    Stream::Stream(bool bEnabled, const std::function<void(const std::wstringstream&)>& endCb /* = nullptr */)
+    Stream::Stream(bool bEnabled, const std::function<void(const std::stringstream&)>& endCb /* = nullptr */)
         : m_bEnabled(bEnabled)
         , m_EndCb(endCb)
     {}
@@ -42,10 +42,7 @@ namespace hscpp { namespace log
             return *this;
         }
 
-        std::wstring ws(str.size(), L' ');
-        ws.resize(std::mbstowcs(&ws[0], str.c_str(), str.size()));
-
-        m_Stream << ws;
+        m_Stream << str;
         return *this;
     }
 
@@ -58,7 +55,7 @@ namespace hscpp { namespace log
             return *this;
         }
 
-        m_Stream << L"[" << platform::GetLastErrorString() << L"]";
+        m_Stream << "[" << platform::GetLastErrorString() << "]";
         return *this;
     }
 
@@ -69,7 +66,7 @@ namespace hscpp { namespace log
             return *this;
         }
 
-        m_Stream << L"[" << platform::GetErrorString(osError.ErrorCode()) << L"]";
+        m_Stream << "[" << platform::GetErrorString(osError.ErrorCode()) << "]";
         return *this;
     }
 
@@ -81,7 +78,7 @@ namespace hscpp { namespace log
         }
 
         *this << endLog.Str();
-        std::wcout << m_Stream.str() << std::endl;
+        std::cout << m_Stream.str() << std::endl;
 
         if (m_EndCb != nullptr)
         {
@@ -121,7 +118,7 @@ namespace hscpp { namespace log
     Stream Build()
     {
         // Direct logs to debugger output.
-        return Stream(s_bLogBuild, [](const std::wstringstream& stream) {
+        return Stream(s_bLogBuild, [](const std::stringstream& stream) {
             platform::WriteDebugString(stream.str());
         });
     }

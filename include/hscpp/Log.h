@@ -63,7 +63,7 @@ namespace hscpp { namespace log
     class Stream
     {
     public:
-        explicit Stream(bool bEnabled, const std::function<void(const std::wstringstream&)>& endCb = nullptr);
+        explicit Stream(bool bEnabled, const std::function<void(const std::stringstream&)>& endCb = nullptr);
         Stream& operator<<(const std::string& str);
 
         Stream& operator<<(const LastOsError& lastError);
@@ -84,9 +84,9 @@ namespace hscpp { namespace log
 
     private:
         bool m_bEnabled = true;
-        std::function<void(const std::wstringstream&)> m_EndCb;
+        std::function<void(const std::stringstream&)> m_EndCb;
 
-        std::wstringstream m_Stream;
+        std::stringstream m_Stream;
     };
 
     //============================================================================
