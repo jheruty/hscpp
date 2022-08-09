@@ -142,6 +142,11 @@ namespace hscpp
         return -1;
     }
 
+    int Hotswapper::LocateAndAddLibrary(const fs::path& rootPath, const fs::path& libraryName)
+    {
+        return -1;
+    }
+
     bool Hotswapper::RemoveLibrary(int)
     {
         return false;

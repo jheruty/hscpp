@@ -85,6 +85,7 @@ namespace hscpp
         void ClearLibraryDirectories();
 
         int AddLibrary(const fs::path& libraryPath);
+        int LocateAndAddLibrary(const fs::path& rootPath, const fs::path& libraryName);
         bool RemoveLibrary(int handle);
         void EnumerateLibraries(const std::function<void(int handle, const fs::path& libraryPath)>& cb);
         void ClearLibraries();
