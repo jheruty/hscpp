@@ -173,7 +173,7 @@ namespace hscpp { namespace util
             }
         }
 
-        log::Warning() << "Unable to find file " << name << " within " << directory << log::End();
+        log::Warning() << HSCPP_LOG_PREFIX << "Unable to find file " << name << " within " << directory << log::End();
 
         return fs::path();
     }

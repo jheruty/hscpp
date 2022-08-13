@@ -95,7 +95,8 @@ int main(int, char**)
     swapper.AddIncludeDirectory(includePath);
     swapper.AddIncludeDirectory(exampleUtilsIncludePath);
     swapper.AddIncludeDirectory(imguiIncludePath);
-    swapper.AddLibrary(hscpp::util::FindFile(DEMO_BUILD_PATH, imguiLibraryName));
+
+    swapper.LocateAndAddLibrary(DEMO_BUILD_PATH, imguiLibraryName);
     swapper.LocateAndAddLibrary(HSCPP_EXAMPLE_UTILS_BUILD_PATH, exampleUtilsLibraryName);
 
     GLFWwindow* pWindow = nullptr;
