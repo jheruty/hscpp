@@ -352,6 +352,12 @@ namespace hscpp
         return Add(libraryPath, m_NextLibraryHandle, m_LibraryPathsByHandle);
     }
 
+    int Hotswapper::LocateAndAddLibrary(const fs::path& rootPath, const fs::path& libraryName)
+    {
+        auto result = util::FindFile(rootPath, libraryName);
+        return Add(result, m_NextLibraryHandle, m_LibraryPathsByHandle);
+    }
+
     bool Hotswapper::RemoveLibrary(int handle)
     {
         return Remove(handle, m_LibraryPathsByHandle);

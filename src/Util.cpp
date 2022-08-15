@@ -155,4 +155,27 @@ namespace hscpp { namespace util
                 dedupedRemovedFilePaths.begin(), dedupedRemovedFilePaths.end());
     }
 
+    fs::path FindFile(const fs::path& rootPath, const fs::path& name)
+    {
+        if (!fs::exists(rootPath)) {
+            return fs::path();
+        }
+
+        fs::path directory = fs::canonical(rootPath);
+
+        for (const auto& entry : fs::recursive_directory_iterator(directory)) {
+            if (entry.is_regular_file()) {
+                if (fs::exists(entry)) {
+                    if (entry.path().filename().compare(name) == 0) {
+                        return entry.path();
+                    }
+                }
+            }
+        }
+
+        log::Warning() << HSCPP_LOG_PREFIX << "Unable to find file " << name << " within " << directory << log::End();
+
+        return fs::path();
+    }
+
 }}

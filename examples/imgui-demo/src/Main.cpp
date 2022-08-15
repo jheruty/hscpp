@@ -84,19 +84,20 @@ int main(int, char**)
     auto imguiIncludePath = DEMO_CODE_PATH / "lib" / "imgui";
 
 #ifdef _WIN32
-    auto imguiLibraryPath = DEMO_BUILD_PATH / "lib" / "imgui" / "imgui.lib";
-    auto exampleUtilsLibraryPath = HSCPP_EXAMPLE_UTILS_BUILD_PATH / "hscpp-example-utils.lib";
+    auto imguiLibraryName = "imgui.lib";
+    auto exampleUtilsLibraryName =  "hscpp-example-utils.lib";
 #else
-    auto imguiLibraryPath = DEMO_BUILD_PATH / "lib" / "imgui" / "libimgui.a";
-    auto exampleUtilsLibraryPath = HSCPP_EXAMPLE_UTILS_BUILD_PATH / "libhscpp-example-utils.a";
+    auto imguiLibraryName = "imgui.a";
+    auto exampleUtilsLibraryName =  "hscpp-example-utils.a";
 #endif
 
     swapper.AddSourceDirectory(srcPath);
     swapper.AddIncludeDirectory(includePath);
     swapper.AddIncludeDirectory(exampleUtilsIncludePath);
     swapper.AddIncludeDirectory(imguiIncludePath);
-    swapper.AddLibrary(imguiLibraryPath);
-    swapper.AddLibrary(exampleUtilsLibraryPath);
+
+    swapper.LocateAndAddLibrary(DEMO_BUILD_PATH, imguiLibraryName);
+    swapper.LocateAndAddLibrary(HSCPP_EXAMPLE_UTILS_BUILD_PATH, exampleUtilsLibraryName);
 
     GLFWwindow* pWindow = nullptr;
     if (!SetupGlfw(pWindow))
